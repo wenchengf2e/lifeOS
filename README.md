@@ -50,6 +50,9 @@ npm run deploy          # build + wrangler deploy
 npm run cf:tail         # 线上日志
 ```
 
+当前开发流程、自动化测试现状和待补测试，见
+[docs/development-workflow.md](docs/development-workflow.md)。
+
 ## 首次部署
 
 ### 1. 注册 workers.dev 子域
