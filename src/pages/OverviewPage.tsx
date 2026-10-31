@@ -129,7 +129,7 @@ export function OverviewPage() {
             {lifeosFilled}
             <span className="ml-1 text-base text-ink-soft">/ {lifeosSections.length}</span>
           </p>
-          <p className="mt-2 text-xs text-ink-soft">五栏都填，系统才闭环</p>
+          <p className="mt-2 text-xs text-ink-soft">六栏都填，系统才闭环</p>
         </Link>
       </section>
 

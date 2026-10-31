@@ -61,7 +61,7 @@ export function LifeOSPage() {
       <PageHeader
         eyebrow="Life OS"
         title="人生 OS"
-        description="把自己当成一个系统来维护：认知 → 应对 → 行动 → 反馈。五栏都填，跑起来才闭环。先写事实和判断，再慢慢迭代。"
+        description="先认识自己，再看处境、方向和差距。六栏都填，跑起来才闭环。先写事实和判断，再慢慢迭代。"
       />
 
       <div className="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">

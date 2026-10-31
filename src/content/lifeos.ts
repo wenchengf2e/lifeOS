@@ -10,8 +10,25 @@ export type LifeOSSection = {
 
 export const lifeosSections: LifeOSSection[] = [
   {
+    key: "identity",
+    title: "1 · 我是谁",
+    icon: "🪞",
+    desc: "在问「我要去哪」之前，先把自己描述清楚。这一栏写的是「我如何运转」，不随阶段变化——它是后面所有判断的地基。",
+    questions: [
+      "我是一个怎样运转的人？我对什么敏感、被什么驱动、遇到问题习惯先做什么？用具体的事说，不用形容词。",
+      "什么在给我充电，什么在把我耗空？回想最近两个月：哪一天过完我反而更有劲，哪一天什么都没干却精疲力尽？",
+      "压力大的时候我会变成什么样——回避、硬扛、讨好，还是失控地往前冲？举一个最近发生的例子。",
+      "我真正在乎什么？哪些事没人看见、没有回报我也愿意做；哪些事给我钱我也做不下去。",
+      "我身上哪些东西从很早以前就没变过？哪些是我一直想改、改了很多次还是没改掉的？",
+      "身边的人反复说我是什么样的人？其中哪一条我最不认同、又隐隐觉得是真的？",
+    ],
+    placeholder:
+      "写场景，不写形容词。与其写「我比较内向」，不如写「被人当众否定时我会先沉默，回家再想一整晚」。",
+    output: "一页关于自己的事实描述。下次做选择时拿来对照：这件事符合我，还是我在扮演别人。",
+  },
+  {
     key: "stage",
-    title: "1 · 当前阶段诊断",
+    title: "2 · 当前阶段诊断",
     icon: "📍",
     desc: "我现在在哪里？不是笼统地评价自己，而是客观盘点当前处境。",
     questions: [
@@ -26,7 +43,7 @@ export const lifeosSections: LifeOSSection[] = [
   },
   {
     key: "ideal",
-    title: "2 · 理想状态",
+    title: "3 · 理想状态",
     icon: "🧭",
     desc: "我究竟想去哪里？不只是列出赚钱、自由、成功等愿望，而是定义自己想过什么样的生活。",
     questions: [
@@ -41,7 +58,7 @@ export const lifeosSections: LifeOSSection[] = [
   },
   {
     key: "gap",
-    title: "3 · Gap 分析",
+    title: "4 · Gap 分析",
     icon: "📐",
     desc: "我与目标差在哪里？这是整个系统的核心。不要把差距简单归结为「我还不够努力」。",
     questions: [
@@ -56,7 +73,7 @@ export const lifeosSections: LifeOSSection[] = [
   },
   {
     key: "strategy",
-    title: "4 · 改变策略",
+    title: "5 · 改变策略",
     icon: "🛠",
     desc: "如何跨越 Gap？不只是制定计划，还要考虑自己的行为模式为什么会让计划失效。",
     questions: [
@@ -71,7 +88,7 @@ export const lifeosSections: LifeOSSection[] = [
   },
   {
     key: "verify",
-    title: "5 · 成长验证",
+    title: "6 · 成长验证",
     icon: "📊",
     desc: "我真的在改变吗？不能只看自己是否更有信心，还要看行为和现实结果有没有变化。",
     questions: [
