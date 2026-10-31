@@ -111,6 +111,9 @@ Worker 的校验逻辑在 `worker/auth.ts`：只接受 Access 注入的邮箱头
 "workers_dev": false
 ```
 
+腾讯云注册、修改 NS、Worker Custom Domain、国内访问注意事项的完整步骤，见
+[docs/custom-domain.md](docs/custom-domain.md)。
+
 ## API
 
 所有 `/api/*` 都要求 Access 身份（本地 localhost 除外）。
