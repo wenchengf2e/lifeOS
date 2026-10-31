@@ -1,0 +1,25 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "lifeos",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-10-30",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*", "/health"]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "lifeos-db",
+      "database_id": "4894e3e1-bc36-4bc0-9e3a-4297e6145d93",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "vars": {
+    "OWNER_EMAIL": "wencheng.f2e@gmail.com"
+  },
+  "observability": {
+    "enabled": true
+  }
+}

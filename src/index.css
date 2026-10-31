@@ -1,0 +1,81 @@
+@import "tailwindcss";
+
+@theme {
+  --color-paper: #f7f3ec;
+  --color-paper-deep: #efe8dc;
+  --color-ink: #262420;
+  --color-ink-soft: #6f6a61;
+  --color-moss: #5d7355;
+  --color-moss-dark: #45573f;
+  --color-moss-soft: #e7ede2;
+  --color-clay: #a47254;
+  --color-line: #ded7ca;
+  --font-display: "Songti SC", "Noto Serif SC", "STSong", "SimSun", serif;
+  --font-sans: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, -apple-system, sans-serif;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-line);
+  }
+
+  html {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    min-height: 100vh;
+    margin: 0;
+    background-image:
+      radial-gradient(1100px 560px at 12% -12%, rgba(93, 115, 85, 0.12), transparent 62%),
+      radial-gradient(900px 500px at 92% -4%, rgba(164, 114, 84, 0.09), transparent 58%);
+    background-attachment: fixed;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  ::selection {
+    background: #dbe4d4;
+    color: var(--color-ink);
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-3xl border border-line/70 bg-white/70 shadow-sm;
+  }
+
+  .field {
+    @apply w-full rounded-2xl border border-line bg-white/80 px-4 py-3 text-sm leading-7 text-ink outline-none transition placeholder:text-ink-soft/50 focus:border-moss/50 focus:ring-4 focus:ring-moss/10;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-moss px-5 py-2.5 text-sm font-medium text-white transition hover:bg-moss-dark disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-line bg-white/70 px-4 py-2 text-sm text-ink-soft transition hover:border-moss/40 hover:text-ink;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-3 py-2 text-sm text-ink-soft transition hover:bg-white/70 hover:text-ink;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-full bg-moss-soft px-2.5 py-1 text-[11px] font-medium text-moss-dark;
+  }
+}
