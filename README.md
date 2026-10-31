@@ -1,6 +1,6 @@
 # LifeOS
 
-个人的 LifeOS 心理工作台：信念重写、人生 OS、日记、成就 / 改变清单、五步诊断。
+个人的 LifeOS 心理工作台：信念重写、人生 OS、日记、成就 / 改变清单、五步诊断、关于。
 
 数据保存在 Cloudflare D1，站点和 API 跑在同一个 Cloudflare Worker 上，登录由 Cloudflare Access 负责。免费额度足够个人使用。
 
@@ -17,9 +17,10 @@
 ```
 src/             React 前端
   components/    布局、日历、状态组件
-  content/       信念重写、人生 OS、清单的文案配置
+  content/       信念重写、人生 OS、清单的文案配置；关于页静态内容
   lib/           API 客户端、查询 hooks、日期与统计工具
-  pages/         总览、信念重写、人生 OS、日记、清单、五步诊断
+  pages/         总览、信念重写、人生 OS、日记、清单、五步诊断、关于
+public/          静态图片（关于页图片在 public/about/）
 worker/          Hono API Worker
   routes/        checkins / docs / items
   db/            Drizzle schema、client、查询
@@ -140,6 +141,18 @@ Worker 的校验逻辑在 `worker/auth.ts`：只接受 Access 注入的邮箱头
 - `checkins`：一人一天一条，`data` 是 JSON，包含 `q1`–`q6` 和 `review`
 - `documents`：按 `(module, key)` 存长文本 / 结构化 JSON，人生 OS 用 `module = "lifeos"`
 - `items`：清单条目，按 `(module, sort_order, created_at)` 排序
+
+## 「关于」页
+
+`/about` 是静态内容页，不读写 D1：
+
+- 文字在 `src/content/about.json`，支持段落、小节、列表、引用、提示框和本地图片
+- 图片放在 `public/about/`，构建时随静态资源一起发布
+- 修改后重新构建部署即可生效
+
+字段说明和示例见 [docs/about-content.md](docs/about-content.md)。
+
+> 这个文件会打包进前端静态资源，并且仓库是公开的，**不要放私人日记或真实联系方式**。私人数据只放在 D1。
 
 ## 备份
 

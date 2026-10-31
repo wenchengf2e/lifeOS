@@ -8,6 +8,7 @@ const NAV = [
   { to: "/diary", label: "日记" },
   { to: "/lists", label: "清单" },
   { to: "/principles", label: "五步诊断" },
+  { to: "/about", label: "关于" },
 ];
 
 export function Layout({ children }: { children: ReactNode }) {
@@ -24,7 +25,7 @@ export function Layout({ children }: { children: ReactNode }) {
             </span>
           </Link>
 
-          <nav className="-mx-1 flex items-center gap-1 overflow-x-auto pb-1 lg:mx-0 lg:pb-0">
+          <nav className="-mx-1 flex flex-wrap items-center gap-1 lg:mx-0 lg:flex-nowrap">
             {NAV.map((item) => (
               <NavLink
                 key={item.to}

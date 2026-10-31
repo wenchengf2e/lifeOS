@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { Route, Routes, useLocation } from "react-router-dom";
 import { Layout } from "./components/Layout";
+import { AboutPage } from "./pages/AboutPage";
 import { BeliefPage } from "./pages/BeliefPage";
 import { DiaryPage } from "./pages/DiaryPage";
 import { LifeOSPage } from "./pages/LifeOSPage";
@@ -30,6 +31,7 @@ export function App() {
         <Route path="/diary" element={<DiaryPage />} />
         <Route path="/lists" element={<ListsPage />} />
         <Route path="/principles" element={<PrinciplesPage />} />
+        <Route path="/about" element={<AboutPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </Layout>

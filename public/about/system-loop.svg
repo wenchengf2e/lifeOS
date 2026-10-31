@@ -1,0 +1,51 @@
+<svg width="960" height="440" viewBox="0 0 960 440" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="960" height="440" fill="#F7F3EC"/>
+  <circle cx="72" cy="32" r="150" fill="#5D7355" fill-opacity="0.06"/>
+  <circle cx="908" cy="424" r="170" fill="#A47254" fill-opacity="0.05"/>
+
+  <rect x="40" y="40" width="880" height="360" rx="28" fill="#FFFDF8" stroke="#DED7CA"/>
+
+  <text x="80" y="88" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif" font-size="11" font-weight="600" letter-spacing="2.4" fill="#5D7355">LIFEOS · DAILY LOOP</text>
+  <text x="80" y="130" font-family="Songti SC, Noto Serif SC, STSong, SimSun, serif" font-size="28" font-weight="600" fill="#262420">每天、每周、每月转动的循环</text>
+  <text x="80" y="160" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif" font-size="13" fill="#6F6A61">写下事实 → 校准方向 → 落到行动 → 回看验证</text>
+
+  <rect x="80" y="230" width="160" height="88" rx="16" fill="#EEF2E9" stroke="#5D7355"/>
+  <circle cx="104" cy="254" r="14" fill="#5D7355"/>
+  <text x="104" y="259" text-anchor="middle" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif" font-size="11" font-weight="600" fill="#FFFFFF">1</text>
+  <text x="128" y="260" font-family="Songti SC, Noto Serif SC, STSong, SimSun, serif" font-size="15" font-weight="600" fill="#262420">信念重写</text>
+  <text x="100" y="286" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif" font-size="11" fill="#6F6A61">每天六个问题</text>
+  <text x="100" y="304" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif" font-size="11" fill="#6F6A61">记录逃避与信念</text>
+
+  <rect x="300" y="230" width="160" height="88" rx="16" fill="#FFFFFF" stroke="#DED7CA"/>
+  <circle cx="324" cy="254" r="14" fill="#5D7355"/>
+  <text x="324" y="259" text-anchor="middle" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif" font-size="11" font-weight="600" fill="#FFFFFF">2</text>
+  <text x="348" y="260" font-family="Songti SC, Noto Serif SC, STSong, SimSun, serif" font-size="15" font-weight="600" fill="#262420">人生 OS</text>
+  <text x="320" y="286" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif" font-size="11" fill="#6F6A61">阶段、Gap、策略</text>
+  <text x="320" y="304" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif" font-size="11" fill="#6F6A61">定期校准方向</text>
+
+  <rect x="520" y="230" width="160" height="88" rx="16" fill="#FFFFFF" stroke="#DED7CA"/>
+  <circle cx="544" cy="254" r="14" fill="#5D7355"/>
+  <text x="544" y="259" text-anchor="middle" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif" font-size="11" font-weight="600" fill="#FFFFFF">3</text>
+  <text x="568" y="260" font-family="Songti SC, Noto Serif SC, STSong, SimSun, serif" font-size="15" font-weight="600" fill="#262420">每日行动</text>
+  <text x="540" y="286" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif" font-size="11" fill="#6F6A61">今天的一件具体事</text>
+  <text x="540" y="304" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif" font-size="11" fill="#6F6A61">写进现实</text>
+
+  <rect x="740" y="230" width="160" height="88" rx="16" fill="#FFFFFF" stroke="#DED7CA"/>
+  <circle cx="764" cy="254" r="14" fill="#5D7355"/>
+  <text x="764" y="259" text-anchor="middle" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif" font-size="11" font-weight="600" fill="#FFFFFF">4</text>
+  <text x="788" y="260" font-family="Songti SC, Noto Serif SC, STSong, SimSun, serif" font-size="15" font-weight="600" fill="#262420">日记与复盘</text>
+  <text x="760" y="286" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif" font-size="11" fill="#6F6A61">归档事实</text>
+  <text x="760" y="304" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif" font-size="11" fill="#6F6A61">验证变化</text>
+
+  <path d="M240 274 H288" stroke="#5D7355" stroke-width="1.5"/>
+  <path d="M280 267 L288 274 L280 281" stroke="#5D7355" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M460 274 H508" stroke="#5D7355" stroke-width="1.5"/>
+  <path d="M500 267 L508 274 L500 281" stroke="#5D7355" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M680 274 H728" stroke="#5D7355" stroke-width="1.5"/>
+  <path d="M720 267 L728 274 L720 281" stroke="#5D7355" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <path d="M820 318 V350 H160 V330" stroke="#5D7355" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5 5"/>
+  <path d="M160 318 L153 330 L167 330 Z" fill="#5D7355"/>
+
+  <text x="490" y="374" text-anchor="middle" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif" font-size="10" fill="#6F6A61">每周 / 每月回看，用行动结果修正下一轮判断</text>
+</svg>
