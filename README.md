@@ -56,8 +56,8 @@ npm run cf:tail         # 线上日志
 Wrangler 部署到 workers.dev 之前，账号必须已经有一个 workers.dev 子域。这个子域是账号级的，不是项目级的：
 
 1. 打开 Cloudflare Dashboard → Workers & Pages
-2. 如果提示注册子域，选择一个可用的名字（例如 `wenchengf2e`）
-3. 部署后的地址形如 `https://lifeos.<子域>.workers.dev`
+2. 如果提示注册子域，选择一个可用的名字（例如 `wencheng-f2e`）
+3. 部署后的地址形如 `https://lifeos.<子域>.workers.dev`（当前为 `https://lifeos.wencheng-f2e.workers.dev`）
 
 > `lifeos` 这个名字可能已被占用。Worker 名称仍然是 `lifeos`，子域可以另选。
 
@@ -81,17 +81,21 @@ npm run deploy
 
 ### 4. 配置 Cloudflare Access
 
-**在把地址发给任何人之前，先完成这一步。** 未配置 Access 时，API 会因为拿不到身份头而返回 401，但静态页面仍然公开。
+**在把地址发给任何人之前，先完成这一步。** Worker 通过 Access 注入的邮箱头识别用户；没有 Access 时普通请求会返回 401，但该请求头本身没有签名校验，所以不要在 Access 开启前公开 Worker 地址。
 
-1. Cloudflare Dashboard → Zero Trust → Access → Applications
-2. Add an application → Self-hosted
-3. Application domain 填部署后的 hostname，例如 `lifeos.wenchengf2e.workers.dev`，path 留空或 `/*`
-4. 新建 policy：Action `Allow`，Include `Emails`，填 `wencheng.f2e@gmail.com`
-5. 身份提供商选 One-time PIN（或 GitHub），按提示保存
-6. 用无痕窗口打开站点，确认会先跳到 Access 登录页
-7. 建议同时在 Zero Trust 设置里保护 Workers 预览 URL（preview URLs），避免绕过正式域名
+1. 打开 [Zero Trust Dashboard](https://one.dash.cloudflare.com/)，完成初始化
+   - 选择团队名，例如 `wencheng-f2e`，登录域会变成 `wencheng-f2e.cloudflareaccess.com`
+   - 选择 Free plan（最多 50 个用户）；如果面板要求验证付款方式，按提示操作，免费额度不收费
+2. Workers & Pages → 选择 `lifeos` → **Access** 标签
+3. 点击 **Protect this Worker behind Access**
+4. 选择 **All traffic**，同时保护 workers.dev、自定义域名和 preview URLs
+5. Authentication policy 选择 **Cloudflare account**（只有账号成员能登录），或先在 Zero Trust 里建一个只允许 `wencheng.f2e@gmail.com` 的 email policy 再选中它
+   - 不要选择 **Email domain** 后填 `gmail.com`，那会允许所有 Gmail 用户登录
+6. 点击 **Apply Access**，再用无痕窗口打开站点，确认先跳到 Access 登录页
 
 Worker 的校验逻辑在 `worker/auth.ts`：只接受 Access 注入的邮箱头，且必须与 `OWNER_EMAIL` 完全一致。**不要让任何能绕过 Access 的 hostname 指向这个 Worker**，否则客户端可以伪造该请求头。
+
+> 使用 Static Assets 的 Worker 目前无法通过 `ctx.access` 读取身份（Cloudflare 的内部 router 不会传递该对象），因此本项目继续使用 Access 注入的请求头。
 
 ### 5. 绑定自定义域名（可选，推荐）
 
