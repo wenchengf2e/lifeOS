@@ -141,7 +141,7 @@ Worker 的校验逻辑在 `worker/auth.ts`：只接受 Access 注入的邮箱头
 
 数据模型：
 
-- `checkins`：一人一天一条，`data` 是 JSON，包含 `q1`–`q6` 和 `review`
+- `checkins`：一人一天一条，`data` 是 JSON，包含 `plan`（事前行动）、`q1`–`q6`（事后复盘）和 `review`
 - `documents`：按 `(module, key)` 存长文本 / 结构化 JSON，人生 OS 用 `module = "lifeos"`
 - `items`：清单条目，按 `(module, sort_order, created_at)` 排序
 

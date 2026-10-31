@@ -11,6 +11,7 @@ const app = new Hono<AppEnv>();
 const dateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Expected YYYY-MM-DD");
 
 const checkinSchema = z.object({
+  plan: z.string().max(20000).optional(),
   q1: z.string().max(20000).optional(),
   q2: z.string().max(20000).optional(),
   q3: z.string().max(20000).optional(),

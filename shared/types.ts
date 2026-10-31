@@ -1,8 +1,16 @@
-export const CHECKIN_FIELD_KEYS = ["q1", "q2", "q3", "q4", "q5", "q6"] as const;
+/**
+ * Fields that make a day count as a check-in.
+ *
+ * `plan` is the pre-action half of the daily loop. Counting it means writing
+ * the morning plan alone already registers the day, so the practice is not
+ * gated behind an evening review that may never happen.
+ */
+export const CHECKIN_FIELD_KEYS = ["plan", "q1", "q2", "q3", "q4", "q5", "q6"] as const;
 
 export type CheckinFieldKey = (typeof CHECKIN_FIELD_KEYS)[number];
 
 export type CheckinData = {
+  plan?: string;
   q1?: string;
   q2?: string;
   q3?: string;

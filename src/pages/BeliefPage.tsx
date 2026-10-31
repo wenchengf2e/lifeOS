@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type { CheckinData } from "../../shared/types";
-import { beliefFields, reviewField } from "../content/belief";
+import { beliefFields, reviewField, type BeliefField } from "../content/belief";
 import { MonthCalendar } from "../components/MonthCalendar";
 import { PageHeader } from "../components/PageHeader";
 import { ErrorState, LoadingPage } from "../components/StateViews";
@@ -16,6 +16,9 @@ import {
 } from "../lib/stats";
 
 type SaveStatus = { type: "idle" | "saved" | "error"; message?: string };
+
+const preFields = beliefFields.filter((field) => field.phase === "pre");
+const postFields = beliefFields.filter((field) => field.phase === "post");
 
 export function BeliefPage() {
   const { data, isLoading, error } = useBootstrap();
@@ -76,6 +79,32 @@ export function BeliefPage() {
     }
   }
 
+  function renderField(field: BeliefField) {
+    return (
+      <article key={field.key} className="card p-5 sm:p-6">
+        <div className="flex flex-wrap items-center gap-2">
+          <h2 className="text-lg text-ink">{field.label}</h2>
+          <span className="rounded-full bg-paper-deep/70 px-2.5 py-1 text-[11px] text-clay">
+            {field.meta}
+          </span>
+        </div>
+
+        <p className="mt-4 whitespace-pre-line text-sm leading-7 text-ink-soft">{field.prompt}</p>
+
+        <label className="mt-5 block">
+          <span className="sr-only">{field.label}</span>
+          <textarea
+            className="field min-h-28 resize-y"
+            rows={4}
+            placeholder={field.placeholder}
+            value={form[field.key] ?? ""}
+            onChange={(event) => updateField(field.key, event.target.value)}
+          />
+        </label>
+      </article>
+    );
+  }
+
   const isCurrentMonth =
     selected.getFullYear() === new Date().getFullYear() &&
     selected.getMonth() === new Date().getMonth();
@@ -90,7 +119,7 @@ export function BeliefPage() {
       <PageHeader
         eyebrow="Daily Practice"
         title="信念重写"
-        description="六个问题，把注意力从「今天感觉如何」拉回「今天做了什么、在逃避什么」。每天写一点，旧信念才会被新证据一点点替换。"
+        description="先写下今天要专注什么、可能卡在哪、卡住了怎么办；一天结束之后再回来对答案。事前定方向、事后做复盘，旧信念才会被新证据一点点替换。"
       />
 
       <div className="grid gap-6 lg:grid-cols-[300px_minmax(0,1fr)]">
@@ -160,31 +189,19 @@ export function BeliefPage() {
         </aside>
 
         <section className="space-y-4">
-          {beliefFields.map((field) => (
-            <article key={field.key} className="card p-5 sm:p-6">
-              <div className="flex flex-wrap items-center gap-2">
-                <h2 className="text-lg text-ink">{field.label}</h2>
-                <span className="rounded-full bg-paper-deep/70 px-2.5 py-1 text-[11px] text-clay">
-                  {field.meta}
-                </span>
-              </div>
+          <div className="flex flex-wrap items-center gap-3 px-1">
+            <span className="chip">事前</span>
+            <p className="text-xs text-ink-soft">先定方向：今天要往哪走，卡住了怎么办</p>
+          </div>
 
-              <p className="mt-4 whitespace-pre-line text-sm leading-7 text-ink-soft">
-                {field.prompt}
-              </p>
+          {preFields.map(renderField)}
 
-              <label className="mt-5 block">
-                <span className="sr-only">{field.label}</span>
-                <textarea
-                  className="field min-h-28 resize-y"
-                  rows={4}
-                  placeholder={field.placeholder}
-                  value={form[field.key] ?? ""}
-                  onChange={(event) => updateField(field.key, event.target.value)}
-                />
-              </label>
-            </article>
-          ))}
+          <div className="flex flex-wrap items-center gap-3 px-1 pt-4">
+            <span className="chip">事后</span>
+            <p className="text-xs text-ink-soft">再对答案：今天实际发生了什么</p>
+          </div>
+
+          {postFields.map(renderField)}
 
           <article className="card p-5 sm:p-6">
             <div className="flex flex-wrap items-center gap-2">

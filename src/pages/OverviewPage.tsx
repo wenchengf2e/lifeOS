@@ -69,12 +69,12 @@ export function OverviewPage() {
               想要的方向走。
             </h1>
             <p className="mt-5 max-w-xl text-sm leading-7 text-ink-soft">
-              这里不评分、不催促，只提供几个向内的入口：今天逃避了什么、相信了什么、又交付了什么。
+              这里不评分、不催促，只提供几个向内的入口：今天要专注什么、逃避了什么、又交付了什么。
               写具体的事实，不写「还行」。
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
               <Link to="/belief" className="btn-primary">
-                {todayDone ? "回顾今天的信念重写" : "开始今天的信念重写"}
+                {todayDone ? "继续今天的信念重写" : "开始今天的信念重写"}
               </Link>
               <Link to="/lifeos" className="btn-secondary">
                 打开人生 OS
@@ -101,7 +101,7 @@ export function OverviewPage() {
           <p className="text-[11px] uppercase tracking-[0.18em] text-ink-soft">今日打卡</p>
           <p className="mt-3 font-display text-3xl text-ink">{todayDone ? "完成" : "未完成"}</p>
           <p className="mt-2 text-xs text-ink-soft">
-            {todayEntry ? "有记录，可以继续补充" : "六个问题，写一个也算开始"}
+            {todayEntry ? "有记录，可以继续补充" : "先写计划，再写复盘，写一个也算开始"}
           </p>
         </Link>
 
