@@ -85,8 +85,8 @@ export function OverviewPage() {
               写具体的事实，不写「还行」。
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
-              <Link to="/belief" className="btn-primary">
-                {todayDone ? "继续今天的信念重写" : "开始今天的信念重写"}
+              <Link to="/daily" className="btn-primary">
+                {todayDone ? "继续今天的仪式" : "开始今天的仪式"}
               </Link>
               <Link to="/diary" className="btn-secondary">
                 翻看日记
@@ -109,7 +109,7 @@ export function OverviewPage() {
       </section>
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Link to="/belief" className="card p-5 transition hover:-translate-y-0.5 hover:shadow-md">
+        <Link to="/daily" className="card p-5 transition hover:-translate-y-0.5 hover:shadow-md">
           <p className="text-[11px] uppercase tracking-[0.18em] text-ink-soft">今日打卡</p>
           <p className="mt-3 font-display text-3xl text-ink">{todayDone ? "完成" : "未完成"}</p>
           <p className="mt-2 text-xs text-ink-soft">
@@ -160,7 +160,7 @@ export function OverviewPage() {
           {recentDiary.length === 0 ? (
             <div className="mt-6 rounded-2xl border border-dashed border-line bg-paper-deep/30 p-6 text-center">
               <p className="text-sm text-ink-soft">还没有复盘记录。</p>
-              <Link to="/belief" className="btn-secondary mt-4">
+              <Link to="/daily" className="btn-secondary mt-4">
                 去写一条
               </Link>
             </div>
@@ -186,10 +186,10 @@ export function OverviewPage() {
             <h2 className="mt-1 text-xl text-ink">今天想做点什么？</h2>
             <div className="mt-4 space-y-2">
               <Link
-                to="/belief"
+                to="/daily"
                 className="flex items-center justify-between rounded-2xl border border-line/70 bg-paper-deep/30 px-4 py-3 text-sm text-ink transition hover:border-moss/30 hover:bg-white/70"
               >
-                <span>🪞 信念重写</span>
+                <span>🪞 每日仪式</span>
                 <span className="text-ink-soft">→</span>
               </Link>
               <Link

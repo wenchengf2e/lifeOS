@@ -53,7 +53,7 @@ npm run cf:tail          # 线上日志
 
 1. 改样式、路由或数据结构后，只能靠人工发现回归。
 2. 鉴权逻辑没有测试覆盖。截至 2026-10-31，Cloudflare Access Applications 复查结果仍为 0 个，站点实际上没有 Access 保护；这类问题测试也很难自动发现。
-3. 静态内容（如 `src/content/belief.ts`、`src/content/about.json`）写错时，通常要到运行时才暴露。
+3. 静态内容（如 `src/content/daily.ts`、`src/content/about.json`）写错时，通常要到运行时才暴露。
 4. 没有 CI，推送后不会自动跑检查。
 
 ## 建议补的测试
@@ -65,7 +65,7 @@ npm run cf:tail          # 线上日志
    - 覆盖 401 / 403、打卡 upsert、文档保存、清单 CRUD、导出
 2. **前端单元 / 组件测试**
    - 使用 Vitest + Testing Library
-   - 覆盖 `stats.ts`、日期工具、信念重写表单、关于页各内容块渲染
+   - 覆盖 `stats.ts`、日期工具、每日仪式表单、关于页各内容块渲染
 3. **Playwright 冒烟测试**
    - 3–5 条关键路径：保存打卡后刷新仍在、页面导航、移动端无横向溢出
 4. **GitHub Actions**

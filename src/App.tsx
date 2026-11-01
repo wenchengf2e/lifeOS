@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { Layout } from "./components/Layout";
 import { AboutPage } from "./pages/AboutPage";
-import { BeliefPage } from "./pages/BeliefPage";
+import { DailyPage } from "./pages/DailyPage";
 import { DiaryPage } from "./pages/DiaryPage";
 import { LifeOSPage } from "./pages/LifeOSPage";
 import { ListsPage } from "./pages/ListsPage";
@@ -28,9 +28,10 @@ export function App() {
       <ScrollToTop />
       <Routes>
         <Route path="/" element={<OverviewPage />} />
-        <Route path="/belief" element={<BeliefPage />} />
-        {/* 晚间日记已并入信念重写，保留旧地址做重定向 */}
-        <Route path="/evening" element={<Navigate to="/belief" replace />} />
+        <Route path="/daily" element={<DailyPage />} />
+        {/* 旧地址：信念重写 → 每日仪式，晚间日记 → 并入每日仪式 */}
+        <Route path="/belief" element={<Navigate to="/daily" replace />} />
+        <Route path="/evening" element={<Navigate to="/daily" replace />} />
         <Route path="/lifeos" element={<LifeOSPage />} />
         <Route path="/diary" element={<DiaryPage />} />
         <Route path="/review" element={<ReviewPage />} />

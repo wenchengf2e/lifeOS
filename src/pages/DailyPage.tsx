@@ -20,12 +20,12 @@ function filledIn(module: DailyModule, form: CheckinData) {
   return module.fields.filter((field) => (form[field.key] ?? "").trim().length > 0).length;
 }
 
-export function BeliefPage() {
+export function DailyPage() {
   const { data, isLoading, error } = useBootstrap();
   const saveCheckin = useSaveCheckin();
   const [searchParams] = useSearchParams();
 
-  // 支持 /belief?date=2026-10-31，日记页的「补写」直接跳过来
+  // 支持 /daily?date=2026-10-31，日记页的「补写」直接跳过来
   const [date, setDate] = useState(() => {
     const raw = searchParams.get("date") ?? "";
     return /^\d{4}-\d{2}-\d{2}$/.test(raw) ? raw : todayKey();

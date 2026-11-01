@@ -26,7 +26,7 @@ export function DiaryPage() {
         title="日记"
         description="晚间日记和想法的只读归档，按时间倒序。想补写某一天，点开那一条就行。"
         action={
-          <Link to="/belief" className="btn-secondary">
+          <Link to="/daily" className="btn-secondary">
             写今天的
           </Link>
         }
@@ -36,9 +36,9 @@ export function DiaryPage() {
         <EmptyState
           icon="📔"
           title="日记还是空的"
-          description="去「信念重写」的晚间日记模块写一段，它会自动出现在这里。"
+          description="去「每日仪式」的晚间日记模块写一段，它会自动出现在这里。"
           action={
-            <Link to="/belief" className="btn-primary">
+            <Link to="/daily" className="btn-primary">
               写今天的第一条
             </Link>
           }
@@ -63,7 +63,7 @@ export function DiaryPage() {
                   <div className="flex items-baseline gap-3">
                     <span className="text-[11px] text-ink-soft">{weekdayCN(entry.date)}</span>
                     <Link
-                      to={`/belief?date=${entry.date}`}
+                      to={`/daily?date=${entry.date}`}
                       className="text-[11px] text-ink-soft/70 transition hover:text-moss"
                     >
                       补写 →

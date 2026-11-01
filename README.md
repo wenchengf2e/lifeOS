@@ -1,6 +1,6 @@
 # LifeOS
 
-个人的 LifeOS 心理工作台：信念重写、人生 OS、日记、成就 / 改变清单、五步诊断、关于。
+个人的 LifeOS 心理工作台：每日仪式、人生 OS、日记、成就 / 改变清单、五步诊断、关于。
 
 数据保存在 Cloudflare D1，站点和 API 跑在同一个 Cloudflare Worker 上，登录由 Cloudflare Access 负责。免费额度足够个人使用。
 
@@ -17,9 +17,9 @@
 ```
 src/             React 前端
   components/    布局、日历、状态组件
-  content/       信念重写的每日模块、人生 OS、清单的文案配置；关于页静态内容
+  content/       每日仪式的四段模块、人生 OS、清单的文案配置；关于页静态内容
   lib/           API 客户端、查询 hooks、日期与统计工具
-  pages/         总览、信念重写、日记、复盘、人生 OS、清单、五步诊断、关于
+  pages/         总览、每日仪式、日记、复盘、人生 OS、清单、五步诊断、关于
 public/          静态图片（关于页图片在 public/about/）
 worker/          Hono API Worker
   routes/        checkins / docs / items / reviews / patterns
@@ -153,7 +153,7 @@ Worker 的校验逻辑在 `worker/auth.ts`：只接受 Access 注入的邮箱头
   - `journal`：02 晚间「晚间日记」——一个输入框，五个问题当追问
   - `review`：03「想法」——不归到其他段落的东西
   - `q1`–`q6`：04 事后「今日复盘」六问，想深一层时再写
-  - 四段都在 `/belief` 一页里，是并列的模块，定义在 `src/content/daily.ts`。任意一段写一条就算当天完成
+  - 四段都在 `/daily` 一页里，是并列的模块，定义在 `src/content/daily.ts`。任意一段写一条就算当天完成
 - `documents`：按 `(module, key)` 存长文本 / 结构化 JSON，人生 OS 用 `module = "lifeos"`
 - `items`：清单条目，按 `(module, sort_order, created_at)` 排序
 - `reviews`：一周 / 一月一条，`(user_id, period_type, period_key)` 唯一，`data` 是 JSON

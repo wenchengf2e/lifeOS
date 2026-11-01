@@ -53,7 +53,7 @@ export function PrinciplesPage() {
             <span className="chip">下一阶段</span>
             <h2 className="mt-3 text-xl text-ink">交互表单还没迁移</h2>
             <p className="mt-3 text-sm leading-7 text-ink-soft">
-              当前版本先跑通「信念重写」和「人生 OS」。五步诊断的
+              当前版本先跑通「每日仪式」和「人生 OS」。五步诊断的
               <code className="mx-1 rounded bg-white/70 px-1.5 py-0.5 text-xs">documents</code>
               数据模型和 API 已经预留，下一阶段把每个目标卡、自检清单和进度状态补齐。
             </p>
@@ -65,7 +65,7 @@ export function PrinciplesPage() {
           <section className="card p-6">
             <h2 className="text-base text-ink">为什么先不做？</h2>
             <p className="mt-2 text-sm leading-7 text-ink-soft">
-              五步诊断的字段多、交互重，适合在核心数据链路稳定后再迁移。先把每天都会用的信念重写跑顺，比一次性堆满页面更重要。
+              五步诊断的字段多、交互重，适合在核心数据链路稳定后再迁移。先把每天都会用的每日仪式跑顺，比一次性堆满页面更重要。
             </p>
           </section>
         </aside>

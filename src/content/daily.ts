@@ -179,6 +179,6 @@ export const allDailyFields: DailyField[] = dailyModules.flatMap((module) => mod
 
 export const dailyPageCopy = {
   eyebrow: "Daily Practice",
-  title: "信念重写",
-  description: "早上定方向，晚上一个框写完，随手记想法，想深一层再回答六问。写一条就算数。",
+  title: "每日仪式",
+  description: "一天四段：方向、经过、想法、复盘。写一条就算，仪式不必完整。",
 };

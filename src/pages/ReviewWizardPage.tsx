@@ -272,7 +272,7 @@ export function ReviewWizardPage() {
                   {entries.length === 0 ? (
                     <div className="mt-3 rounded-2xl border border-dashed border-line bg-paper-deep/30 p-6 text-center">
                       <p className="text-sm text-ink-soft">{focusStepCopy.listEmpty}</p>
-                      <Link to="/belief" className="btn-secondary mt-4">
+                      <Link to="/daily" className="btn-secondary mt-4">
                         去写今天的记录
                       </Link>
                     </div>
