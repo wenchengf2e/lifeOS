@@ -4,9 +4,10 @@ import { Link, NavLink } from "react-router-dom";
 const NAV = [
   { to: "/", label: "总览", end: true },
   { to: "/belief", label: "信念重写" },
-  { to: "/lifeos", label: "人生 OS" },
+  { to: "/evening", label: "晚间日记" },
   { to: "/diary", label: "日记" },
   { to: "/review", label: "复盘" },
+  { to: "/lifeos", label: "人生 OS" },
   { to: "/lists", label: "清单" },
   { to: "/principles", label: "五步诊断" },
   { to: "/about", label: "关于" },

@@ -1,24 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import type { CheckinData } from "../../shared/types";
-import { beliefFields, reviewField, type BeliefField } from "../content/belief";
-import { MonthCalendar } from "../components/MonthCalendar";
+import { beliefFields, type BeliefField } from "../content/belief";
+import { DaySidebar } from "../components/DaySidebar";
 import { PageHeader } from "../components/PageHeader";
 import { ErrorState, LoadingPage } from "../components/StateViews";
-import { formatDateCN, parseDateKey, shiftDate, todayKey } from "../lib/date";
+import { todayKey } from "../lib/date";
 import { useBootstrap, useSaveCheckin } from "../lib/queries";
-import {
-  currentStreak,
-  doneDateSet,
-  entryDateSet,
-  isCountedDone,
-  monthDoneCount,
-  totalDoneCount,
-} from "../lib/stats";
+import { isCountedDone } from "../lib/stats";
 
 type SaveStatus = { type: "idle" | "saved" | "error"; message?: string };
 
-const preFields = beliefFields.filter((field) => field.phase === "pre");
-const postFields = beliefFields.filter((field) => field.phase === "post");
+/** 事后六问暂时隐藏，只保留事前部分。 */
+const activeFields = beliefFields.filter((field) => !field.hidden);
 
 export function BeliefPage() {
   const { data, isLoading, error } = useBootstrap();
@@ -29,25 +23,14 @@ export function BeliefPage() {
   const [status, setStatus] = useState<SaveStatus>({ type: "idle" });
 
   const entry = data?.checkins.find((item) => item.date === date);
+  const checkins = useMemo(() => data?.checkins ?? [], [data]);
 
   useEffect(() => {
     setForm(entry?.data ?? {});
     setStatus({ type: "idle" });
   }, [date, entry?.updatedAt]);
 
-  const checkins = data?.checkins ?? [];
-  const entryDates = useMemo(() => entryDateSet(checkins), [checkins]);
-  const doneDates = useMemo(() => doneDateSet(checkins), [checkins]);
-
-  const selected = parseDateKey(date);
-  const monthStats = useMemo(
-    () => monthDoneCount(checkins, selected.getFullYear(), selected.getMonth()),
-    [checkins, selected],
-  );
-  const streak = useMemo(() => currentStreak(checkins), [checkins]);
-  const total = useMemo(() => totalDoneCount(checkins), [checkins]);
-
-  if (isLoading) return <LoadingPage label="正在读取今天的记录…" />;
+  if (isLoading) return <LoadingPage label="正在读取今天的计划…" />;
   if (error) return <ErrorState error={error} />;
 
   function updateField(key: keyof CheckinData, value: string) {
@@ -56,14 +39,14 @@ export function BeliefPage() {
   }
 
   async function handleSave() {
-    const payload: CheckinData = {};
-    for (const field of beliefFields) {
+    // 以 form 为底，避免把隐藏的 q1–q6 和晚间日记的字段覆盖掉
+    const payload: CheckinData = { ...form };
+    for (const field of activeFields) {
       payload[field.key] = (form[field.key] ?? "").trim();
     }
-    payload.review = (form.review ?? "").trim();
 
     if (!isCountedDone(payload)) {
-      setStatus({ type: "error", message: "至少填写一个核心问题再保存" });
+      setStatus({ type: "error", message: "先写一句今天的计划再保存" });
       return;
     }
 
@@ -105,88 +88,21 @@ export function BeliefPage() {
     );
   }
 
-  const isCurrentMonth =
-    selected.getFullYear() === new Date().getFullYear() &&
-    selected.getMonth() === new Date().getMonth();
-
-  const dateLabel =
-    date === todayKey()
-      ? `今天 · ${formatDateCN(date, { withWeekday: true })}`
-      : formatDateCN(date, { withWeekday: true, withYear: true });
-
   return (
     <>
       <PageHeader
         eyebrow="Daily Practice"
         title="信念重写"
-        description="先写下今天要专注什么、可能卡在哪、卡住了怎么办；一天结束之后再回来对答案。事前定方向、事后做复盘，旧信念才会被新证据一点点替换。"
+        description="早上花两分钟，把今天要专注什么、可能卡在哪、卡住了怎么办写下来。事后的复盘已经移到「晚间日记」。"
       />
 
       <div className="grid gap-6 lg:grid-cols-[300px_minmax(0,1fr)]">
-        <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
-          <section className="card p-5">
-            <div className="mb-4 flex items-center justify-between gap-2">
-              <button
-                type="button"
-                className="btn-ghost h-8 px-2.5"
-                onClick={() => setDate(shiftDate(date, -1))}
-                aria-label="前一天"
-              >
-                ‹
-              </button>
-              <div className="text-center">
-                <p className="text-sm font-medium text-ink">{dateLabel}</p>
-                <p className="mt-0.5 text-[11px] text-ink-soft">
-                  {entry ? "有记录" : "还没有记录"}
-                </p>
-              </div>
-              <button
-                type="button"
-                className="btn-ghost h-8 px-2.5"
-                onClick={() => setDate(shiftDate(date, 1))}
-                aria-label="后一天"
-              >
-                ›
-              </button>
-            </div>
-
-            <label className="block">
-              <span className="sr-only">选择日期</span>
-              <input
-                type="date"
-                value={date}
-                onChange={(event) => setDate(event.target.value || todayKey())}
-                className="field px-3 py-2 text-xs"
-              />
-            </label>
-
-            <div className="mt-5">
-              <MonthCalendar
-                selectedDate={date}
-                onSelect={setDate}
-                entryDates={entryDates}
-                doneDates={doneDates}
-              />
-            </div>
-          </section>
-
-          <section className="card grid grid-cols-3 divide-x divide-line/60 p-4 text-center">
-            <div className="px-2">
-              <p className="font-display text-2xl text-ink">{monthStats}</p>
-              <p className="mt-1 text-[11px] text-ink-soft">
-                {isCurrentMonth ? "本月打卡" : "该月打卡"}
-              </p>
-            </div>
-            <div className="px-2">
-              <p className="font-display text-2xl text-ink">{streak}</p>
-              <p className="mt-1 text-[11px] text-ink-soft">连续天数</p>
-            </div>
-            <div className="px-2">
-              <p className="font-display text-2xl text-ink">{total}</p>
-              <p className="mt-1 text-[11px] text-ink-soft">累计打卡</p>
-            </div>
-          </section>
-        </aside>
+        <DaySidebar
+          date={date}
+          onDateChange={setDate}
+          hasEntry={Boolean(entry)}
+          checkins={checkins}
+        />
 
         <section className="space-y-4">
           <div className="flex flex-wrap items-center gap-3 px-1">
@@ -194,32 +110,16 @@ export function BeliefPage() {
             <p className="text-xs text-ink-soft">先定方向：今天要往哪走，卡住了怎么办</p>
           </div>
 
-          {preFields.map(renderField)}
+          {activeFields.map(renderField)}
 
-          <div className="flex flex-wrap items-center gap-3 px-1 pt-4">
-            <span className="chip">事后</span>
-            <p className="text-xs text-ink-soft">再对答案：今天实际发生了什么</p>
+          <div className="card flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-xs leading-6 text-ink-soft">
+              晚上的事不在这里写。想到什么就记什么，不评分、不追问。
+            </p>
+            <Link to="/evening" className="btn-secondary shrink-0 text-xs">
+              去写晚间日记
+            </Link>
           </div>
-
-          {postFields.map(renderField)}
-
-          <article className="card p-5 sm:p-6">
-            <div className="flex flex-wrap items-center gap-2">
-              <h2 className="text-lg text-ink">{reviewField.label}</h2>
-              <span className="chip">不计入打卡</span>
-            </div>
-            <p className="mt-4 text-sm leading-7 text-ink-soft">{reviewField.prompt}</p>
-            <label className="mt-5 block">
-              <span className="sr-only">{reviewField.label}</span>
-              <textarea
-                className="field min-h-24 resize-y"
-                rows={4}
-                placeholder={reviewField.placeholder}
-                value={form.review ?? ""}
-                onChange={(event) => updateField("review", event.target.value)}
-              />
-            </label>
-          </article>
 
           <div className="card flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="text-xs text-ink-soft">
@@ -252,7 +152,7 @@ export function BeliefPage() {
           </div>
 
           <p className="px-2 text-[11px] leading-6 text-ink-soft/80">
-            数据保存到 Cloudflare D1，换设备登录同一账号后会自动同步。每日复盘会出现在「日记」页。
+            数据保存到 Cloudflare D1，换设备登录同一账号后会自动同步。
           </p>
         </section>
       </div>

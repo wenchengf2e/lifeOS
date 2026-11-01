@@ -4,6 +4,7 @@ import { Layout } from "./components/Layout";
 import { AboutPage } from "./pages/AboutPage";
 import { BeliefPage } from "./pages/BeliefPage";
 import { DiaryPage } from "./pages/DiaryPage";
+import { EveningPage } from "./pages/EveningPage";
 import { LifeOSPage } from "./pages/LifeOSPage";
 import { ListsPage } from "./pages/ListsPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
@@ -29,6 +30,7 @@ export function App() {
       <Routes>
         <Route path="/" element={<OverviewPage />} />
         <Route path="/belief" element={<BeliefPage />} />
+        <Route path="/evening" element={<EveningPage />} />
         <Route path="/lifeos" element={<LifeOSPage />} />
         <Route path="/diary" element={<DiaryPage />} />
         <Route path="/review" element={<ReviewPage />} />

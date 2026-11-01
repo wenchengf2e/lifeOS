@@ -28,7 +28,11 @@ export function OverviewPage() {
     return String(doc?.data.notes ?? "").trim().length > 0;
   }).length;
   const recentDiary = checkins
-    .filter((entry) => String(entry.data.review ?? "").trim().length > 0)
+    .filter((entry) =>
+      [entry.data.e1, entry.data.e2, entry.data.e3, entry.data.e4, entry.data.e5, entry.data.review].some(
+        (value) => String(value ?? "").trim().length > 0,
+      ),
+    )
     .sort((a, b) => (a.date < b.date ? 1 : -1))
     .slice(0, 3);
   const itemCount = data?.items.length ?? 0;
@@ -84,8 +88,8 @@ export function OverviewPage() {
               <Link to="/belief" className="btn-primary">
                 {todayDone ? "继续今天的信念重写" : "开始今天的信念重写"}
               </Link>
-              <Link to="/lifeos" className="btn-secondary">
-                打开人生 OS
+              <Link to="/evening" className="btn-secondary">
+                写晚间日记
               </Link>
             </div>
           </div>
@@ -168,7 +172,7 @@ export function OverviewPage() {
                     {entry.date === today ? "今天" : formatDateCN(entry.date, { withWeekday: true })}
                   </p>
                   <p className="mt-1.5 line-clamp-3 whitespace-pre-wrap text-sm leading-7 text-ink">
-                    {String(entry.data.review)}
+                    {String(entry.data.e1 ?? "").trim() || String(entry.data.review ?? "")}
                   </p>
                 </article>
               ))}
@@ -193,6 +197,13 @@ export function OverviewPage() {
                 className="flex items-center justify-between rounded-2xl border border-line/70 bg-paper-deep/30 px-4 py-3 text-sm text-ink transition hover:border-moss/30 hover:bg-white/70"
               >
                 <span>🧭 人生 OS</span>
+                <span className="text-ink-soft">→</span>
+              </Link>
+              <Link
+                to="/evening"
+                className="flex items-center justify-between rounded-2xl border border-line/70 bg-paper-deep/30 px-4 py-3 text-sm text-ink transition hover:border-moss/30 hover:bg-white/70"
+              >
+                <span>🌙 晚间日记</span>
                 <span className="text-ink-soft">→</span>
               </Link>
               <Link

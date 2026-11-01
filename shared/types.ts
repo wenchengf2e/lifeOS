@@ -1,16 +1,39 @@
 /**
  * Fields that make a day count as a check-in.
  *
- * `plan` is the pre-action half of the daily loop. Counting it means writing
- * the morning plan alone already registers the day, so the practice is not
- * gated behind an evening review that may never happen.
+ * `plan` is the morning half, `e1`–`e5` are the evening diary. `q1`–`q6` are
+ * the old belief-rewrite questions: their UI is hidden, but they stay here so
+ * that days recorded before the switch still count toward streaks.
  */
-export const CHECKIN_FIELD_KEYS = ["plan", "q1", "q2", "q3", "q4", "q5", "q6"] as const;
+export const CHECKIN_FIELD_KEYS = [
+  "plan",
+  "e1",
+  "e2",
+  "e3",
+  "e4",
+  "e5",
+  "q1",
+  "q2",
+  "q3",
+  "q4",
+  "q5",
+  "q6",
+] as const;
 
 export type CheckinFieldKey = (typeof CHECKIN_FIELD_KEYS)[number];
 
 export type CheckinData = {
   plan?: string;
+  /** 晚间日记：今天完成了什么。 */
+  e1?: string;
+  /** 晚间日记：完成之后体验到了什么。 */
+  e2?: string;
+  /** 晚间日记：哪些计划没完成，为什么。 */
+  e3?: string;
+  /** 晚间日记：学到或感悟到什么。 */
+  e4?: string;
+  /** 晚间日记：希望明天如何度过。 */
+  e5?: string;
   q1?: string;
   q2?: string;
   q3?: string;

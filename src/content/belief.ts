@@ -9,6 +9,11 @@ export type BeliefField = {
   placeholder: string;
   meta: string;
   phase: BeliefPhase;
+  /**
+   * 暂时隐藏，不渲染。
+   * 事后六问保留在这里，将来想重新启用时把 hidden 去掉即可。
+   */
+  hidden?: boolean;
 };
 
 export const beliefFields: BeliefField[] = [
@@ -24,6 +29,7 @@ export const beliefFields: BeliefField[] = [
   },
   {
     key: "q1",
+    hidden: true,
     label: "2 · 恐惧识别",
     phase: "post",
     prompt:
@@ -33,6 +39,7 @@ export const beliefFields: BeliefField[] = [
   },
   {
     key: "q2",
+    hidden: true,
     label: "3 · 旧信念识别",
     phase: "post",
     prompt:
@@ -42,6 +49,7 @@ export const beliefFields: BeliefField[] = [
   },
   {
     key: "q3",
+    hidden: true,
     label: "4 · 身份信念校准",
     phase: "post",
     prompt:
@@ -51,6 +59,7 @@ export const beliefFields: BeliefField[] = [
   },
   {
     key: "q4",
+    hidden: true,
     label: "5 · 勇气与现实",
     phase: "post",
     prompt:
@@ -60,6 +69,7 @@ export const beliefFields: BeliefField[] = [
   },
   {
     key: "q5",
+    hidden: true,
     label: "6 · 关键行动",
     phase: "post",
     prompt:
@@ -69,6 +79,7 @@ export const beliefFields: BeliefField[] = [
   },
   {
     key: "q6",
+    hidden: true,
     label: "7 · 复盘与调整",
     phase: "post",
     prompt:
@@ -78,9 +89,3 @@ export const beliefFields: BeliefField[] = [
   },
 ];
 
-export const reviewField = {
-  key: "review" as const,
-  label: "今日复盘 / 感恩",
-  prompt: "一句话总结今天，或写下一件感恩的事。",
-  placeholder: "今天的一句话总结，或者一件值得感恩的小事……",
-};
