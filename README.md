@@ -17,9 +17,9 @@
 ```
 src/             React 前端
   components/    布局、日历、状态组件
-  content/       信念重写、人生 OS、清单的文案配置；关于页静态内容
+  content/       信念重写的每日模块、人生 OS、清单的文案配置；关于页静态内容
   lib/           API 客户端、查询 hooks、日期与统计工具
-  pages/         总览、信念重写、晚间日记、日记、复盘、人生 OS、清单、五步诊断、关于
+  pages/         总览、信念重写、日记、复盘、人生 OS、清单、五步诊断、关于
 public/          静态图片（关于页图片在 public/about/）
 worker/          Hono API Worker
   routes/        checkins / docs / items / reviews / patterns
@@ -148,8 +148,11 @@ Worker 的校验逻辑在 `worker/auth.ts`：只接受 Access 注入的邮箱头
 
 数据模型：
 
-- `checkins`：一人一天一条，`data` 是 JSON，包含 `plan`（早上：今日行动）、`e1`–`e5`（晚上：晚间日记五问）、`review`（自由复盘）
-  - `q1`–`q6` 是旧的「信念重写」事后六问。界面已隐藏（`src/content/belief.ts` 里 `hidden: true`），定义和数据都保留着，去掉 hidden 即可恢复
+- `checkins`：一人一天一条，`data` 是 JSON，包含三段
+  - `plan`：早上，「今日行动」——专注什么、计划、障碍、应对
+  - `e1`–`e5` + `review`：晚上，「晚间日记」五个开放问题 + 可选的一句总结
+  - `q1`–`q6`：「今日复盘」六问，想深一层时再写
+  - 三段都在 `/belief` 一页里，是并列的模块，定义在 `src/content/daily.ts`。任意一段写一条就算当天完成
 - `documents`：按 `(module, key)` 存长文本 / 结构化 JSON，人生 OS 用 `module = "lifeos"`
 - `items`：清单条目，按 `(module, sort_order, created_at)` 排序
 - `reviews`：一周 / 一月一条，`(user_id, period_type, period_key)` 唯一，`data` 是 JSON

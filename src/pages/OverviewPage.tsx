@@ -88,8 +88,8 @@ export function OverviewPage() {
               <Link to="/belief" className="btn-primary">
                 {todayDone ? "继续今天的信念重写" : "开始今天的信念重写"}
               </Link>
-              <Link to="/evening" className="btn-secondary">
-                写晚间日记
+              <Link to="/diary" className="btn-secondary">
+                翻看日记
               </Link>
             </div>
           </div>
@@ -200,10 +200,10 @@ export function OverviewPage() {
                 <span className="text-ink-soft">→</span>
               </Link>
               <Link
-                to="/evening"
+                to="/diary"
                 className="flex items-center justify-between rounded-2xl border border-line/70 bg-paper-deep/30 px-4 py-3 text-sm text-ink transition hover:border-moss/30 hover:bg-white/70"
               >
-                <span>🌙 晚间日记</span>
+                <span>📔 日记归档</span>
                 <span className="text-ink-soft">→</span>
               </Link>
               <Link

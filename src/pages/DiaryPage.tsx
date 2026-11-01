@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import type { CheckinData } from "../../shared/types";
 import { PageHeader } from "../components/PageHeader";
 import { EmptyState, ErrorState, LoadingPage } from "../components/StateViews";
-import { eveningFields } from "../content/evening";
+import { eveningFields } from "../content/daily";
 import { formatDateCN, todayKey, weekdayCN } from "../lib/date";
 import { useBootstrap } from "../lib/queries";
 
@@ -30,7 +30,7 @@ export function DiaryPage() {
         title="日记"
         description="晚间日记的只读归档，按时间倒序。想补写某一天，点开那一条就行。"
         action={
-          <Link to="/evening" className="btn-secondary">
+          <Link to="/belief" className="btn-secondary">
             写今天的
           </Link>
         }
@@ -40,9 +40,9 @@ export function DiaryPage() {
         <EmptyState
           icon="📔"
           title="日记还是空的"
-          description="去「晚间日记」写下今天完成的事、当时的感受，它会自动出现在这里。"
+          description="去「信念重写」的晚间日记模块，写下今天完成的事、当时的感受，它会自动出现在这里。"
           action={
-            <Link to="/evening" className="btn-primary">
+            <Link to="/belief" className="btn-primary">
               写今天的第一条
             </Link>
           }
@@ -66,7 +66,7 @@ export function DiaryPage() {
                   <div className="flex items-baseline gap-3">
                     <span className="text-[11px] text-ink-soft">{weekdayCN(entry.date)}</span>
                     <Link
-                      to={`/evening?date=${entry.date}`}
+                      to={`/belief?date=${entry.date}`}
                       className="text-[11px] text-ink-soft/70 transition hover:text-moss"
                     >
                       补写 →
@@ -80,7 +80,7 @@ export function DiaryPage() {
                     if (!value) return null;
                     return (
                       <div key={field.key}>
-                        <dt className="text-[11px] leading-6 text-ink-soft">{field.question}</dt>
+                        <dt className="text-[11px] leading-6 text-ink-soft">{field.title}</dt>
                         <dd className="mt-1 whitespace-pre-wrap text-sm leading-8 text-ink">
                           {value}
                         </dd>

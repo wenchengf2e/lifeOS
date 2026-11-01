@@ -1,10 +1,9 @@
 import { useEffect } from "react";
-import { Route, Routes, useLocation } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { Layout } from "./components/Layout";
 import { AboutPage } from "./pages/AboutPage";
 import { BeliefPage } from "./pages/BeliefPage";
 import { DiaryPage } from "./pages/DiaryPage";
-import { EveningPage } from "./pages/EveningPage";
 import { LifeOSPage } from "./pages/LifeOSPage";
 import { ListsPage } from "./pages/ListsPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
@@ -30,7 +29,8 @@ export function App() {
       <Routes>
         <Route path="/" element={<OverviewPage />} />
         <Route path="/belief" element={<BeliefPage />} />
-        <Route path="/evening" element={<EveningPage />} />
+        {/* 晚间日记已并入信念重写，保留旧地址做重定向 */}
+        <Route path="/evening" element={<Navigate to="/belief" replace />} />
         <Route path="/lifeos" element={<LifeOSPage />} />
         <Route path="/diary" element={<DiaryPage />} />
         <Route path="/review" element={<ReviewPage />} />
