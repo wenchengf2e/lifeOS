@@ -70,3 +70,50 @@ export function mondayOffset(year: number, monthIndex: number) {
 export function isToday(key: string) {
   return key === todayKey();
 }
+
+// ---- ISO 周（周一开始，跨年周归属由那周的周四决定） ----
+
+function weekOneMonday(year: number) {
+  const jan4 = new Date(year, 0, 4);
+  const jan4DayNum = (jan4.getDay() + 6) % 7;
+  return new Date(year, 0, 4 - jan4DayNum);
+}
+
+export function isoWeekKeyOf(dateKey: string) {
+  const date = parseDateKey(dateKey);
+  const dayNum = (date.getDay() + 6) % 7;
+  const monday = new Date(date.getFullYear(), date.getMonth(), date.getDate() - dayNum);
+
+  const thursday = new Date(monday);
+  thursday.setDate(monday.getDate() + 3);
+  const isoYear = thursday.getFullYear();
+
+  const start = weekOneMonday(isoYear);
+  const week = 1 + Math.round((monday.getTime() - start.getTime()) / (7 * 86400000));
+  return `${isoYear}-W${pad2(week)}`;
+}
+
+export function isoWeekStart(weekKey: string) {
+  const [yearStr, weekStr] = weekKey.split("-W");
+  const start = weekOneMonday(Number(yearStr));
+  const offset = (Number(weekStr) - 1) * 7;
+  return toDateKey(new Date(start.getFullYear(), start.getMonth(), start.getDate() + offset));
+}
+
+export function isoWeekDays(weekKey: string) {
+  const start = isoWeekStart(weekKey);
+  return Array.from({ length: 7 }, (_, index) => shiftDate(start, index));
+}
+
+export function isoWeekNumber(weekKey: string) {
+  return Number(weekKey.split("-W")[1] ?? 0);
+}
+
+export function shiftWeekKey(weekKey: string, delta: number) {
+  return isoWeekKeyOf(shiftDate(isoWeekStart(weekKey), delta * 7));
+}
+
+export function weekRangeLabel(weekKey: string) {
+  const days = isoWeekDays(weekKey);
+  return `${formatDateCN(days[0])} – ${formatDateCN(days[6])}`;
+}

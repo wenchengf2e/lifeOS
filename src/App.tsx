@@ -9,6 +9,8 @@ import { ListsPage } from "./pages/ListsPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { OverviewPage } from "./pages/OverviewPage";
 import { PrinciplesPage } from "./pages/PrinciplesPage";
+import { ReviewPage } from "./pages/ReviewPage";
+import { ReviewWizardPage } from "./pages/ReviewWizardPage";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -29,6 +31,8 @@ export function App() {
         <Route path="/belief" element={<BeliefPage />} />
         <Route path="/lifeos" element={<LifeOSPage />} />
         <Route path="/diary" element={<DiaryPage />} />
+        <Route path="/review" element={<ReviewPage />} />
+        <Route path="/review/week/:key" element={<ReviewWizardPage />} />
         <Route path="/lists" element={<ListsPage />} />
         <Route path="/principles" element={<PrinciplesPage />} />
         <Route path="/about" element={<AboutPage />} />

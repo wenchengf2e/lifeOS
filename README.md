@@ -22,7 +22,7 @@ src/             React 前端
   pages/         总览、信念重写、人生 OS、日记、清单、五步诊断、关于
 public/          静态图片（关于页图片在 public/about/）
 worker/          Hono API Worker
-  routes/        checkins / docs / items
+  routes/        checkins / docs / items / reviews / patterns
   db/            Drizzle schema、client、查询
 shared/          前后端共享类型
 migrations/      D1 migration
@@ -138,12 +138,23 @@ Worker 的校验逻辑在 `worker/auth.ts`：只接受 Access 注入的邮箱头
 | POST | `/api/items` | 新增清单项 |
 | PATCH | `/api/items/:id` | 修改清单项 |
 | DELETE | `/api/items/:id` | 删除清单项 |
+| GET | `/api/reviews?type=` | 读取复盘（`week` / `month`） |
+| GET | `/api/reviews/:type/:key` | 读取单个周期，如 `/api/reviews/week/2026-W44` |
+| PUT | `/api/reviews/:type/:key` | 保存复盘（upsert，允许草稿） |
+| GET | `/api/patterns` | 读取模式库 |
+| POST | `/api/patterns` | 新建模式卡 |
+| PATCH | `/api/patterns/:id` | 修改模式卡（含状态流转） |
+| DELETE | `/api/patterns/:id` | 删除模式卡 |
 
 数据模型：
 
 - `checkins`：一人一天一条，`data` 是 JSON，包含 `plan`（事前行动）、`q1`–`q6`（事后复盘）和 `review`
 - `documents`：按 `(module, key)` 存长文本 / 结构化 JSON，人生 OS 用 `module = "lifeos"`
 - `items`：清单条目，按 `(module, sort_order, created_at)` 排序
+- `reviews`：一周 / 一月一条，`(user_id, period_type, period_key)` 唯一，`data` 是 JSON
+- `patterns`：模式卡，`evidence` 是关联的打卡日期数组
+
+复盘模块的设计取舍见 [docs/review-module-design.md](docs/review-module-design.md)。
 
 ## 「关于」页
 
@@ -166,6 +177,7 @@ Worker 的校验逻辑在 `worker/auth.ts`：只接受 Access 注入的邮箱头
 - [ ] 旧 localStorage 数据导入页面
 - [ ] 五步诊断的交互表单（`documents` 模型和 API 已预留）
 - [ ] 清单项的编辑、勾选完成、日期分组
-- [ ] 周 / 月回顾视图
+- [x] 周复盘（四步向导 + 模式库）
+- [ ] 月复盘（表结构和 API 已支持 `period_type = "month"`，页面待做）
 - [ ] PWA 离线壳
 - [ ] Access JWT 签名校验（`jose` 已安装，等 Access 应用创建后配置 `ACCESS_TEAM_DOMAIN` / `ACCESS_AUD` 再启用）

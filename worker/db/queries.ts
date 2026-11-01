@@ -1,7 +1,18 @@
 import { desc, eq } from "drizzle-orm";
-import type { CheckinData, DocumentData, CheckinEntry, DocumentEntry, ItemEntry } from "../../shared/types";
+import type {
+  CheckinData,
+  DocumentData,
+  CheckinEntry,
+  DocumentEntry,
+  ItemEntry,
+  PatternEntry,
+  PatternStatus,
+  ReviewData,
+  ReviewEntry,
+  ReviewPeriodType,
+} from "../../shared/types";
 import { getDb } from "./client";
-import { checkins, documents, items } from "./schema";
+import { checkins, documents, items, patterns, reviews } from "./schema";
 
 type Db = ReturnType<typeof getDb>;
 
@@ -43,16 +54,46 @@ export function mapItem(row: typeof items.$inferSelect): ItemEntry {
   };
 }
 
+export function mapReview(row: typeof reviews.$inferSelect): ReviewEntry {
+  const data = parseJson<Partial<ReviewData>>(row.data, {});
+  return {
+    periodType: row.periodType as ReviewPeriodType,
+    periodKey: row.periodKey,
+    data: { focus: [], ...data },
+    updatedAt: row.updatedAt,
+  };
+}
+
+export function mapPattern(row: typeof patterns.$inferSelect): PatternEntry {
+  return {
+    id: row.id,
+    title: row.title,
+    trigger: row.trigger ?? "",
+    reaction: row.reaction ?? "",
+    payoff: row.payoff ?? "",
+    cost: row.cost ?? "",
+    alternative: row.alternative ?? "",
+    evidence: parseJson<string[]>(row.evidence, []),
+    status: row.status as PatternStatus,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  };
+}
+
 export async function loadAll(db: Db, userId: string) {
-  const [checkinRows, documentRows, itemRows] = await Promise.all([
+  const [checkinRows, documentRows, itemRows, reviewRows, patternRows] = await Promise.all([
     db.select().from(checkins).where(eq(checkins.userId, userId)).orderBy(desc(checkins.checkinDate)),
     db.select().from(documents).where(eq(documents.userId, userId)).orderBy(desc(documents.updatedAt)),
     db.select().from(items).where(eq(items.userId, userId)).orderBy(desc(items.createdAt)),
+    db.select().from(reviews).where(eq(reviews.userId, userId)).orderBy(desc(reviews.periodKey)),
+    db.select().from(patterns).where(eq(patterns.userId, userId)).orderBy(desc(patterns.updatedAt)),
   ]);
 
   return {
     checkins: checkinRows.map(mapCheckin),
     documents: documentRows.map(mapDocument),
     items: itemRows.map(mapItem),
+    reviews: reviewRows.map(mapReview),
+    patterns: patternRows.map(mapPattern),
   };
 }

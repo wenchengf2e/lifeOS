@@ -5,7 +5,22 @@ import type {
   DocumentData,
   ExportResponse,
   ItemEntry,
+  PatternEntry,
+  PatternStatus,
+  ReviewData,
+  ReviewPeriodType,
 } from "../../shared/types";
+
+export type PatternDraft = {
+  title: string;
+  trigger?: string;
+  reaction?: string;
+  payoff?: string;
+  cost?: string;
+  alternative?: string;
+  evidence?: string[];
+  status?: PatternStatus;
+};
 
 export class ApiError extends Error {
   status: number;
@@ -81,6 +96,31 @@ export const api = {
 
   deleteItem(id: string) {
     return request<{ ok: true }>(`/api/items/${encode(id)}`, { method: "DELETE" });
+  },
+
+  saveReview(periodType: ReviewPeriodType, periodKey: string, data: ReviewData) {
+    return request<{ ok: true; periodType: string; periodKey: string; updatedAt: string }>(
+      `/api/reviews/${encode(periodType)}/${encode(periodKey)}`,
+      { method: "PUT", body: JSON.stringify(data) },
+    );
+  },
+
+  createPattern(draft: PatternDraft) {
+    return request<{ ok: true; pattern: PatternEntry }>("/api/patterns", {
+      method: "POST",
+      body: JSON.stringify(draft),
+    });
+  },
+
+  updatePattern(id: string, patch: Partial<PatternDraft>) {
+    return request<{ ok: true; pattern: PatternEntry }>(`/api/patterns/${encode(id)}`, {
+      method: "PATCH",
+      body: JSON.stringify(patch),
+    });
+  },
+
+  deletePattern(id: string) {
+    return request<{ ok: true }>(`/api/patterns/${encode(id)}`, { method: "DELETE" });
   },
 
   exportAll() {

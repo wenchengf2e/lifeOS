@@ -6,6 +6,7 @@ const NAV = [
   { to: "/belief", label: "信念重写" },
   { to: "/lifeos", label: "人生 OS" },
   { to: "/diary", label: "日记" },
+  { to: "/review", label: "复盘" },
   { to: "/lists", label: "清单" },
   { to: "/principles", label: "五步诊断" },
   { to: "/about", label: "关于" },

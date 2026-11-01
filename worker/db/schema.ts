@@ -30,3 +30,28 @@ export const items = sqliteTable("items", {
   createdAt: text("created_at").notNull(),
   updatedAt: text("updated_at").notNull(),
 });
+
+export const reviews = sqliteTable("reviews", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  periodType: text("period_type").notNull(),
+  periodKey: text("period_key").notNull(),
+  data: text("data").notNull(),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});
+
+export const patterns = sqliteTable("patterns", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  title: text("title").notNull(),
+  trigger: text("trigger"),
+  reaction: text("reaction"),
+  payoff: text("payoff"),
+  cost: text("cost"),
+  alternative: text("alternative"),
+  evidence: text("evidence").notNull().default("[]"),
+  status: text("status").notNull().default("watching"),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});

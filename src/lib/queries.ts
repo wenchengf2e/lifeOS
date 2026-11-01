@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { CheckinData, DocumentData } from "../../shared/types";
-import { api } from "./api";
+import type { CheckinData, DocumentData, ReviewData, ReviewPeriodType } from "../../shared/types";
+import { api, type PatternDraft } from "./api";
 
 export const bootstrapQueryKey = ["bootstrap"] as const;
 
@@ -62,6 +62,47 @@ export function useDeleteItem() {
   const invalidate = useInvalidateBootstrap();
   return useMutation({
     mutationFn: (id: string) => api.deleteItem(id),
+    onSuccess: invalidate,
+  });
+}
+
+export function useSaveReview() {
+  const invalidate = useInvalidateBootstrap();
+  return useMutation({
+    mutationFn: ({
+      periodType,
+      periodKey,
+      data,
+    }: {
+      periodType: ReviewPeriodType;
+      periodKey: string;
+      data: ReviewData;
+    }) => api.saveReview(periodType, periodKey, data),
+    onSuccess: invalidate,
+  });
+}
+
+export function useCreatePattern() {
+  const invalidate = useInvalidateBootstrap();
+  return useMutation({
+    mutationFn: (draft: PatternDraft) => api.createPattern(draft),
+    onSuccess: invalidate,
+  });
+}
+
+export function useUpdatePattern() {
+  const invalidate = useInvalidateBootstrap();
+  return useMutation({
+    mutationFn: ({ id, patch }: { id: string; patch: Partial<PatternDraft> }) =>
+      api.updatePattern(id, patch),
+    onSuccess: invalidate,
+  });
+}
+
+export function useDeletePattern() {
+  const invalidate = useInvalidateBootstrap();
+  return useMutation({
+    mutationFn: (id: string) => api.deletePattern(id),
     onSuccess: invalidate,
   });
 }

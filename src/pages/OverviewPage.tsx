@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { lifeosSections } from "../content/lifeos";
 import { ErrorState, LoadingPage } from "../components/StateViews";
 import { api } from "../lib/api";
-import { formatDateCN, todayKey, weekdayCN } from "../lib/date";
+import { formatDateCN, isoWeekKeyOf, todayKey, weekdayCN } from "../lib/date";
 import { useBootstrap } from "../lib/queries";
 import { currentStreak, isCountedDone, monthDoneCount } from "../lib/stats";
 
@@ -32,6 +32,14 @@ export function OverviewPage() {
     .sort((a, b) => (a.date < b.date ? 1 : -1))
     .slice(0, 3);
   const itemCount = data?.items.length ?? 0;
+
+  const currentWeek = isoWeekKeyOf(today);
+  const weekReview = (data?.reviews ?? []).find(
+    (entry) => entry.periodType === "week" && entry.periodKey === currentWeek,
+  );
+  const weekReviewDone = Boolean(
+    (weekReview?.data.abstraction ?? "").trim() || (weekReview?.data.connection ?? "").trim(),
+  );
 
   async function handleExport() {
     setExporting(true);
@@ -186,6 +194,13 @@ export function OverviewPage() {
               >
                 <span>🧭 人生 OS</span>
                 <span className="text-ink-soft">→</span>
+              </Link>
+              <Link
+                to="/review"
+                className="flex items-center justify-between rounded-2xl border border-line/70 bg-paper-deep/30 px-4 py-3 text-sm text-ink transition hover:border-moss/30 hover:bg-white/70"
+              >
+                <span>🧩 周复盘</span>
+                <span className="text-ink-soft">{weekReviewDone ? "已复盘" : "待复盘"} →</span>
               </Link>
               <Link
                 to="/lists"
