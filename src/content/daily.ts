@@ -3,13 +3,13 @@ import type { CheckinData } from "../../shared/types";
 /**
  * 每日练习里的一个问题。
  *
- * 三个模块的写法不一样（事前计划 / 晚间日记 / 事后复盘），但渲染结构是同一套：
+ * 每个模块的写法不一样（事前计划 / 晚间日记 / 想法 / 事后复盘），但渲染结构是同一套：
  * 标题 + 可选的追问 + 可选的标签 + 输入框。所以共用一个类型，
  * 页面只写一个 renderField，不用为每个模块各写一遍。
  */
 export type DailyField = {
   key: keyof CheckinData;
-  /** 问题标题。模块标题已经说明主题时（比如今日行动）可以省略。 */
+  /** 问题标题。模块标题已经说明主题时（比如今日行动、想法）可以省略。 */
   title?: string;
   /** 主问题，始终显示 */
   prompt?: string;
@@ -28,8 +28,6 @@ export type DailyModule = {
   title: string;
   description: string;
   fields: DailyField[];
-  /** 模块末尾的可选补充项，视觉上弱一档 */
-  tail?: DailyField;
 };
 
 /* ------------------------------------------------------------------ */
@@ -48,54 +46,34 @@ const actionFields: DailyField[] = [
 ];
 
 /* ------------------------------------------------------------------ */
-/* 02 晚间日记：如实记，不追问                                          */
+/* 02 晚间日记：一个框，五个问题当提示                                   */
 /* ------------------------------------------------------------------ */
 
-export const eveningFields: DailyField[] = [
+const journalFields: DailyField[] = [
   {
-    key: "e1",
-    title: "今天我完成的事情有什么？",
+    key: "journal",
+    prompt:
+      "追问：\n· 今天我完成的事情有什么？\n· 完成这些事情后，我体验到了什么？\n· 今天有没完成的计划吗，是什么原因导致的？\n· 今天，我学到、感悟到的新事物有什么？\n· 回顾今天，我希望明天将如何度过？",
     placeholder:
-      "写具体的事，带数量和结果。例：写完晚间日记页面并部署上线；回了三封拖了两天的邮件。",
-    rows: 3,
-  },
-  {
-    key: "e2",
-    title: "完成这些事情后，我体验到了什么？",
-    placeholder:
-      "写身体和情绪的实际感受，不写「还行」。例：有点轻，也有点心虚——真正花在做事上的时间不到三小时。",
-    rows: 3,
-  },
-  {
-    key: "e3",
-    title: "今天有没完成的计划吗，是什么原因导致的？",
-    placeholder: "只写原因，不写检讨。例：计划写月复盘，没做。上午被会议切碎，下午先去处理了别人的事。",
-    rows: 3,
-  },
-  {
-    key: "e4",
-    title: "今天，我学到、感悟到的新事物有什么？",
-    placeholder: "一句话也算。例：我写计划时总是高估一天能做的事。",
-    rows: 2,
-  },
-  {
-    key: "e5",
-    title: "回顾今天，我希望明天将如何度过？",
-    placeholder: "用一句话描述明天，越具体越好。例：明天上午不打开微信，先把 V1 发出去。",
-    rows: 2,
+      "今天做成了……\n当时的感受是……\n没做完的、原因是……\n学到的：……\n明天想……",
+    rows: 6,
   },
 ];
 
-export const eveningReviewField: DailyField = {
-  key: "review",
-  title: "还有什么想留下的？",
-  tag: "可选 · 一句话总结，或者一件值得感恩的小事",
-  placeholder: "今天的一句话总结，或者一件值得感恩的小事……",
-  rows: 2,
-};
+/* ------------------------------------------------------------------ */
+/* 03 想法：不归到别处的都放这儿                                        */
+/* ------------------------------------------------------------------ */
+
+const thoughtFields: DailyField[] = [
+  {
+    key: "review",
+    placeholder: "一句话、一个念头、一件值得感恩的小事……",
+    rows: 4,
+  },
+];
 
 /* ------------------------------------------------------------------ */
-/* 03 今日复盘：想深一层时再写                                          */
+/* 04 今日复盘：想深一层时再写                                          */
 /* ------------------------------------------------------------------ */
 
 const reflectionFields: DailyField[] = [
@@ -154,7 +132,7 @@ const reflectionFields: DailyField[] = [
     title: "复盘与调整",
     prompt: "今天的结果告诉了我什么？明天应该具体调整什么？",
     detail:
-      "· 哪个判断得到了验证，哪个被推翻？\n· 我遇到的问题是能力不足、方法错误，还是执行不够？\n· 明天最重要、最具体的一个动作是什么？",
+      "· 哪个判断得到了验证，哪个被推翻？\n· 我遇到的问题是哪一类：能力不足、方法错误，还是执行不够？\n· 明天最重要、最具体的一个动作是什么？",
     tag: "识别对象：重复犯错、只总结情绪而不调整方法、没有从经历中积累经验",
     placeholder: "被验证的判断：…… 被推翻的：…… 明天第一件要做的事：……",
     rows: 3,
@@ -172,17 +150,23 @@ export const dailyModules: DailyModule[] = [
     fields: actionFields,
   },
   {
-    id: "evening",
+    id: "journal",
     kicker: "02 · 晚间",
     title: "晚间日记",
     description:
-      "五个开放问题，不评分、不追问、不要求写完。先如实记下来，分析和提炼交给以后的自己——或者 AI。",
-    fields: eveningFields,
-    tail: eveningReviewField,
+      "五个问题当提示，一个框写完。不评分，不要求写全，分析和提炼交给以后的自己——或者 AI。",
+    fields: journalFields,
+  },
+  {
+    id: "thought",
+    kicker: "03 · 随手",
+    title: "想法",
+    description: "不归到上面任何一段的，都放这里。一句话、一个念头、一件值得记的小事都算。",
+    fields: thoughtFields,
   },
   {
     id: "reflection",
-    kicker: "03 · 事后",
+    kicker: "04 · 事后",
     title: "今日复盘",
     description:
       "想深一层的时候再写。六问不强制，写不出来就跳过——它们是留给自己的提示，不是作业。",
@@ -191,12 +175,10 @@ export const dailyModules: DailyModule[] = [
 ];
 
 /** 页面上出现的全部问题，保存时按这个顺序取值。 */
-export const allDailyFields: DailyField[] = dailyModules.flatMap((module) =>
-  module.tail ? [...module.fields, module.tail] : module.fields,
-);
+export const allDailyFields: DailyField[] = dailyModules.flatMap((module) => module.fields);
 
 export const dailyPageCopy = {
   eyebrow: "Daily Practice",
   title: "信念重写",
-  description: "早上定方向，晚上如实记，想深一层再回答六问。三段都不强制，写一条就算数。",
+  description: "早上定方向，晚上一个框写完，随手记想法，想深一层再回答六问。写一条就算数。",
 };

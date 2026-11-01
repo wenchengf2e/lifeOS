@@ -17,8 +17,7 @@ import { useBootstrap, useSaveCheckin } from "../lib/queries";
 type SaveStatus = { type: "idle" | "saved" | "error"; message?: string };
 
 function filledIn(module: DailyModule, form: CheckinData) {
-  const fields = module.tail ? [...module.fields, module.tail] : module.fields;
-  return fields.filter((field) => (form[field.key] ?? "").trim().length > 0).length;
+  return module.fields.filter((field) => (form[field.key] ?? "").trim().length > 0).length;
 }
 
 export function BeliefPage() {
@@ -78,9 +77,9 @@ export function BeliefPage() {
     }
   }
 
-  function renderField(field: DailyField, extra = "") {
+  function renderField(field: DailyField) {
     return (
-      <div key={field.key} className={`px-5 py-5 sm:px-6 ${extra}`}>
+      <div key={field.key} className="px-5 py-5 sm:px-6">
         {field.title ? (
           <h3 className="text-base leading-7 text-ink">{field.title}</h3>
         ) : null}
@@ -120,7 +119,7 @@ export function BeliefPage() {
 
   function renderModule(module: DailyModule) {
     const filled = filledIn(module, form);
-    const total = module.fields.length + (module.tail ? 1 : 0);
+    const total = module.fields.length;
 
     return (
       <section key={module.id} id={module.id} className="card overflow-hidden">
@@ -137,7 +136,6 @@ export function BeliefPage() {
 
         <div className="divide-y divide-line/50">
           {module.fields.map((field) => renderField(field))}
-          {module.tail ? renderField(module.tail, "bg-paper-deep/25") : null}
         </div>
       </section>
     );

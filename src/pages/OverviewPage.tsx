@@ -29,7 +29,7 @@ export function OverviewPage() {
   }).length;
   const recentDiary = checkins
     .filter((entry) =>
-      [entry.data.e1, entry.data.e2, entry.data.e3, entry.data.e4, entry.data.e5, entry.data.review].some(
+      [entry.data.journal, entry.data.review].some(
         (value) => String(value ?? "").trim().length > 0,
       ),
     )
@@ -172,7 +172,7 @@ export function OverviewPage() {
                     {entry.date === today ? "今天" : formatDateCN(entry.date, { withWeekday: true })}
                   </p>
                   <p className="mt-1.5 line-clamp-3 whitespace-pre-wrap text-sm leading-7 text-ink">
-                    {String(entry.data.e1 ?? "").trim() || String(entry.data.review ?? "")}
+                    {String(entry.data.journal ?? "").trim() || String(entry.data.review ?? "")}
                   </p>
                 </article>
               ))}

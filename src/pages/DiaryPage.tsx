@@ -2,15 +2,11 @@ import { Link } from "react-router-dom";
 import type { CheckinData } from "../../shared/types";
 import { PageHeader } from "../components/PageHeader";
 import { EmptyState, ErrorState, LoadingPage } from "../components/StateViews";
-import { eveningFields } from "../content/daily";
 import { formatDateCN, todayKey, weekdayCN } from "../lib/date";
 import { useBootstrap } from "../lib/queries";
 
-function hasEveningContent(data: CheckinData) {
-  return (
-    eveningFields.some((field) => (data[field.key] ?? "").trim().length > 0) ||
-    (data.review ?? "").trim().length > 0
-  );
+function hasJournalContent(data: CheckinData) {
+  return (data.journal ?? "").trim().length > 0 || (data.review ?? "").trim().length > 0;
 }
 
 export function DiaryPage() {
@@ -20,7 +16,7 @@ export function DiaryPage() {
   if (error) return <ErrorState error={error} />;
 
   const entries = (data?.checkins ?? [])
-    .filter((entry) => hasEveningContent(entry.data))
+    .filter((entry) => hasJournalContent(entry.data))
     .sort((a, b) => (a.date < b.date ? 1 : -1));
 
   return (
@@ -28,7 +24,7 @@ export function DiaryPage() {
       <PageHeader
         eyebrow="Journal"
         title="日记"
-        description="晚间日记的只读归档，按时间倒序。想补写某一天，点开那一条就行。"
+        description="晚间日记和想法的只读归档，按时间倒序。想补写某一天，点开那一条就行。"
         action={
           <Link to="/belief" className="btn-secondary">
             写今天的
@@ -40,7 +36,7 @@ export function DiaryPage() {
         <EmptyState
           icon="📔"
           title="日记还是空的"
-          description="去「信念重写」的晚间日记模块，写下今天完成的事、当时的感受，它会自动出现在这里。"
+          description="去「信念重写」的晚间日记模块写一段，它会自动出现在这里。"
           action={
             <Link to="/belief" className="btn-primary">
               写今天的第一条
@@ -51,7 +47,8 @@ export function DiaryPage() {
         <div className="space-y-4">
           {entries.map((entry) => {
             const isToday = entry.date === todayKey();
-            const review = (entry.data.review ?? "").trim();
+            const journal = (entry.data.journal ?? "").trim();
+            const thought = (entry.data.review ?? "").trim();
 
             return (
               <article key={entry.date} className="card p-5 sm:p-6">
@@ -74,26 +71,15 @@ export function DiaryPage() {
                   </div>
                 </div>
 
-                <dl className="mt-4 space-y-4">
-                  {eveningFields.map((field) => {
-                    const value = (entry.data[field.key] ?? "").trim();
-                    if (!value) return null;
-                    return (
-                      <div key={field.key}>
-                        <dt className="text-[11px] leading-6 text-ink-soft">{field.title}</dt>
-                        <dd className="mt-1 whitespace-pre-wrap text-sm leading-8 text-ink">
-                          {value}
-                        </dd>
-                      </div>
-                    );
-                  })}
-                </dl>
+                {journal ? (
+                  <p className="mt-4 whitespace-pre-wrap text-sm leading-8 text-ink">{journal}</p>
+                ) : null}
 
-                {review ? (
-                  <div className="mt-5 rounded-2xl bg-paper-deep/45 p-4">
-                    <p className="text-[11px] text-ink-soft">还有什么想留下的</p>
+                {thought ? (
+                  <div className="mt-4 rounded-2xl bg-paper-deep/45 p-4">
+                    <p className="text-[11px] text-ink-soft">想法</p>
                     <p className="mt-1 whitespace-pre-wrap text-sm leading-8 text-ink-soft">
-                      {review}
+                      {thought}
                     </p>
                   </div>
                 ) : null}

@@ -148,11 +148,12 @@ Worker 的校验逻辑在 `worker/auth.ts`：只接受 Access 注入的邮箱头
 
 数据模型：
 
-- `checkins`：一人一天一条，`data` 是 JSON，包含三段
-  - `plan`：早上，「今日行动」——专注什么、计划、障碍、应对
-  - `e1`–`e5` + `review`：晚上，「晚间日记」五个开放问题 + 可选的一句总结
-  - `q1`–`q6`：「今日复盘」六问，想深一层时再写
-  - 三段都在 `/belief` 一页里，是并列的模块，定义在 `src/content/daily.ts`。任意一段写一条就算当天完成
+- `checkins`：一人一天一条，`data` 是 JSON，包含四段
+  - `plan`：01 事前「今日行动」——专注什么、计划、障碍、应对
+  - `journal`：02 晚间「晚间日记」——一个输入框，五个问题当追问
+  - `review`：03「想法」——不归到其他段落的东西
+  - `q1`–`q6`：04 事后「今日复盘」六问，想深一层时再写
+  - 四段都在 `/belief` 一页里，是并列的模块，定义在 `src/content/daily.ts`。任意一段写一条就算当天完成
 - `documents`：按 `(module, key)` 存长文本 / 结构化 JSON，人生 OS 用 `module = "lifeos"`
 - `items`：清单条目，按 `(module, sort_order, created_at)` 排序
 - `reviews`：一周 / 一月一条，`(user_id, period_type, period_key)` 唯一，`data` 是 JSON

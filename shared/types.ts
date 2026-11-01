@@ -1,17 +1,13 @@
 /**
  * Fields that make a day count as a check-in.
  *
- * `plan` is the morning half, `e1`–`e5` are the evening diary. `q1`–`q6` are
- * the old belief-rewrite questions: their UI is hidden, but they stay here so
- * that days recorded before the switch still count toward streaks.
+ * 三段式：`plan`（早上）、`journal` + `review`（晚上）、`q1`–`q6`（复盘）。
+ * 写任意一段的一条就算当天完成。
  */
 export const CHECKIN_FIELD_KEYS = [
   "plan",
-  "e1",
-  "e2",
-  "e3",
-  "e4",
-  "e5",
+  "journal",
+  "review",
   "q1",
   "q2",
   "q3",
@@ -23,24 +19,18 @@ export const CHECKIN_FIELD_KEYS = [
 export type CheckinFieldKey = (typeof CHECKIN_FIELD_KEYS)[number];
 
 export type CheckinData = {
+  /** 今日行动：开工前的方向、计划、障碍与应对。 */
   plan?: string;
-  /** 晚间日记：今天完成了什么。 */
-  e1?: string;
-  /** 晚间日记：完成之后体验到了什么。 */
-  e2?: string;
-  /** 晚间日记：哪些计划没完成，为什么。 */
-  e3?: string;
-  /** 晚间日记：学到或感悟到什么。 */
-  e4?: string;
-  /** 晚间日记：希望明天如何度过。 */
-  e5?: string;
+  /** 晚间日记：一个输入框，五个问题当追问。 */
+  journal?: string;
+  /** 想法：不归到其他段落的东西都放这里。 */
+  review?: string;
   q1?: string;
   q2?: string;
   q3?: string;
   q4?: string;
   q5?: string;
   q6?: string;
-  review?: string;
 };
 
 export type DocumentData = {

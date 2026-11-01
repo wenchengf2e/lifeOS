@@ -12,18 +12,14 @@ const dateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Expected YYYY-MM-DD"
 
 const checkinSchema = z.object({
   plan: z.string().max(20000).optional(),
-  e1: z.string().max(20000).optional(),
-  e2: z.string().max(20000).optional(),
-  e3: z.string().max(20000).optional(),
-  e4: z.string().max(20000).optional(),
-  e5: z.string().max(20000).optional(),
+  journal: z.string().max(40000).optional(),
+  review: z.string().max(40000).optional(),
   q1: z.string().max(20000).optional(),
   q2: z.string().max(20000).optional(),
   q3: z.string().max(20000).optional(),
   q4: z.string().max(20000).optional(),
   q5: z.string().max(20000).optional(),
   q6: z.string().max(20000).optional(),
-  review: z.string().max(40000).optional(),
 });
 
 app.get("/", async (c) => {
