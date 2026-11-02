@@ -41,6 +41,17 @@ export const reviews = sqliteTable("reviews", {
   updatedAt: text("updated_at").notNull(),
 });
 
+export const goals = sqliteTable("goals", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  title: text("title").notNull(),
+  domain: text("domain").notNull().default("other"),
+  status: text("status").notNull().default("active"),
+  data: text("data").notNull().default("{}"),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});
+
 export const patterns = sqliteTable("patterns", {
   id: text("id").primaryKey(),
   userId: text("user_id").notNull(),

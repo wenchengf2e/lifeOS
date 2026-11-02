@@ -1,9 +1,18 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { lifeosSections } from "../content/lifeos";
+import { goalSteps } from "../content/goals";
+import { GoalStepProgress } from "../components/GoalStepProgress";
 import { ErrorState, LoadingPage } from "../components/StateViews";
 import { api } from "../lib/api";
 import { formatDateCN, isoWeekKeyOf, todayKey, weekdayCN } from "../lib/date";
+import {
+  goalDeadlineLabel,
+  goalDomainOf,
+  goalPracticeLabel,
+  goalProgress,
+  sortGoals,
+} from "../lib/goals";
 import { useBootstrap } from "../lib/queries";
 import { currentStreak, isCountedDone, monthDoneCount } from "../lib/stats";
 
@@ -36,6 +45,7 @@ export function OverviewPage() {
     .sort((a, b) => (a.date < b.date ? 1 : -1))
     .slice(0, 3);
   const itemCount = data?.items.length ?? 0;
+  const activeGoals = sortGoals(data?.goals ?? []).filter((goal) => goal.status === "active");
 
   const currentWeek = isoWeekKeyOf(today);
   const weekReview = (data?.reviews ?? []).find(
@@ -141,8 +151,65 @@ export function OverviewPage() {
             {lifeosFilled}
             <span className="ml-1 text-base text-ink-soft">/ {lifeosSections.length}</span>
           </p>
-          <p className="mt-2 text-xs text-ink-soft">六栏都填，系统才闭环</p>
+          <p className="mt-2 text-xs text-ink-soft">方向卡定坐标，六栏写细节</p>
         </Link>
+      </section>
+
+      <section className="mt-6 card p-6 sm:p-7">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.2em] text-moss">Goals</p>
+            <h2 className="mt-1 text-xl text-ink">进行中的目标</h2>
+            <p className="mt-1 text-xs text-ink-soft">
+              人生 OS 定方向，目标定战场。每个目标单独走五步。
+            </p>
+          </div>
+          <Link to="/principles" className="btn-ghost text-xs">
+            全部目标 →
+          </Link>
+        </div>
+
+        {activeGoals.length === 0 ? (
+          <div className="mt-4 rounded-2xl border border-dashed border-line bg-paper-deep/30 p-6 text-center">
+            <p className="text-sm text-ink-soft">
+              {data?.goals.length
+                ? "暂时没有进行中的目标。可以去目标页恢复一个，或者新建一个。"
+                : "还没有目标。先写一个现在最想推进的对象，比如投资、健康、职业。"}
+            </p>
+            <Link to="/principles" className="btn-secondary mt-4">
+              去五步诊断
+            </Link>
+          </div>
+        ) : (
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {activeGoals.slice(0, 3).map((goal) => {
+              const progress = goalProgress(goal.data);
+              const next = goalSteps.find((step) => step.key === progress.nextStep);
+              const domain = goalDomainOf(goal.domain);
+              return (
+                <Link
+                  key={goal.id}
+                  to={`/principles/${goal.id}?step=${next?.index ?? 5}`}
+                  className="rounded-2xl border border-line/70 bg-paper-deep/20 p-4 transition hover:border-moss/30 hover:bg-white/70"
+                >
+                  <div className="flex items-center justify-between gap-2 text-[11px] text-ink-soft">
+                    <span>
+                      {domain.icon} {domain.label}
+                    </span>
+                    <span>{goalDeadlineLabel(goal)}</span>
+                  </div>
+                  <p className="mt-2 line-clamp-1 text-sm font-medium text-ink">{goal.title}</p>
+                  <div className="mt-3">
+                    <GoalStepProgress data={goal.data} />
+                  </div>
+                  <p className="mt-2 text-[11px] text-ink-soft">
+                    {next ? `下一步：${next.title}` : "五步已走完"} · 践行 {goalPracticeLabel(goal)}
+                  </p>
+                </Link>
+              );
+            })}
+          </div>
+        )}
       </section>
 
       <div className="mt-6 grid gap-5 lg:grid-cols-[minmax(0,1fr)_340px]">
@@ -212,6 +279,13 @@ export function OverviewPage() {
               >
                 <span>🧩 周复盘</span>
                 <span className="text-ink-soft">{weekReviewDone ? "已复盘" : "待复盘"} →</span>
+              </Link>
+              <Link
+                to="/principles"
+                className="flex items-center justify-between rounded-2xl border border-line/70 bg-paper-deep/30 px-4 py-3 text-sm text-ink transition hover:border-moss/30 hover:bg-white/70"
+              >
+                <span>🎯 五步诊断</span>
+                <span className="text-ink-soft">{activeGoals.length} 个进行中 →</span>
               </Link>
               <Link
                 to="/lists"

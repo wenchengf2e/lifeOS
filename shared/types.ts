@@ -114,6 +114,294 @@ export type PatternEntry = {
   updatedAt: string;
 };
 
+export const GOAL_STATUSES = ["draft", "active", "paused", "achieved", "archived"] as const;
+
+export type GoalStatus = (typeof GOAL_STATUSES)[number];
+
+export type GoalImpact = "high" | "medium" | "low";
+
+/** 切分：这个问题我能不能改变。 */
+export type GoalControl = "in" | "partial" | "out";
+
+export type GoalProblem = {
+  id: string;
+  title: string;
+  evidence: string;
+  impact: GoalImpact;
+  control: GoalControl;
+};
+
+export type GoalMilestone = {
+  id: string;
+  text: string;
+  due: string;
+  done: boolean;
+};
+
+export type GoalIfThen = {
+  id: string;
+  trigger: string;
+  response: string;
+};
+
+export type GoalMetric = {
+  id: string;
+  name: string;
+  target: string;
+  cadence: string;
+};
+
+export type GoalPracticeLog = {
+  id: string;
+  date: string;
+  did: string;
+  evidence: string;
+  gap: string;
+  next: string;
+};
+
+export type GoalGoalStep = {
+  /** 在什么期限内，把什么从什么状态变成什么状态。 */
+  statement: string;
+  whyNow: string;
+  successCriteria: string[];
+  tradeoffs: string;
+  notDoing: string[];
+  deadline: string;
+  /** 它服务于人生 OS 的哪个方向。 */
+  alignment: string;
+  /** 1–10，挑战度。 */
+  challenge: number;
+};
+
+export type GoalProblemStep = {
+  items: GoalProblem[];
+  keyProblemId: string | null;
+};
+
+export type GoalDiagnosisStep = {
+  directCause: string;
+  /** 连续追问「为什么」，3–5 条。 */
+  whyChain: string[];
+  rootCause: string;
+  pattern: string;
+  alternative: string;
+  conclusion: string;
+};
+
+export type GoalPlanStep = {
+  strategy: string;
+  check: string;
+  milestones: GoalMilestone[];
+  weeklyActions: string[];
+  dailyActions: string[];
+  ifThen: GoalIfThen[];
+  metrics: GoalMetric[];
+  stopDoing: string[];
+};
+
+export type GoalPracticeStep = {
+  logs: GoalPracticeLog[];
+  review: string;
+  nextStep: string;
+};
+
+export type GoalData = {
+  version: 1;
+  goal: GoalGoalStep;
+  problem: GoalProblemStep;
+  diagnosis: GoalDiagnosisStep;
+  plan: GoalPlanStep;
+  practice: GoalPracticeStep;
+};
+
+export type GoalEntry = {
+  id: string;
+  title: string;
+  /** 可选分类，不强制。 */
+  domain: string;
+  status: GoalStatus;
+  data: GoalData;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export function createEmptyGoalData(): GoalData {
+  return {
+    version: 1,
+    goal: {
+      statement: "",
+      whyNow: "",
+      successCriteria: [],
+      tradeoffs: "",
+      notDoing: [],
+      deadline: "",
+      alignment: "",
+      challenge: 5,
+    },
+    problem: { items: [], keyProblemId: null },
+    diagnosis: {
+      directCause: "",
+      whyChain: [],
+      rootCause: "",
+      pattern: "",
+      alternative: "",
+      conclusion: "",
+    },
+    plan: {
+      strategy: "",
+      check: "",
+      milestones: [],
+      weeklyActions: [],
+      dailyActions: [],
+      ifThen: [],
+      metrics: [],
+      stopDoing: [],
+    },
+    practice: { logs: [], review: "", nextStep: "" },
+  };
+}
+
+function asString(value: unknown, fallback = ""): string {
+  return typeof value === "string" ? value : fallback;
+}
+
+function asStringArray(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
+}
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
+function asNumber(value: unknown, fallback: number): number {
+  return typeof value === "number" && Number.isFinite(value) ? value : fallback;
+}
+
+function normalizeProblems(value: unknown): GoalProblem[] {
+  if (!Array.isArray(value)) return [];
+  return value.map((raw, index) => {
+    const item = asRecord(raw);
+    const impact = item.impact;
+    const control = item.control;
+    return {
+      id: asString(item.id) || `problem-${index}`,
+      title: asString(item.title),
+      evidence: asString(item.evidence),
+      impact: impact === "high" || impact === "medium" || impact === "low" ? impact : "medium",
+      control: control === "in" || control === "partial" || control === "out" ? control : "in",
+    };
+  });
+}
+
+function normalizeMilestones(value: unknown): GoalMilestone[] {
+  if (!Array.isArray(value)) return [];
+  return value.map((raw, index) => {
+    const item = asRecord(raw);
+    return {
+      id: asString(item.id) || `milestone-${index}`,
+      text: asString(item.text),
+      due: asString(item.due),
+      done: item.done === true,
+    };
+  });
+}
+
+function normalizeIfThen(value: unknown): GoalIfThen[] {
+  if (!Array.isArray(value)) return [];
+  return value.map((raw, index) => {
+    const item = asRecord(raw);
+    return {
+      id: asString(item.id) || `ifthen-${index}`,
+      trigger: asString(item.trigger),
+      response: asString(item.response),
+    };
+  });
+}
+
+function normalizeMetrics(value: unknown): GoalMetric[] {
+  if (!Array.isArray(value)) return [];
+  return value.map((raw, index) => {
+    const item = asRecord(raw);
+    return {
+      id: asString(item.id) || `metric-${index}`,
+      name: asString(item.name),
+      target: asString(item.target),
+      cadence: asString(item.cadence),
+    };
+  });
+}
+
+function normalizeLogs(value: unknown): GoalPracticeLog[] {
+  if (!Array.isArray(value)) return [];
+  return value.map((raw, index) => {
+    const item = asRecord(raw);
+    return {
+      id: asString(item.id) || `log-${index}`,
+      date: asString(item.date),
+      did: asString(item.did),
+      evidence: asString(item.evidence),
+      gap: asString(item.gap),
+      next: asString(item.next),
+    };
+  });
+}
+
+/** 把可能缺字段的 JSON 补成完整形状，读旧数据时也不会炸。 */
+export function normalizeGoalData(raw: unknown): GoalData {
+  const root = asRecord(raw);
+  const goal = asRecord(root.goal);
+  const problem = asRecord(root.problem);
+  const diagnosis = asRecord(root.diagnosis);
+  const plan = asRecord(root.plan);
+  const practice = asRecord(root.practice);
+  const items = normalizeProblems(problem.items);
+  const rawKey = asString(problem.keyProblemId);
+
+  return {
+    version: 1,
+    goal: {
+      statement: asString(goal.statement),
+      whyNow: asString(goal.whyNow),
+      successCriteria: asStringArray(goal.successCriteria),
+      tradeoffs: asString(goal.tradeoffs),
+      notDoing: asStringArray(goal.notDoing),
+      deadline: asString(goal.deadline),
+      alignment: asString(goal.alignment),
+      challenge: Math.min(10, Math.max(1, Math.round(asNumber(goal.challenge, 5)))),
+    },
+    problem: {
+      items,
+      keyProblemId: rawKey && items.some((item) => item.id === rawKey) ? rawKey : null,
+    },
+    diagnosis: {
+      directCause: asString(diagnosis.directCause),
+      whyChain: asStringArray(diagnosis.whyChain),
+      rootCause: asString(diagnosis.rootCause),
+      pattern: asString(diagnosis.pattern),
+      alternative: asString(diagnosis.alternative),
+      conclusion: asString(diagnosis.conclusion),
+    },
+    plan: {
+      strategy: asString(plan.strategy),
+      check: asString(plan.check),
+      milestones: normalizeMilestones(plan.milestones),
+      weeklyActions: asStringArray(plan.weeklyActions),
+      dailyActions: asStringArray(plan.dailyActions),
+      ifThen: normalizeIfThen(plan.ifThen),
+      metrics: normalizeMetrics(plan.metrics),
+      stopDoing: asStringArray(plan.stopDoing),
+    },
+    practice: {
+      logs: normalizeLogs(practice.logs),
+      review: asString(practice.review),
+      nextStep: asString(practice.nextStep),
+    },
+  };
+}
+
 export type BootstrapResponse = {
   user: { email: string };
   checkins: CheckinEntry[];
@@ -121,6 +409,7 @@ export type BootstrapResponse = {
   items: ItemEntry[];
   reviews: ReviewEntry[];
   patterns: PatternEntry[];
+  goals: GoalEntry[];
 };
 
 export type ExportResponse = BootstrapResponse & {

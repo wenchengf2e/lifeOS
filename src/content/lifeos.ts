@@ -8,6 +8,55 @@ export type LifeOSSection = {
   output: string;
 };
 
+export type LifeOSDirectionField = {
+  key: "statement" | "theme" | "bet" | "notDoing";
+  label: string;
+  hint: string;
+  placeholder: string;
+  rows: number;
+};
+
+/** 方向卡不并进六栏：六栏是认识自己，方向卡是给出坐标。 */
+export const lifeosDirection = {
+  module: "lifeos",
+  key: "direction",
+  eyebrow: "North Star",
+  title: "方向卡",
+  desc: "在六栏之前，先给出一组坐标。目标模块会直接引用这里，不用再复制一遍。",
+  linkLabel: "用五步诊断拆一个目标",
+  fields: [
+    {
+      key: "statement" as const,
+      label: "3–5 年，我想把人生带到哪里？",
+      hint: "写方向，不写愿望。它能帮你判断一个目标值不值得做。",
+      placeholder:
+        "例：有一份自己掌控节奏的工作，有足够的资产自由度，能选择想做的事，也能照顾重要的人。",
+      rows: 3,
+    },
+    {
+      key: "theme" as const,
+      label: "未来 12 个月的主题",
+      hint: "一句话就够。今年所有目标都应该能挂到这句话下面。",
+      placeholder: "例：把能力变成可交付的作品，同时把投资规则跑通。",
+      rows: 2,
+    },
+    {
+      key: "bet" as const,
+      label: "今年最重要的一个赌注",
+      hint: "如果只做成一件事，是哪件？",
+      placeholder: "例：把复盘方法做成一个能持续更新的产品。",
+      rows: 2,
+    },
+    {
+      key: "notDoing" as const,
+      label: "我明确不做什么",
+      hint: "方向感来自取舍。写下今年不碰的事。",
+      placeholder: "例：不接需要长期加班的项目；不碰看不懂的标的；不为了证明自己而学习。",
+      rows: 2,
+    },
+  ] satisfies LifeOSDirectionField[],
+};
+
 export const lifeosSections: LifeOSSection[] = [
   {
     key: "identity",

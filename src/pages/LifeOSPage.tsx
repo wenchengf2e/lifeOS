@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { lifeosSections } from "../content/lifeos";
+import { DirectionCard } from "../components/DirectionCard";
 import { PageHeader } from "../components/PageHeader";
 import { ErrorState, LoadingPage } from "../components/StateViews";
 import { useBootstrap, useSaveDocument } from "../lib/queries";
@@ -15,6 +16,7 @@ export function LifeOSPage() {
   const [status, setStatus] = useState<SaveStatus>({ type: "idle" });
 
   const docs = data?.documents.filter((item) => item.module === "lifeos") ?? [];
+  const directionDoc = docs.find((item) => item.key === "direction");
   const currentDoc = docs.find((item) => item.key === selectedKey);
   const section = lifeosSections.find((item) => item.key === selectedKey) ?? lifeosSections[0];
 
@@ -61,8 +63,10 @@ export function LifeOSPage() {
       <PageHeader
         eyebrow="Life OS"
         title="人生 OS"
-        description="先认识自己，再看处境、方向和差距。六栏都填，跑起来才闭环。先写事实和判断，再慢慢迭代。"
+        description="先写方向卡，再用六栏把自己描述清楚。方向卡给坐标，六栏给细节；先写事实和判断，再慢慢迭代。"
       />
+
+      <DirectionCard doc={directionDoc} />
 
       <div className="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
         <aside className="card p-4 lg:sticky lg:top-24 lg:self-start">

@@ -4,6 +4,9 @@ import type {
   CheckinData,
   DocumentData,
   ExportResponse,
+  GoalData,
+  GoalEntry,
+  GoalStatus,
   ItemEntry,
   PatternEntry,
   PatternStatus,
@@ -20,6 +23,20 @@ export type PatternDraft = {
   alternative?: string;
   evidence?: string[];
   status?: PatternStatus;
+};
+
+export type GoalCreateInput = {
+  title: string;
+  domain?: string;
+  status?: GoalStatus;
+  data?: GoalData;
+};
+
+export type GoalPatch = {
+  title?: string;
+  domain?: string;
+  status?: GoalStatus;
+  data?: GoalData;
 };
 
 export class ApiError extends Error {
@@ -121,6 +138,24 @@ export const api = {
 
   deletePattern(id: string) {
     return request<{ ok: true }>(`/api/patterns/${encode(id)}`, { method: "DELETE" });
+  },
+
+  createGoal(input: GoalCreateInput) {
+    return request<{ ok: true; goal: GoalEntry }>("/api/goals", {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+  },
+
+  updateGoal(id: string, patch: GoalPatch) {
+    return request<{ ok: true; goal: GoalEntry }>(`/api/goals/${encode(id)}`, {
+      method: "PATCH",
+      body: JSON.stringify(patch),
+    });
+  },
+
+  deleteGoal(id: string) {
+    return request<{ ok: true }>(`/api/goals/${encode(id)}`, { method: "DELETE" });
   },
 
   exportAll() {

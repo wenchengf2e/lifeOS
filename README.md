@@ -1,6 +1,6 @@
 # LifeOS
 
-个人的 LifeOS 心理工作台：每日仪式、人生 OS、日记、成就 / 改变清单、五步诊断、关于。
+个人的 LifeOS 心理工作台：每日仪式、人生 OS、目标与五步诊断、日记、复盘、成就 / 改变清单、关于。
 
 数据保存在 Cloudflare D1，站点和 API 跑在同一个 Cloudflare Worker 上，登录由 Cloudflare Access 负责。免费额度足够个人使用。
 
@@ -17,12 +17,12 @@
 ```
 src/             React 前端
   components/    布局、日历、状态组件
-  content/       每日仪式的四段模块、人生 OS、清单的文案配置；关于页静态内容
+  content/       每日仪式、人生 OS、目标、复盘、清单的文案配置；关于页静态内容
   lib/           API 客户端、查询 hooks、日期与统计工具
-  pages/         总览、每日仪式、日记、复盘、人生 OS、清单、五步诊断、关于
-public/          静态图片（关于页图片在 public/about/）
+  pages/         总览、每日仪式、日记、复盘、人生 OS、目标与五步诊断、清单、关于
+public/          静态资源：favicon / site.webmanifest、关于页图片（public/about/）
 worker/          Hono API Worker
-  routes/        checkins / docs / items / reviews / patterns
+  routes/        checkins / docs / goals / items / reviews / patterns
   db/            Drizzle schema、client、查询
 shared/          前后端共享类型
 migrations/      D1 migration
@@ -126,7 +126,7 @@ Worker 的校验逻辑在 `worker/auth.ts`：只接受 Access 注入的邮箱头
 | --- | --- | --- |
 | GET | `/health` | 公开健康检查 |
 | GET | `/api/me` | 当前登录邮箱 |
-| GET | `/api/bootstrap` | 一次性拉取 checkins / documents / items |
+| GET | `/api/bootstrap` | 一次性拉取 checkins / documents / items / reviews / patterns / goals |
 | GET | `/api/export` | 全量 JSON 导出 |
 | GET | `/api/checkins?from=&to=` | 按日期范围读取打卡 |
 | GET | `/api/checkins/:date` | 读取某天打卡 |
@@ -134,6 +134,11 @@ Worker 的校验逻辑在 `worker/auth.ts`：只接受 Access 注入的邮箱头
 | GET | `/api/docs` | 读取所有文档 |
 | GET | `/api/docs/:module/:key` | 读取单篇文档 |
 | PUT | `/api/docs/:module/:key` | 保存文档（upsert） |
+| GET | `/api/goals` | 读取所有目标 |
+| GET | `/api/goals/:id` | 读取单个目标 |
+| POST | `/api/goals` | 新建目标 |
+| PATCH | `/api/goals/:id` | 修改目标（标题 / 领域 / 状态 / 五步 data） |
+| DELETE | `/api/goals/:id` | 删除目标 |
 | GET | `/api/items?module=` | 读取清单 |
 | POST | `/api/items` | 新增清单项 |
 | PATCH | `/api/items/:id` | 修改清单项 |
@@ -154,12 +159,13 @@ Worker 的校验逻辑在 `worker/auth.ts`：只接受 Access 注入的邮箱头
   - `review`：03「想法」——不归到其他段落的东西
   - `q1`–`q6`：04 事后「今日复盘」六问，想深一层时再写
   - 四段都在 `/daily` 一页里，是并列的模块，定义在 `src/content/daily.ts`。任意一段写一条就算当天完成
-- `documents`：按 `(module, key)` 存长文本 / 结构化 JSON，人生 OS 用 `module = "lifeos"`
+- `documents`：按 `(module, key)` 存长文本 / 结构化 JSON；人生 OS 六栏用 `module = "lifeos"`，方向卡用 `key = "direction"`
 - `items`：清单条目，按 `(module, sort_order, created_at)` 排序
 - `reviews`：一周 / 一月一条，`(user_id, period_type, period_key)` 唯一，`data` 是 JSON
 - `patterns`：模式卡，`evidence` 是关联的打卡日期数组
+- `goals`：一个目标一条记录，`data` 是 JSON，包含五步（目标 / 问题 / 诊断 / 方案 / 践行）；`domain` 是可选分类，`status` 是目标状态
 
-复盘模块的设计取舍见 [docs/review-module-design.md](docs/review-module-design.md)。
+复盘模块的设计取舍见 [docs/review-module-design.md](docs/review-module-design.md)，目标与五步诊断的设计见 [docs/goal-module-design.md](docs/goal-module-design.md)。
 
 ## 「关于」页
 
@@ -180,7 +186,9 @@ Worker 的校验逻辑在 `worker/auth.ts`：只接受 Access 注入的邮箱头
 ## 后续
 
 - [ ] 旧 localStorage 数据导入页面
-- [ ] 五步诊断的交互表单（`documents` 模型和 API 已预留）
+- [x] 目标模块 + 五步诊断（方向卡、目标列表、五步工作台、践行日志）
+- [ ] 把目标的每周动作同步到清单 / 每日仪式（V1.1）
+- [ ] 诊断关联模式卡，周复盘展示进行中的目标（V1.1）
 - [ ] 清单项的编辑、勾选完成、日期分组
 - [x] 周复盘（四步向导 + 模式库）
 - [ ] 月复盘（表结构和 API 已支持 `period_type = "month"`，页面待做）

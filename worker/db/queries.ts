@@ -4,6 +4,8 @@ import type {
   DocumentData,
   CheckinEntry,
   DocumentEntry,
+  GoalEntry,
+  GoalStatus,
   ItemEntry,
   PatternEntry,
   PatternStatus,
@@ -11,8 +13,9 @@ import type {
   ReviewEntry,
   ReviewPeriodType,
 } from "../../shared/types";
+import { normalizeGoalData } from "../../shared/types";
 import { getDb } from "./client";
-import { checkins, documents, items, patterns, reviews } from "./schema";
+import { checkins, documents, goals, items, patterns, reviews } from "./schema";
 
 type Db = ReturnType<typeof getDb>;
 
@@ -80,13 +83,26 @@ export function mapPattern(row: typeof patterns.$inferSelect): PatternEntry {
   };
 }
 
+export function mapGoal(row: typeof goals.$inferSelect): GoalEntry {
+  return {
+    id: row.id,
+    title: row.title,
+    domain: row.domain,
+    status: row.status as GoalStatus,
+    data: normalizeGoalData(parseJson<unknown>(row.data, {})),
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  };
+}
+
 export async function loadAll(db: Db, userId: string) {
-  const [checkinRows, documentRows, itemRows, reviewRows, patternRows] = await Promise.all([
+  const [checkinRows, documentRows, itemRows, reviewRows, patternRows, goalRows] = await Promise.all([
     db.select().from(checkins).where(eq(checkins.userId, userId)).orderBy(desc(checkins.checkinDate)),
     db.select().from(documents).where(eq(documents.userId, userId)).orderBy(desc(documents.updatedAt)),
     db.select().from(items).where(eq(items.userId, userId)).orderBy(desc(items.createdAt)),
     db.select().from(reviews).where(eq(reviews.userId, userId)).orderBy(desc(reviews.periodKey)),
     db.select().from(patterns).where(eq(patterns.userId, userId)).orderBy(desc(patterns.updatedAt)),
+    db.select().from(goals).where(eq(goals.userId, userId)).orderBy(desc(goals.updatedAt)),
   ]);
 
   return {
@@ -95,5 +111,6 @@ export async function loadAll(db: Db, userId: string) {
     items: itemRows.map(mapItem),
     reviews: reviewRows.map(mapReview),
     patterns: patternRows.map(mapPattern),
+    goals: goalRows.map(mapGoal),
   };
 }
