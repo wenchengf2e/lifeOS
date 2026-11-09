@@ -4,6 +4,8 @@
 
 数据保存在 Cloudflare D1，站点和 API 跑在同一个 Cloudflare Worker 上，登录由 Cloudflare Access 负责。免费额度足够个人使用。
 
+> 技术架构、目录结构与业务功能总览见 [docs/project-overview.md](docs/project-overview.md)。
+
 ## 技术栈
 
 - 前端：Vite + React 19 + React Router 7 + TanStack Query + Tailwind CSS 4

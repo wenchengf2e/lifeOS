@@ -1,0 +1,3 @@
+{"file": "docs/project-overview.md", "reason": "项目总览：目录结构、技术架构、业务功能"}
+{"file": ".trellis/spec/frontend/directory-structure.md", "reason": "前端目录与命名规范"}
+{"file": ".trellis/spec/backend/directory-structure.md", "reason": "后端目录、模块与迁移规范"}
