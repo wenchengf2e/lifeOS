@@ -4,6 +4,7 @@ import { Link, NavLink } from "react-router-dom";
 const NAV = [
   { to: "/", label: "总览", end: true },
   { to: "/daily", label: "每日仪式" },
+  { to: "/fears", label: "恐惧清单" },
   { to: "/diary", label: "日记" },
   { to: "/review", label: "复盘" },
   { to: "/lifeos", label: "人生 OS" },

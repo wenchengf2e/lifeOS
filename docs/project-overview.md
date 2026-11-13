@@ -2,7 +2,7 @@
 
 > 一份面向新成员和 AI 助手的项目说明：技术架构、业务功能、数据模型与当前边界。
 >
-> 更新时间：2026-11-09
+> 更新时间：2026-11-14
 > 详细代码规范见 [`.trellis/spec/frontend/directory-structure.md`](../.trellis/spec/frontend/directory-structure.md) 与 [`.trellis/spec/backend/directory-structure.md`](../.trellis/spec/backend/directory-structure.md)。
 
 ---
@@ -13,7 +13,7 @@ LifeOS 是一个**个人心理工作台**，把「每日记录 → 每周复盘 
 
 - **每日**：今日行动、晚间日记、想法、今日复盘六问。
 - **每周**：四步复盘（聚焦、联结、抽象化、具体化）+ 模式库。
-- **长期**：人生 OS 六栏、五步诊断目标、Reality OS 投资能力六维。
+- **长期**：人生 OS 六栏、五步诊断目标、恐惧清单、Reality OS 投资能力六维。
 - **沉淀**：成就 / 关键改变 / 复盘动作清单，以及全量 JSON 导出。
 
 数据只属于站点所有者：登录由 Cloudflare Access 负责，Worker 再校验邮箱是否等于 `OWNER_EMAIL`。
@@ -32,7 +32,7 @@ LifeOS 是一个**个人心理工作台**，把「每日记录 → 每周复盘 
 | 样式 | Tailwind CSS 4（`@theme` token） | 语义色 `paper` / `ink` / `moss` / `clay` / `line` |
 | 构建 | Vite 8 + `@cloudflare/vite-plugin` | 本地同时跑前端与 Worker |
 | API | Hono 4（`worker/`） | REST API，与静态资源同一个 Worker |
-| 数据库 | Cloudflare D1（SQLite） | 六张业务表 |
+| 数据库 | Cloudflare D1（SQLite） | 七张业务表 |
 | ORM | Drizzle ORM（`drizzle-orm/d1`） | 表定义与查询 |
 | 校验 | Zod 4 | Worker 侧请求体校验 |
 | 鉴权 | Cloudflare Access + 邮箱头 | 仅所有者可访问 |
@@ -55,14 +55,14 @@ Cloudflare Access
 Cloudflare Worker（Hono，worker/index.ts）
   ├─ 公开路由   /health
   ├─ 全局 API   /api/me · /api/bootstrap · /api/export
-  ├─ 资源路由   /api/checkins · /api/docs · /api/goals
+  ├─ 资源路由   /api/checkins · /api/docs · /api/fears · /api/goals
   │             /api/items · /api/reviews · /api/patterns
   │
   │  requireUser：邮箱头 → 与 OWNER_EMAIL 比对
   │  Zod 校验 → Drizzle 查询
   ▼
 Cloudflare D1（SQLite，lifeos-db）
-  checkins · documents · items · reviews · patterns · goals
+  checkins · documents · items · reviews · patterns · goals · fears
 ```
 
 前端静态资源与 Worker 同属一个 Cloudflare Worker：
@@ -73,12 +73,12 @@ Cloudflare D1（SQLite，lifeos-db）
 
 ### 2.3 请求与数据流
 
-1. SPA 启动后调用一次 `GET /api/bootstrap`，Worker 用 `loadAll()` 并行读取六张表，返回当前用户的全部数据。
+1. SPA 启动后调用一次 `GET /api/bootstrap`，Worker 用 `loadAll()` 并行读取七张表，返回当前用户的全部数据。
 2. 前端把结果放在 TanStack Query 的 `["bootstrap"]` 缓存里，`staleTime: 15s`。
 3. 写操作分两类：
    - **自然键资源**用 `PUT` upsert：打卡按日期、文档按 `(module, key)`、复盘按 `(period_type, period_key)`。
-   - **自增 ID 资源**用 `POST` / `PATCH` / `DELETE`：目标、清单项、模式卡。
-4. 多数 mutation 成功后 invalidate bootstrap；目标相关 mutation 用 `setQueryData` 就地更新，避免覆盖正在编辑的草稿。
+   - **自增 ID 资源**用 `POST` / `PATCH` / `DELETE`：目标、恐惧条目、清单项、模式卡。
+4. 多数 mutation 成功后 invalidate bootstrap；目标与恐惧相关 mutation 用 `setQueryData` 就地更新，避免覆盖正在编辑的草稿。
 5. `GET /api/export` 返回与 bootstrap 相同的数据，外加 `version` 和 `exportedAt`，用于备份。
 
 ### 2.4 目录结构
@@ -86,7 +86,7 @@ Cloudflare D1（SQLite，lifeos-db）
 ```
 lifeos/
 ├── src/                    # React 前端
-│   ├── components/         # 可复用组件（含 goals/ 五步表单）
+│   ├── components/         # 可复用组件（含 goals/ 五步表单、fears/ 恐惧步骤卡）
 │   ├── content/            # 纯配置与文案
 │   ├── lib/                # API、Query、日期、统计、派生逻辑
 │   ├── pages/              # 路由页面（XxxPage.tsx）
@@ -94,13 +94,13 @@ lifeos/
 │   ├── main.tsx            # 入口与 Provider
 │   └── index.css           # Tailwind 4 + 设计 token
 ├── worker/                 # Hono API Worker
-│   ├── routes/             # checkins / docs / goals / items / reviews / patterns
+│   ├── routes/             # checkins / docs / fears / goals / items / reviews / patterns
 │   ├── db/                 # schema、client、queries
 │   ├── auth.ts             # requireUser 身份中间件
 │   ├── types.ts            # AppEnv（Bindings / Variables）
 │   └── index.ts            # Worker 入口与路由挂载
 ├── shared/types.ts         # 前后端共享类型与常量
-├── migrations/             # D1 migration（0001–0003）
+├── migrations/             # D1 migration（0001–0004）
 ├── public/                 # favicon、manifest、关于页图片
 ├── docs/                   # 设计、运维与开发流程文档
 ├── index.html              # SPA 壳
@@ -155,6 +155,7 @@ npm run cf:tail            # 线上日志
 | `reviews` | 用户 + 周期 | `period_type`(`week`/`month`)、`period_key`、`data`(JSON) | 周复盘、月复盘（页面待做） |
 | `patterns` | 单条 | `title`、`trigger`、`reaction`、`payoff`、`cost`、`alternative`、`evidence`、`status` | 模式库 |
 | `goals` | 单条 | `title`、`domain`、`status`、`data`(JSON 五步) | 五步诊断目标 |
+| `fears` | 单条 | `data`(JSON 五步) | 恐惧清单；标题与状态都从内容派生 |
 
 共同约定：
 
@@ -176,6 +177,7 @@ npm run cf:tail            # 线上日志
 | 日记 | `/diary` | 只读回看有日记或想法的日期 | `checkins` |
 | 人生 OS | `/lifeos` | 方向卡 + 身份 / 阶段 / 理想 / 差距 / 策略 / 验证六栏 | `documents(module=lifeos)` |
 | 五步诊断 | `/principles`、`/principles/:id` | 目标列表 + 单目标五步工作台 | `goals` |
+| 恐惧清单 | `/fears`、`/fears/:id` | 恐惧列表 + 五步恐惧转化（识别 → 根因 → 问题 → 行动 → 验证） | `fears` |
 | 复盘 | `/review`、`/review/week/:key` | 周复盘四步向导 + 模式库 | `reviews`、`patterns`、`items` |
 | 清单 | `/lists` | 成就 / 关键改变 / 复盘动作 | `items` |
 | Reality OS | `/reality` | 投资能力六维 T 度雷达与升级 | `documents(module=reality)` |
@@ -186,7 +188,7 @@ npm run cf:tail            # 线上日志
 - 今日是否完成、连续打卡天数、本月打卡次数、人生 OS 六栏完成度。
 - 最多三个进行中目标及其五步进度。
 - 最近三条日记 / 想法摘要。
-- 快捷入口：每日仪式、人生 OS、日记、复盘、五步诊断、Reality OS、清单。
+- 快捷入口：每日仪式、人生 OS、日记、复盘、五步诊断、恐惧清单、Reality OS、清单。
 - 「导出全部数据」下载全量 JSON。
 
 ### 3.3 每日仪式 `/daily`
@@ -273,14 +275,34 @@ npm run cf:tail            # 线上日志
 - 数据写入 `documents(module=reality, key=trading)`，并镜像到 `localStorage`；写入失败时先用本地状态兜底。
 - 当前为未提交功能，README 与相关文档尚未同步。
 
-### 3.10 关于 `/about`
+### 3.10 恐惧清单 `/fears`
+
+业务意图：把一条模糊的恐惧拆成五步，最后变成可以验证的下一步行动。恐惧写下来、拆开之后，才有机会被处理，而不是一直在脑子里放大。
+
+五步（固定顺序，五个输入框）：
+
+1. **识别恐惧**：我具体在害怕什么。
+2. **寻找根因**：为什么害怕，追问到真正的原因。
+3. **定义问题**：需要解决的是什么。
+4. **转化为任务**：下一步具体做什么。
+5. **验证与反馈**：取得了什么证据。
+
+机制：
+
+- 列表按更新时间倒序；标题取第 1 步内容第一行，空内容显示「未命名恐惧」。
+- 不存显式状态：第 4 步为空 → 待行动；第 4 步有内容、第 5 步为空 → 待验证；第 5 步有内容 → 已验证。
+- 新建时只填第 1 步，创建后直接进入详情页。
+- 详情页 800ms 防抖自动保存、版本守卫、离开提示与补保存；删除有二次确认。
+- 第 4 步只作文本记录，暂不与清单 / 五步诊断联动。
+
+### 3.11 关于 `/about`
 
 - 静态内容页，不读写 D1。
 - 内容在 `src/content/about.json`，支持段落、小节、列表、引用、提示框、图片。
 - 图片放 `public/about/`，随静态资源发布。
 - 仓库公开，**不要放私人日记或真实联系方式**。
 
-### 3.11 业务闭环
+### 3.12 业务闭环
 
 ```
 人生 OS（方向）
@@ -296,6 +318,8 @@ npm run cf:tail            # 线上日志
     │                              │
     ▼                              ▼
 清单（成就 / 改变 / 动作）      月复盘（待实现）
+
+恐惧清单（回避 → 行动） ──► 第 4 步动作 ──► 每日仪式 / 清单
 ```
 
 ---

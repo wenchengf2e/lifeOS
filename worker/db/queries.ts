@@ -4,6 +4,7 @@ import type {
   DocumentData,
   CheckinEntry,
   DocumentEntry,
+  FearEntry,
   GoalEntry,
   GoalStatus,
   ItemEntry,
@@ -13,9 +14,9 @@ import type {
   ReviewEntry,
   ReviewPeriodType,
 } from "../../shared/types";
-import { normalizeGoalData } from "../../shared/types";
+import { normalizeFearData, normalizeGoalData } from "../../shared/types";
 import { getDb } from "./client";
-import { checkins, documents, goals, items, patterns, reviews } from "./schema";
+import { checkins, documents, fears, goals, items, patterns, reviews } from "./schema";
 
 type Db = ReturnType<typeof getDb>;
 
@@ -95,15 +96,26 @@ export function mapGoal(row: typeof goals.$inferSelect): GoalEntry {
   };
 }
 
+export function mapFear(row: typeof fears.$inferSelect): FearEntry {
+  return {
+    id: row.id,
+    data: normalizeFearData(parseJson<unknown>(row.data, {})),
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  };
+}
+
 export async function loadAll(db: Db, userId: string) {
-  const [checkinRows, documentRows, itemRows, reviewRows, patternRows, goalRows] = await Promise.all([
-    db.select().from(checkins).where(eq(checkins.userId, userId)).orderBy(desc(checkins.checkinDate)),
-    db.select().from(documents).where(eq(documents.userId, userId)).orderBy(desc(documents.updatedAt)),
-    db.select().from(items).where(eq(items.userId, userId)).orderBy(desc(items.createdAt)),
-    db.select().from(reviews).where(eq(reviews.userId, userId)).orderBy(desc(reviews.periodKey)),
-    db.select().from(patterns).where(eq(patterns.userId, userId)).orderBy(desc(patterns.updatedAt)),
-    db.select().from(goals).where(eq(goals.userId, userId)).orderBy(desc(goals.updatedAt)),
-  ]);
+  const [checkinRows, documentRows, itemRows, reviewRows, patternRows, goalRows, fearRows] =
+    await Promise.all([
+      db.select().from(checkins).where(eq(checkins.userId, userId)).orderBy(desc(checkins.checkinDate)),
+      db.select().from(documents).where(eq(documents.userId, userId)).orderBy(desc(documents.updatedAt)),
+      db.select().from(items).where(eq(items.userId, userId)).orderBy(desc(items.createdAt)),
+      db.select().from(reviews).where(eq(reviews.userId, userId)).orderBy(desc(reviews.periodKey)),
+      db.select().from(patterns).where(eq(patterns.userId, userId)).orderBy(desc(patterns.updatedAt)),
+      db.select().from(goals).where(eq(goals.userId, userId)).orderBy(desc(goals.updatedAt)),
+      db.select().from(fears).where(eq(fears.userId, userId)).orderBy(desc(fears.updatedAt)),
+    ]);
 
   return {
     checkins: checkinRows.map(mapCheckin),
@@ -112,5 +124,6 @@ export async function loadAll(db: Db, userId: string) {
     reviews: reviewRows.map(mapReview),
     patterns: patternRows.map(mapPattern),
     goals: goalRows.map(mapGoal),
+    fears: fearRows.map(mapFear),
   };
 }

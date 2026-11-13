@@ -11,7 +11,7 @@
 整体分层：
 
 - `src/pages/`：路由页面，负责页面级布局、表单状态和交互编排。
-- `src/components/`：可复用 UI 与业务组件；五步诊断的表单组件单独放在 `components/goals/`。
+- `src/components/`：可复用 UI 与业务组件；五步诊断的表单组件放在 `components/goals/`，恐惧清单的步骤组件放在 `components/fears/`。
 - `src/content/`：纯配置与文案（模块定义、步骤定义、选项、限额），不包含 JSX。
 - `src/lib/`：API 客户端、查询 hooks、日期 / 统计 / 目标派生逻辑和自定义 hook。
 - `src/App.tsx`：唯一的扁平路由表；所有页面都包在 `Layout` 里。
@@ -36,14 +36,18 @@ src/
 │   ├── MonthCalendar.tsx       # 周一开头的月历，标记有记录 / 已完成
 │   ├── GoalCard.tsx            # 目标摘要卡
 │   ├── GoalStepProgress.tsx    # 五步完成进度条
+│   ├── FearCard.tsx            # 恐惧清单摘要卡
 │   ├── DirectionCard.tsx       # 人生 OS 方向卡
 │   ├── PatternCard.tsx         # 模式卡字段、证据、状态流转
 │   ├── Reality*.tsx            # Reality OS：方向卡、目标摘要卡、雷达图
-│   └── goals/
-│       ├── fields.tsx          # FieldHeader / TextField / TextInput / TextListField / SegmentedField / StepEmpty
-│       └── Step*.tsx           # 五步诊断各步骤表单：目标 / 问题 / 诊断 / 方案 / 践行
+│   ├── goals/
+│   │   ├── fields.tsx          # FieldHeader / TextField / TextInput / TextListField / SegmentedField / StepEmpty
+│   │   └── Step*.tsx           # 五步诊断各步骤表单：目标 / 问题 / 诊断 / 方案 / 践行
+│   └── fears/
+│       └── FearStepField.tsx   # 恐惧清单单个步骤卡 + 文本域
 ├── content/                    # 纯配置与文案（无 JSX）
 │   ├── daily.ts                # 每日仪式四模块与字段
+│   ├── fears.ts                # 恐惧清单五步定义、派生状态与文案
 │   ├── goals.ts                # 领域、状态、五步定义、限额与文案
 │   ├── lifeos.ts               # 方向卡与人生 OS 六栏
 │   ├── lists.ts                # 成就 / 关键改变 / 复盘动作三个清单
@@ -54,6 +58,7 @@ src/
 ├── lib/
 │   ├── api.ts                  # fetch 封装、ApiError、所有端点方法
 │   ├── queries.ts              # bootstrap 查询与各类 mutation
+│   ├── fears.ts                # 恐惧派生：标题、完成度、状态、下一步预览
 │   ├── goals.ts                # 五步派生：完成度、进度、检查清单、停滞判断
 │   ├── stats.ts                # 打卡完成判断、日期集合、月 / 总计数、连续天数
 │   ├── date.ts                 # 日期键、中文格式化、月 / ISO 周工具
@@ -67,6 +72,8 @@ src/
     ├── ReviewWizardPage.tsx    # 周复盘四步向导
     ├── GoalsPage.tsx           # 五步诊断目标列表
     ├── GoalDetailPage.tsx      # 单个目标五步工作台
+    ├── FearsPage.tsx           # 恐惧清单列表 + 新建弹窗
+    ├── FearDetailPage.tsx      # 单条恐惧五步详情 + 自动保存
     ├── ListsPage.tsx           # 清单（三个 tab）
     ├── RealityPage.tsx         # Reality OS 投资六维
     ├── AboutPage.tsx           # 静态关于页
@@ -85,6 +92,8 @@ src/
 | `/review` | `ReviewPage` |
 | `/review/week/:key` | `ReviewWizardPage`（`?step=1..4`） |
 | `/lists` | `ListsPage` |
+| `/fears` | `FearsPage` |
+| `/fears/:fearId` | `FearDetailPage` |
 | `/principles` | `GoalsPage` |
 | `/principles/:goalId` | `GoalDetailPage`（`?step=1..5`） |
 | `/reality` | `RealityPage` |
@@ -118,7 +127,7 @@ src/
 - 服务端状态统一通过 `useBootstrap()` 读取，查询键固定为 `["bootstrap"]`，`staleTime: 15s`。
 - 写操作分两类：
   - 打卡、文档、清单、复盘、模式卡：mutation 成功后 invalidate `["bootstrap"]`。
-  - 目标：用 `setQueryData` 就地更新缓存，避免覆盖正在编辑的草稿。
+  - 目标、恐惧清单：用 `setQueryData` 就地更新缓存，避免覆盖正在编辑的草稿。
 - 页面内表单使用局部 state；日期、步骤等领域选择状态用 `useSearchParams` 保存，保证刷新和分享链接可恢复。
 - 长表单（如 `GoalDetailPage`）使用防抖自动保存和版本守卫，避免旧响应覆盖新输入。
 
@@ -126,6 +135,7 @@ src/
 
 - 打卡完成判断、连续天数、月度统计 → `src/lib/stats.ts`。
 - 五步完成度、进度、检查清单、停滞判断 → `src/lib/goals.ts`。
+- 恐惧标题（第 1 步首行）、完成度、派生状态、下一步预览 → `src/lib/fears.ts`。
 - 日期键、ISO 周、中文格式化 → `src/lib/date.ts`。
 - 页面里不要重复实现这些计算。
 
@@ -154,4 +164,5 @@ src/
 | API + Query 封装 | `src/lib/api.ts`、`src/lib/queries.ts` |
 | 派生统计 | `src/lib/stats.ts`、`src/lib/goals.ts` |
 | 新模块复用 documents + localStorage 兜底 | `src/lib/useReality.ts`、`src/pages/RealityPage.tsx` |
+| 列表 + 详情 + 自动保存 + 派生状态的新模块 | `src/pages/FearsPage.tsx`、`src/pages/FearDetailPage.tsx`、`src/lib/fears.ts` |
 | 静态内容页 | `src/pages/AboutPage.tsx` + `src/content/about.json` |

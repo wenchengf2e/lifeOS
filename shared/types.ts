@@ -226,6 +226,42 @@ export type GoalEntry = {
   updatedAt: string;
 };
 
+export const FEAR_STEP_KEYS = ["fear", "rootCause", "problem", "action", "evidence"] as const;
+
+export type FearStepKey = (typeof FEAR_STEP_KEYS)[number];
+
+export type FearData = {
+  version: 1;
+  /** 1 识别恐惧：我具体在害怕什么。 */
+  fear: string;
+  /** 2 寻找根因：为什么害怕，追问到真正的原因。 */
+  rootCause: string;
+  /** 3 定义问题：需要解决的是什么。 */
+  problem: string;
+  /** 4 转化为任务：下一步具体做什么。 */
+  action: string;
+  /** 5 验证与反馈：我取得了什么证据。 */
+  evidence: string;
+};
+
+export type FearEntry = {
+  id: string;
+  data: FearData;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export function createEmptyFearData(): FearData {
+  return {
+    version: 1,
+    fear: "",
+    rootCause: "",
+    problem: "",
+    action: "",
+    evidence: "",
+  };
+}
+
 export function createEmptyGoalData(): GoalData {
   return {
     version: 1,
@@ -402,6 +438,19 @@ export function normalizeGoalData(raw: unknown): GoalData {
   };
 }
 
+/** 把可能缺字段的 JSON 补成完整形状，读旧数据时也不会炸。 */
+export function normalizeFearData(raw: unknown): FearData {
+  const root = asRecord(raw);
+  return {
+    version: 1,
+    fear: asString(root.fear),
+    rootCause: asString(root.rootCause),
+    problem: asString(root.problem),
+    action: asString(root.action),
+    evidence: asString(root.evidence),
+  };
+}
+
 export type BootstrapResponse = {
   user: { email: string };
   checkins: CheckinEntry[];
@@ -410,6 +459,7 @@ export type BootstrapResponse = {
   reviews: ReviewEntry[];
   patterns: PatternEntry[];
   goals: GoalEntry[];
+  fears: FearEntry[];
 };
 
 export type ExportResponse = BootstrapResponse & {

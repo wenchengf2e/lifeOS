@@ -52,6 +52,14 @@ export const goals = sqliteTable("goals", {
   updatedAt: text("updated_at").notNull(),
 });
 
+export const fears = sqliteTable("fears", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  data: text("data").notNull().default("{}"),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});
+
 export const patterns = sqliteTable("patterns", {
   id: text("id").primaryKey(),
   userId: text("user_id").notNull(),

@@ -6,6 +6,7 @@ import { getDb } from "./db/client";
 import { loadAll } from "./db/queries";
 import checkinsRoute from "./routes/checkins";
 import docsRoute from "./routes/docs";
+import fearsRoute from "./routes/fears";
 import goalsRoute from "./routes/goals";
 import itemsRoute from "./routes/items";
 import patternsRoute from "./routes/patterns";
@@ -47,6 +48,7 @@ app.get("/api/export", async (c) => {
 
 app.route("/api/checkins", checkinsRoute);
 app.route("/api/docs", docsRoute);
+app.route("/api/fears", fearsRoute);
 app.route("/api/goals", goalsRoute);
 app.route("/api/items", itemsRoute);
 app.route("/api/reviews", reviewsRoute);

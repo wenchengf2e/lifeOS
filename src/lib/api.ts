@@ -4,6 +4,8 @@ import type {
   CheckinData,
   DocumentData,
   ExportResponse,
+  FearData,
+  FearEntry,
   GoalData,
   GoalEntry,
   GoalStatus,
@@ -37,6 +39,14 @@ export type GoalPatch = {
   domain?: string;
   status?: GoalStatus;
   data?: GoalData;
+};
+
+export type FearCreateInput = {
+  data?: FearData;
+};
+
+export type FearPatch = {
+  data: FearData;
 };
 
 export class ApiError extends Error {
@@ -138,6 +148,24 @@ export const api = {
 
   deletePattern(id: string) {
     return request<{ ok: true }>(`/api/patterns/${encode(id)}`, { method: "DELETE" });
+  },
+
+  createFear(input: FearCreateInput = {}) {
+    return request<{ ok: true; fear: FearEntry }>("/api/fears", {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+  },
+
+  updateFear(id: string, patch: FearPatch) {
+    return request<{ ok: true; fear: FearEntry }>(`/api/fears/${encode(id)}`, {
+      method: "PATCH",
+      body: JSON.stringify(patch),
+    });
+  },
+
+  deleteFear(id: string) {
+    return request<{ ok: true }>(`/api/fears/${encode(id)}`, { method: "DELETE" });
   },
 
   createGoal(input: GoalCreateInput) {

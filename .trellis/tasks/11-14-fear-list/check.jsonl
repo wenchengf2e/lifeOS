@@ -1,0 +1,3 @@
+{"file": ".trellis/spec/frontend/directory-structure.md", "reason": "检查前端分层、命名、缓存更新与自动保存实现是否符合规范"}
+{"file": ".trellis/spec/backend/directory-structure.md", "reason": "检查路由、user_id 隔离、迁移、命名与响应格式是否符合规范"}
+{"file": "docs/development-workflow.md", "reason": "确认当前项目质量门与验证命令"}

@@ -1,0 +1,3 @@
+{"file": ".trellis/spec/frontend/directory-structure.md", "reason": "前端页面 / 组件 / content / lib 分层、路由、命名与状态数据流约定"}
+{"file": ".trellis/spec/backend/directory-structure.md", "reason": "新增资源模块、D1 表、migration、bootstrap 聚合与 API 约定"}
+{"file": "docs/goal-module-design.md", "reason": "已有五步诊断的数据模型、自动保存与交互机制参考"}

@@ -8,7 +8,7 @@ import type {
   ReviewData,
   ReviewPeriodType,
 } from "../../shared/types";
-import { api, type GoalPatch, type PatternDraft } from "./api";
+import { api, type FearCreateInput, type FearPatch, type GoalPatch, type PatternDraft } from "./api";
 
 export const bootstrapQueryKey = ["bootstrap"] as const;
 
@@ -151,6 +151,53 @@ export function useUpdateGoal() {
           ),
         };
       });
+    },
+  });
+}
+
+/**
+ * 恐惧清单沿用目标的缓存策略：保存后只改这一条，不整页 refetch。
+ * 自动保存触发 bootstrap 重新拉取，会把正在输入的字段覆盖成旧数据。
+ */
+export function useCreateFear() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: FearCreateInput = {}) => api.createFear(input),
+    onSuccess: ({ fear }) => {
+      queryClient.setQueryData<BootstrapResponse>(bootstrapQueryKey, (prev) =>
+        prev ? { ...prev, fears: [fear, ...(prev.fears ?? [])] } : prev,
+      );
+    },
+  });
+}
+
+export function useUpdateFear() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, patch }: { id: string; patch: FearPatch }) => api.updateFear(id, patch),
+    onSuccess: ({ fear }) => {
+      queryClient.setQueryData<BootstrapResponse>(bootstrapQueryKey, (prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          // 两个保存请求交错时，别让旧响应覆盖新内容。
+          fears: (prev.fears ?? []).map((item) =>
+            item.id === fear.id && item.updatedAt <= fear.updatedAt ? fear : item,
+          ),
+        };
+      });
+    },
+  });
+}
+
+export function useDeleteFear() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.deleteFear(id),
+    onSuccess: (_result, id) => {
+      queryClient.setQueryData<BootstrapResponse>(bootstrapQueryKey, (prev) =>
+        prev ? { ...prev, fears: (prev.fears ?? []).filter((item) => item.id !== id) } : prev,
+      );
     },
   });
 }

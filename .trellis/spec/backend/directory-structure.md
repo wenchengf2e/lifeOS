@@ -32,13 +32,14 @@ worker/
 └── routes/
     ├── checkins.ts       # 打卡：按日期读取 / upsert
     ├── docs.ts           # 通用文档：按 (module, key) 读取 / upsert
+    ├── fears.ts          # 恐惧清单 CRUD，五步 data 为 JSON
     ├── goals.ts          # 目标 CRUD，五步诊断 data 为 JSON
     ├── items.ts          # 清单项 CRUD
     ├── patterns.ts       # 模式卡 CRUD 与状态流转
     └── reviews.ts        # 周 / 月复盘读取 / upsert
 
 shared/types.ts           # 前端与 Worker 共享的类型、常量和数据契约
-migrations/               # D1 migration：0001_init.sql / 0002_review.sql / 0003_goals.sql
+migrations/               # D1 migration：0001_init.sql / 0002_review.sql / 0003_goals.sql / 0004_fears.sql
 wrangler.jsonc            # Worker、D1 binding、静态资源、OWNER_EMAIL 配置
 ```
 
@@ -92,7 +93,15 @@ export default route;
 ### 何时复用 `documents`，何时新建表
 
 - 页面级、结构不固定或迭代频繁的数据 → `documents`（`module` + `key`），例如人生 OS 六栏、方向卡、Reality OS 的 `module="reality", key="trading"`。
-- 需要列表、排序、筛选、状态流转或独立计数的实体 → 单独建表（`goals`、`items`、`patterns`、`reviews`、`checkins`）。
+- 需要列表、排序、筛选、状态流转或独立计数的实体 → 单独建表（`goals`、`fears`、`items`、`patterns`、`reviews`、`checkins`）。
+
+### 恐惧清单（`fears`）
+
+- 独立表 `fears(id, user_id, data, created_at, updated_at)`；五步写在 `data` JSON 里。
+- 不存 `title` / `status` 列：标题由 `data.fear` 第一行派生，状态由 `data.action` / `data.evidence` 派生。
+- 路由：`GET /api/fears`、`GET /api/fears/:id`、`POST /api/fears`（`data` 可空）、`PATCH /api/fears/:id`（`data` 必填）、`DELETE /api/fears/:id`。
+- 写入前统一走 `normalizeFearData`，JSON 长度上限 200,000；所有查询按 `user_id` 过滤。
+- `fears` 已加入 `loadAll()`，因此 `/api/bootstrap` 与 `/api/export` 自动包含该字段。
 
 ---
 
@@ -114,6 +123,7 @@ export default route;
 | --- | --- |
 | 按日期 upsert 的最小范例 | `worker/routes/checkins.ts` |
 | 带 JSON `data`、长度上限和状态枚举的 CRUD | `worker/routes/goals.ts` |
+| 无 title/status 列、字段全部由 JSON 派生的 CRUD | `worker/routes/fears.ts` |
 | 通用 `(module, key)` 文档存储，新页面数据首选 | `worker/routes/docs.ts` |
 | 行映射与 `/api/bootstrap` 聚合读取 | `worker/db/queries.ts` 的 `mapXxx` / `loadAll` |
 | 身份中间件与本地绕过 | `worker/auth.ts` |
@@ -128,5 +138,6 @@ export default route;
 - `0001_init.sql` — `checkins` / `documents` / `items`
 - `0002_review.sql` — `reviews` / `patterns`
 - `0003_goals.sql` — `goals`
+- `0004_fears.sql` — `fears`
 
 每个 migration 文件开头保留 `PRAGMA foreign_keys = ON;`。
