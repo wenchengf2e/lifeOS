@@ -263,7 +263,7 @@ npm run cf:tail            # 线上日志
 - **关键改变**（`changes`）
 - **复盘动作**（`review`）
 
-支持新增、删除（带确认）；排序按 `sort_order` 与创建时间。编辑和勾选完成尚未做。
+支持新增、内联编辑、删除（带确认）；排序按 `sort_order` 与创建时间。勾选完成尚未做。
 
 ### 3.9 Reality OS `/reality`（进行中）
 
@@ -334,7 +334,7 @@ npm run cf:tail            # 线上日志
 - **Access 邮箱头未做签名校验**：依赖 Cloudflare Access 在前面拦截；公开部署前必须确认 Access 已启用。
 - **Reality OS 未提交**：前端代码与入口已存在，后端复用 `documents`，没有新增表或 migration。
 - **月复盘只有数据结构**：API 支持 `period_type = "month"`，没有页面。
-- **清单能力不完整**：缺少编辑、勾选完成、日期分组。
+- **清单能力不完整**：缺少勾选完成、日期分组。
 - **旧 localStorage 数据没有导入页面**。
 
 ### 4.2 后续方向（来自 README）

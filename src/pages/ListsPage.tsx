@@ -3,16 +3,20 @@ import { listModules } from "../content/lists";
 import { PageHeader } from "../components/PageHeader";
 import { EmptyState, ErrorState, LoadingPage } from "../components/StateViews";
 import { formatDateCN } from "../lib/date";
-import { useBootstrap, useCreateItem, useDeleteItem } from "../lib/queries";
+import { useBootstrap, useCreateItem, useDeleteItem, useUpdateItem } from "../lib/queries";
 
 export function ListsPage() {
   const { data, isLoading, error } = useBootstrap();
   const createItem = useCreateItem();
+  const updateItem = useUpdateItem();
   const deleteItem = useDeleteItem();
 
   const [selectedKey, setSelectedKey] = useState(listModules[0].key);
   const [draft, setDraft] = useState("");
   const [message, setMessage] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editDraft, setEditDraft] = useState("");
+  const [editError, setEditError] = useState<string | null>(null);
 
   const module = listModules.find((item) => item.key === selectedKey) ?? listModules[0];
   const items = (data?.items ?? []).filter((item) => item.module === selectedKey);
@@ -46,6 +50,41 @@ export function ListsPage() {
     }
   }
 
+  function startEdit(id: string, content: string) {
+    if (updateItem.isPending) return;
+    if (editingId && editingId !== id) {
+      if (!window.confirm("还有未保存的编辑，切换会丢失，继续吗？")) return;
+    }
+    setEditingId(id);
+    setEditDraft(content);
+    setEditError(null);
+    setMessage(null);
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setEditDraft("");
+    setEditError(null);
+  }
+
+  async function handleSaveEdit(id: string) {
+    const content = editDraft.trim();
+    if (!content) {
+      setEditError("内容不能为空");
+      return;
+    }
+
+    try {
+      await updateItem.mutateAsync({ id, patch: { content } });
+      setEditingId(null);
+      setEditDraft("");
+      setEditError(null);
+      setMessage("已保存");
+    } catch (saveError) {
+      setEditError(saveError instanceof Error ? saveError.message : "保存失败，请重试");
+    }
+  }
+
   return (
     <>
       <PageHeader
@@ -62,6 +101,9 @@ export function ListsPage() {
             onClick={() => {
               setSelectedKey(item.key);
               setMessage(null);
+              setEditingId(null);
+              setEditDraft("");
+              setEditError(null);
             }}
             className={[
               "shrink-0 rounded-full px-4 py-2 text-sm transition",
@@ -108,28 +150,92 @@ export function ListsPage() {
           <EmptyState icon={module.icon} title={`${module.title}还是空的`} description={module.empty} />
         ) : (
           <ul className="space-y-3">
-            {items.map((item) => (
-              <li key={item.id} className="card group flex items-start gap-4 p-4 sm:p-5">
-                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-moss" />
-                <div className="min-w-0 flex-1">
-                  <p className="whitespace-pre-wrap text-sm leading-7 text-ink">{item.content}</p>
-                  <p className="mt-1 text-[11px] text-ink-soft">
-                    {formatDateCN(item.itemDate ?? item.createdAt.slice(0, 10), {
-                      withYear: true,
-                    })}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => handleDelete(item.id)}
-                  className="shrink-0 rounded-full px-2 py-1 text-xs text-ink-soft/60 transition hover:bg-paper-deep/60 hover:text-clay"
-                  aria-label="删除这条记录"
-                  disabled={deleteItem.isPending}
-                >
-                  ×
-                </button>
-              </li>
-            ))}
+            {items.map((item) => {
+              const editing = editingId === item.id;
+              return (
+                <li key={item.id} className="card group flex items-start gap-4 p-4 sm:p-5">
+                  <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-moss" />
+                  <div className="min-w-0 flex-1">
+                    {editing ? (
+                      <>
+                        <textarea
+                          className="field resize-y"
+                          rows={4}
+                          maxLength={4000}
+                          aria-label="编辑记录内容"
+                          autoFocus
+                          value={editDraft}
+                          onChange={(event) => {
+                            setEditDraft(event.target.value);
+                            setEditError(null);
+                          }}
+                          onKeyDown={(event) => {
+                            if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
+                              event.preventDefault();
+                              void handleSaveEdit(item.id);
+                            } else if (event.key === "Escape") {
+                              cancelEdit();
+                            }
+                          }}
+                        />
+                        {editError ? <p className="mt-2 text-xs text-clay">{editError}</p> : null}
+                        <div className="mt-2 flex flex-wrap items-center gap-2">
+                          <button
+                            type="button"
+                            className="btn-primary text-xs"
+                            onClick={() => void handleSaveEdit(item.id)}
+                            disabled={updateItem.isPending}
+                          >
+                            {updateItem.isPending ? "保存中…" : "保存"}
+                          </button>
+                          <button
+                            type="button"
+                            className="btn-ghost text-xs"
+                            onClick={cancelEdit}
+                            disabled={updateItem.isPending}
+                          >
+                            取消
+                          </button>
+                          <span className="text-[11px] text-ink-soft">
+                            ⌘/Ctrl + Enter 保存 · Esc 取消
+                          </span>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <p className="whitespace-pre-wrap text-sm leading-7 text-ink">{item.content}</p>
+                        <p className="mt-1 text-[11px] text-ink-soft">
+                          {formatDateCN(item.itemDate ?? item.createdAt.slice(0, 10), {
+                            withYear: true,
+                          })}
+                        </p>
+                      </>
+                    )}
+                  </div>
+                  {!editing ? (
+                    <div className="flex shrink-0 items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => startEdit(item.id, item.content)}
+                        className="rounded-full px-2 py-1 text-xs text-ink-soft/70 transition hover:bg-paper-deep/60 hover:text-ink"
+                        aria-label="编辑这条记录"
+                      >
+                        编辑
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(item.id)}
+                        className="rounded-full px-2 py-1 text-xs text-ink-soft/60 transition hover:bg-paper-deep/60 hover:text-clay"
+                        aria-label="删除这条记录"
+                        disabled={deleteItem.isPending}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ) : null}
+                </li>
+              );
+            })}
           </ul>
         )}
       </section>
