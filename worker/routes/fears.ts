@@ -16,9 +16,14 @@ const createSchema = z.object({
   data: dataSchema.optional(),
 });
 
-const patchSchema = z.object({
-  data: dataSchema,
-});
+const patchSchema = z
+  .object({
+    data: dataSchema.optional(),
+    archived: z.boolean().optional(),
+  })
+  .refine((value) => value.data !== undefined || value.archived !== undefined, {
+    message: "至少需要提供 data 或 archived",
+  });
 
 /** 恐惧 data 是整段 JSON，给一个上限，避免误传超大内容。 */
 const MAX_DATA_LENGTH = 200_000;
@@ -74,6 +79,7 @@ app.post("/", async (c) => {
     id: crypto.randomUUID(),
     userId: c.get("userEmail"),
     data: serialized.data,
+    archived: false,
     createdAt: now,
     updatedAt: now,
   };
@@ -107,15 +113,22 @@ app.patch("/:id", async (c) => {
     return c.json({ error: "not_found" }, 404);
   }
 
-  const serialized = serializeData(parsed.data.data);
-  if ("error" in serialized) {
-    return c.json({ error: serialized.error }, 413);
+  // 只归档时不动 data，只保存内容时不动 archived。
+  const updates: Partial<typeof fears.$inferInsert> = { updatedAt: new Date().toISOString() };
+
+  if (parsed.data.data !== undefined) {
+    const serialized = serializeData(parsed.data.data);
+    if ("error" in serialized) {
+      return c.json({ error: serialized.error }, 413);
+    }
+    updates.data = serialized.data;
   }
 
-  await db
-    .update(fears)
-    .set({ data: serialized.data, updatedAt: new Date().toISOString() })
-    .where(and(eq(fears.id, id), eq(fears.userId, user)));
+  if (parsed.data.archived !== undefined) {
+    updates.archived = parsed.data.archived;
+  }
+
+  await db.update(fears).set(updates).where(and(eq(fears.id, id), eq(fears.userId, user)));
 
   const [updated] = await db
     .select()

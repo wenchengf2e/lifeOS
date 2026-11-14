@@ -100,6 +100,7 @@ export function mapFear(row: typeof fears.$inferSelect): FearEntry {
   return {
     id: row.id,
     data: normalizeFearData(parseJson<unknown>(row.data, {})),
+    archived: row.archived,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   };

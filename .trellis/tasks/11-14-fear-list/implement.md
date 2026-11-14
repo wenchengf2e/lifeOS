@@ -9,21 +9,22 @@
 
 ### 1. 共享契约（`shared/types.ts`）
 
-- [ ] 增加 `FEAR_STEP_KEYS`、`FearStepKey`、`FearData`、`FearEntry`
+- [ ] 增加 `FEAR_STEP_KEYS`、`FearStepKey`、`FearData`、`FearEntry`（含 `archived: boolean`）
 - [ ] 增加 `createEmptyFearData()` 与 `normalizeFearData()`
 - [ ] `BootstrapResponse` 增加 `fears: FearEntry[]`
 
 ### 2. 数据库
 
-- [ ] `worker/db/schema.ts` 增加 `fears` 表定义（id / user_id / data / created_at / updated_at）
-- [ ] 新增 `migrations/0004_fears.sql`，包含表与 `(user_id, updated_at)` 索引
-- [ ] `worker/db/queries.ts` 增加 `mapFear`，并在 `loadAll()` 中并行读取 `fears`
+- [ ] `worker/db/schema.ts` 增加 `fears` 表定义（id / user_id / data / archived / created_at / updated_at）
+- [ ] 新增 `migrations/0004_fears.sql`（表、`archived` 列、`(user_id, updated_at)` 与 `(user_id, archived, updated_at)` 索引）
+- [ ] `worker/db/queries.ts` 增加 `mapFear`（映射 `archived`），并在 `loadAll()` 中并行读取 `fears`
 - [ ] 运行 `npm run db:migrate:local`
 
 ### 3. Worker API
 
 - [ ] 新增 `worker/routes/fears.ts`：GET 列表 / GET 单个 / POST / PATCH / DELETE
-- [ ] Zod 校验 id 与 data，`normalizeFearData` + 200,000 字符上限
+- [ ] PATCH 接受 `{ data?: FearData, archived?: boolean }`，两者至少传一个
+- [ ] Zod 校验 id / data / archived，`normalizeFearData` + 200,000 字符上限
 - [ ] 所有查询带 `user_id`；PATCH / DELETE 先查存在性
 - [ ] `worker/index.ts` 挂载 `/api/fears`
 
@@ -36,21 +37,22 @@
 
 ### 5. 内容与派生逻辑
 
-- [ ] 新增 `src/content/fears.ts`：五步定义、页面文案、状态标签与样式
-- [ ] 新增 `src/lib/fears.ts`：`fearTitle`、`fearProgress`、`fearStage`、`sortFears`
+- [ ] 新增 `src/content/fears.ts`：五步定义、页面文案、归档筛选文案
+- [ ] 新增 `src/lib/fears.ts`：`fearTitle`、`fearProgress`、`filterFears`、`sortFears`
+- [ ] 移除 `fearStage` 与「待行动 / 待验证 / 已验证」相关文案和类型
 
 ### 6. UI
 
 - [ ] `src/components/fears/FearStepField.tsx`：步骤卡 + 文本域
-- [ ] `src/components/FearCard.tsx`：列表卡片（标题 / 状态 / 下一步预览 / 五步点 / 更新时间）
-- [ ] `src/pages/FearsPage.tsx`：列表、统计 chips、空状态、新建弹窗
-- [ ] `src/pages/FearDetailPage.tsx`：五步纵向表单、800ms 自动保存、版本守卫、离开提示、删除确认
+- [ ] `src/components/FearCard.tsx`：列表卡片（标题 / 已归档 chip / 下一步预览 / 五步点 / 更新时间）
+- [ ] `src/pages/FearsPage.tsx`：列表、未归档 / 已归档筛选 tabs、空状态、新建弹窗
+- [ ] `src/pages/FearDetailPage.tsx`：五步纵向表单、800ms 自动保存、版本守卫、离开提示、归档 / 取消归档、删除确认
 
 ### 7. 路由与入口
 
 - [ ] `src/App.tsx` 注册 `/fears` 与 `/fears/:id`
 - [ ] `src/components/Layout.tsx` 的 `NAV` 增加「恐惧清单」
-- [ ] `src/pages/OverviewPage.tsx` 快捷入口增加恐惧清单（显示待行动数量）
+- [ ] `src/pages/OverviewPage.tsx` 快捷入口增加恐惧清单（显示未归档数量）
 
 ### 8. 文档
 
@@ -66,9 +68,11 @@
 - [ ] 手动冒烟（`npm run dev`）：
   - [ ] 新建恐惧 → 进入详情 → 五步都能输入 → 等待自动保存 → 刷新后内容完整
   - [ ] 列表标题来自第 1 步；空内容显示「未命名恐惧」
-  - [ ] 填第 4 步后状态变「待验证」，填第 5 步后变「已验证」
+  - [ ] 列表默认只显示未归档；切换到「已归档」后只显示归档条目
+  - [ ] 详情页归档后，条目从默认列表消失并出现在已归档列表；取消归档后恢复
+  - [ ] 界面上不再出现「待行动 / 待验证 / 已验证」标签
   - [ ] 删除有确认，删除后列表与 `/api/bootstrap` 同步
-  - [ ] `/api/export` 中包含 `fears`
+  - [ ] `/api/export` 中包含 `fears` 与 `archived`
   - [ ] 现有页面（每日仪式、五步诊断、复盘、清单、人生 OS）正常加载
 
 ## 风险文件与回滚点

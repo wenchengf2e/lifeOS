@@ -1,27 +1,14 @@
 import type { FearStepKey } from "../../shared/types";
 
-/** 派生状态：不存字段，只看第 4、5 步有没有内容。 */
-export type FearStage = "pending_action" | "pending_proof" | "verified";
+/** 列表筛选：默认只展示未归档，归档可逆。 */
+export const fearFilters = {
+  active: "未归档",
+  archived: "已归档",
+} as const;
 
-export const fearStageMeta: Record<
-  FearStage,
-  { label: string; className: string; hint: string }
-> = {
-  pending_action: {
-    label: "待行动",
-    className: "bg-paper-deep/80 text-ink-soft",
-    hint: "第 4 步还没写：这条恐惧还没有变成动作。",
-  },
-  pending_proof: {
-    label: "待验证",
-    className: "bg-clay/10 text-clay",
-    hint: "下一步已经写好了，还没有回去看结果。",
-  },
-  verified: {
-    label: "已验证",
-    className: "bg-moss-soft text-moss-dark",
-    hint: "已经拿到一次真实反馈，可以决定继续、调整还是放下。",
-  },
+export const fearCardCopy = {
+  activeHint: "继续拆解下一步",
+  archivedHint: "归档记录，可随时恢复",
 };
 
 export type FearStep = {
@@ -102,11 +89,12 @@ export const fearsPageCopy = {
   description:
     "把一条模糊的恐惧拆成五步：识别、找根因、定义问题、变成动作、用证据验证。写下来之后，它才有机会被处理，而不是一直在脑子里放大。",
   newFear: "新建恐惧",
-  statsTotal: "共",
-  statsUnit: "条",
   emptyTitle: "还没有写下的恐惧",
   emptyDesc:
     "恐惧在脑子里会放大。先写一条最具体的：你此刻在回避什么？不用写完整，第 1 步就够了。",
+  archivedEmptyTitle: "还没有归档的恐惧",
+  archivedEmptyDesc:
+    "事件完全结束后，可以在详情页把它归档。归档不会删除内容，随时可以取消归档。",
 };
 
 export const newFearCopy = {
@@ -128,6 +116,13 @@ export const fearDetailCopy = {
   saveSaved: "已保存",
   saveError: "保存失败，点击重试",
   notFound: "这条恐惧不存在，可能已经被删除了。",
+  archivedBadge: "已归档",
+  archive: "归档",
+  unarchive: "取消归档",
+  archiveHint: "事件完全结束后归档，记录保留，可随时恢复。",
+  unarchiveHint: "恢复到未归档列表，继续编辑。",
+  archiveFailed: "归档失败，请重试",
+  unarchiveFailed: "取消归档失败，请重试",
   deleteFear: "删除这条恐惧",
   deleteConfirm: "删除后，这条恐惧的五步内容都会消失。确定吗？",
   createdAt: "创建于",

@@ -97,9 +97,9 @@ export default route;
 
 ### 恐惧清单（`fears`）
 
-- 独立表 `fears(id, user_id, data, created_at, updated_at)`；五步写在 `data` JSON 里。
-- 不存 `title` / `status` 列：标题由 `data.fear` 第一行派生，状态由 `data.action` / `data.evidence` 派生。
-- 路由：`GET /api/fears`、`GET /api/fears/:id`、`POST /api/fears`（`data` 可空）、`PATCH /api/fears/:id`（`data` 必填）、`DELETE /api/fears/:id`。
+- 独立表 `fears(id, user_id, data, archived, created_at, updated_at)`；五步写在 `data` JSON 里。
+- 不存 `title` / `status` 列：标题由 `data.fear` 第一行派生；`archived` 是显式布尔列，归档可逆，不再从内容派生状态。
+- 路由：`GET /api/fears`、`GET /api/fears/:id`、`POST /api/fears`（`data` 可空，新建默认 `archived = false`）、`PATCH /api/fears/:id`（`data` 与 `archived` 至少传一个，只改传入的字段）、`DELETE /api/fears/:id`。
 - 写入前统一走 `normalizeFearData`，JSON 长度上限 200,000；所有查询按 `user_id` 过滤。
 - `fears` 已加入 `loadAll()`，因此 `/api/bootstrap` 与 `/api/export` 自动包含该字段。
 
@@ -138,6 +138,6 @@ export default route;
 - `0001_init.sql` — `checkins` / `documents` / `items`
 - `0002_review.sql` — `reviews` / `patterns`
 - `0003_goals.sql` — `goals`
-- `0004_fears.sql` — `fears`
+- `0004_fears.sql` — `fears`（含 `archived` 列与归档索引）
 
 每个 migration 文件开头保留 `PRAGMA foreign_keys = ON;`。

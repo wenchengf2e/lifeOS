@@ -6,7 +6,6 @@ import { GoalStepProgress } from "../components/GoalStepProgress";
 import { ErrorState, LoadingPage } from "../components/StateViews";
 import { api } from "../lib/api";
 import { formatDateCN, isoWeekKeyOf, todayKey, weekdayCN } from "../lib/date";
-import { fearStage } from "../lib/fears";
 import {
   goalDeadlineLabel,
   goalDomainOf,
@@ -47,9 +46,7 @@ export function OverviewPage() {
     .slice(0, 3);
   const itemCount = data?.items.length ?? 0;
   const activeGoals = sortGoals(data?.goals ?? []).filter((goal) => goal.status === "active");
-  const pendingFears = (data?.fears ?? []).filter(
-    (entry) => fearStage(entry.data) === "pending_action",
-  ).length;
+  const unarchivedFears = (data?.fears ?? []).filter((entry) => !entry.archived).length;
 
   const currentWeek = isoWeekKeyOf(today);
   const weekReview = (data?.reviews ?? []).find(
@@ -296,7 +293,7 @@ export function OverviewPage() {
                 className="flex items-center justify-between rounded-2xl border border-line/70 bg-paper-deep/30 px-4 py-3 text-sm text-ink transition hover:border-moss/30 hover:bg-white/70"
               >
                 <span>🫨 恐惧清单</span>
-                <span className="text-ink-soft">{pendingFears} 条待行动 →</span>
+                <span className="text-ink-soft">{unarchivedFears} 条未归档 →</span>
               </Link>
               <Link
                 to="/lists"

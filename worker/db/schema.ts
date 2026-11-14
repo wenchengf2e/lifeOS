@@ -56,6 +56,7 @@ export const fears = sqliteTable("fears", {
   id: text("id").primaryKey(),
   userId: text("user_id").notNull(),
   data: text("data").notNull().default("{}"),
+  archived: integer("archived", { mode: "boolean" }).notNull().default(false),
   createdAt: text("created_at").notNull(),
   updatedAt: text("updated_at").notNull(),
 });

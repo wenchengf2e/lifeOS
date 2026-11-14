@@ -30,6 +30,7 @@ export const fears = sqliteTable("fears", {
   id: text("id").primaryKey(),
   userId: text("user_id").notNull(),
   data: text("data").notNull().default("{}"),
+  archived: integer("archived", { mode: "boolean" }).notNull().default(false),
   createdAt: text("created_at").notNull(),
   updatedAt: text("updated_at").notNull(),
 });
@@ -45,18 +46,22 @@ CREATE TABLE IF NOT EXISTS fears (
   id TEXT PRIMARY KEY,
   user_id TEXT NOT NULL,
   data TEXT NOT NULL DEFAULT '{}',
+  archived INTEGER NOT NULL DEFAULT 0,
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL
 );
 
 CREATE INDEX IF NOT EXISTS fears_user_updated_idx
   ON fears (user_id, updated_at);
+
+CREATE INDEX IF NOT EXISTS fears_user_archived_updated_idx
+  ON fears (user_id, archived, updated_at);
 ```
 
 设计取舍：
 
 - **不存 `title` 列**：标题由第 1 步内容派生，避免标题和内容出现两份真相。
-- **不存 `status` 列**：状态由第 4、5 步内容派生，不增加用户输入。
+- **只存 `archived` 布尔列**：不再从内容派生「待行动 / 待验证 / 已验证」；归档是用户显式动作，单独存列并按 `(user_id, archived, updated_at)` 建索引。
 - **五步用 JSON 而不是五个列**：与 `goals.data` 一致；后续加字段不用改表，读取时统一走 `normalizeFearData`。
 
 ### 2.2 共享类型（`shared/types.ts`）
@@ -83,6 +88,8 @@ export type FearData = {
 export type FearEntry = {
   id: string;
   data: FearData;
+  /** 事件是否已完全结束；归档可逆。 */
+  archived: boolean;
   createdAt: string;
   updatedAt: string;
 };
@@ -110,15 +117,17 @@ export type FearEntry = {
 | GET | `/api/fears` | — | `{ fears: FearEntry[] }` |
 | GET | `/api/fears/:id` | — | `{ fear: FearEntry \| null }` |
 | POST | `/api/fears` | `{ data?: FearData }` | `201 { ok: true, fear }` |
-| PATCH | `/api/fears/:id` | `{ data: FearData }` | `{ ok: true, fear }` |
+| PATCH | `/api/fears/:id` | `{ data?: FearData, archived?: boolean }` | `{ ok: true, fear }` |
 | DELETE | `/api/fears/:id` | — | `{ ok: true }` |
 
 约定：
 
-- id 校验 `z.string().min(1).max(64)`；data 用 `z.record(z.string(), z.unknown())`。
-- 写入前 `JSON.stringify(normalizeFearData(data))`，长度上限 `200_000`，超限返回 `413 payload_too_large`。
+- id 校验 `z.string().min(1).max(64)`；data 用 `z.record(z.string(), z.unknown())`；`archived` 用 `z.boolean()`。
+- PATCH 的 `data` 与 `archived` 至少传一个；只归档时不动 `data`，只保存内容时不动 `archived`。
+- 写入 `data` 前 `JSON.stringify(normalizeFearData(data))`，长度上限 `200_000`，超限返回 `413 payload_too_large`。
 - 所有查询带 `user_id = c.get("userEmail")`；PATCH / DELETE 先按 `(id, user_id)` 查存在性，不存在返回 `404 not_found`。
-- POST 允许 `data` 为空（服务端兜底为空五步）；UI 在创建弹窗要求第 1 步非空。
+- POST 允许 `data` 为空（服务端兜底为空五步）；UI 在创建弹窗要求第 1 步非空；新建默认 `archived = false`。
+- GET 默认返回全部记录（含已归档），由前端按 `archived` 过滤；`/api/bootstrap` 与 `/api/export` 同理。
 - `worker/index.ts` 挂载 `app.route("/api/fears", fearsRoute)`。
 
 ## 4. 前端设计
@@ -129,14 +138,14 @@ export type FearEntry = {
 
 | 文件 | 职责 |
 | --- | --- |
-| `src/content/fears.ts` | 五步定义、页面文案、派生状态标签与样式 |
-| `src/lib/fears.ts` | 标题派生、完成度、状态派生、排序 |
+| `src/content/fears.ts` | 五步定义、页面文案、归档列表文案 |
+| `src/lib/fears.ts` | 标题派生、完成度、归档过滤、排序 |
 | `src/components/fears/FearStepField.tsx` | 单个步骤的卡片 + 文本域 |
 | `src/components/FearCard.tsx` | 列表卡片 |
 | `src/pages/FearsPage.tsx` | 列表 + 新建弹窗 |
 | `src/pages/FearDetailPage.tsx` | 五步详情 + 自动保存 + 删除 |
-| `worker/routes/fears.ts` | CRUD |
-| `migrations/0004_fears.sql` | `fears` 表 |
+| `worker/routes/fears.ts` | CRUD + 归档 |
+| `migrations/0004_fears.sql` | `fears` 表（含 `archived` 列与索引） |
 
 修改：
 
@@ -190,21 +199,18 @@ export const fearSteps: FearStep[] = [
 
 - `fearTitle(data)`：取 `data.fear` 第一行，`trim`，为空返回「未命名恐惧」，超长截断。
 - `fearProgress(data)`：五个字段非空计数 / 5，返回 `completed` 与 `percent`。
-- `fearStage(data)`：
-  - `evidence` 非空 → `verified`（已验证）
-  - `action` 非空 → `pending_proof`（待验证）
-  - 其他 → `pending_action`（待行动）
+- `filterFears(entries, archived)`：按 `entry.archived` 过滤；列表默认传 `false`。
 - `sortFears(entries)`：按 `updatedAt` 倒序，时间相同按 `createdAt`。
 
-派生状态样式沿用现有 token，不使用硬编码颜色。
+不再提供 `fearStage` 或任何从内容派生的状态标签。
 
 ### 4.3 列表页 `/fears`
 
 - 顶部 `PageHeader`：eyebrow「Fear → Action」，标题「恐惧清单」，描述一句话说明五步转化。
 - 右侧主按钮「+ 新建恐惧」。
-- 标题下方一行统计 chips：共 N 条 · 待行动 X · 待验证 Y · 已验证 Z。
+- 标题下方一行筛选 tabs：「未归档 N」（默认）/「已归档 N」。
 - 卡片网格（`lg:grid-cols-2`），每张卡：
-  - 派生状态 chip
+  - 已归档时显示「已归档」chip；未归档不显示状态标签
   - 第 1 步标题（单行截断）
   - 下一步预览：第 4 步有内容显示「下一步：…」，否则显示第 1 步摘要
   - 五步完成点（5 个小圆点，已完成填色）
@@ -223,10 +229,11 @@ export const fearSteps: FearStep[] = [
   - 返回按钮（有未保存改动先保存，再回 `/fears`）
   - eyebrow「Fear → Action」
   - 派生标题（`fearTitle`，用 `font-display` 展示，不单独做标题输入）
-  - 派生状态 chip、保存状态
+  - 已归档时显示「已归档」badge，以及保存状态
   - 五步进度条（`completed / 5`）
 - 主体：五张步骤卡纵向排列，每张包含序号、图标、标题、引导语、提示语和文本域。
-- 底部操作条：保存状态（保存中 / 已保存 · 时间 / 保存失败，点击重试）、手动「保存」按钮、删除入口。
+- 底部操作条：保存状态（保存中 / 已保存 · 时间 / 保存失败，点击重试）、手动「保存」按钮、归档 / 取消归档按钮（不弹确认）、删除入口。
+- 归档操作走 `updateFear({ archived: true/false })`，成功后留在详情页；缓存更新后列表自动按归档状态过滤。
 - 保存机制：
   - 输入停止 800ms 后自动保存；
   - `changeVersion` ref 版本守卫，响应回来时版本不一致则保持 dirty；
@@ -245,13 +252,13 @@ export const fearSteps: FearStep[] = [
 
 ### 4.6 入口
 
-- `Layout.tsx` 的 `NAV` 在「五步诊断」后增加 `{ to: "/fears", label: "恐惧清单" }`。
-- `OverviewPage` 快捷入口增加一条，显示待行动数量，例如「😨 恐惧清单 · N 条待行动」。
+- `Layout.tsx` 的 `NAV` 在「每日仪式」后增加 `{ to: "/fears", label: "恐惧清单" }`。
+- `OverviewPage` 快捷入口增加一条，显示未归档数量，例如「🫨 恐惧清单 · N 条未归档」。
 - `App.tsx` 注册 `/fears` 与 `/fears/:id`。
 
 ## 5. 兼容、迁移与部署
 
-- migration 为纯新增表，无回填；本地 `npm run db:migrate:local`，线上部署前 `npm run db:migrate:remote`。
+- `0004` 一次性建表并包含 `archived` 列与索引；`archived` 默认 `0`，无回填。线上尚未部署过 `fears`，因此归档改动已合并进 `0004`。本地 `npm run db:migrate:local`，线上部署前 `npm run db:migrate:remote`。
 - `/api/bootstrap`、`/api/export` 为增量字段 `fears`，不影响现有模块；前端读取时用 `data?.fears ?? []` 兜底旧 Worker。
 - `ExportResponse.version` 保持 `1`，属于向后兼容的新增字段。
 - 部署顺序：先应用 migration，再部署 Worker，最后前端静态资源（同一次 deploy 内顺序由 Wrangler 保证）。
@@ -263,7 +270,7 @@ export const fearSteps: FearStep[] = [
 | 存储 | 独立 `fears` 表 | 需要列表、排序和独立 id，不是单篇文档 |
 | 字段存储 | JSON `data` | 与 `goals` 一致，五步结构演进不用改表 |
 | 标题 | 从第 1 步派生 | 保持五个输入框，避免标题与内容不一致 |
-| 状态 | 内容派生 | 零额外输入，避免用户维护状态 |
+| 归档 | 显式 `archived` 布尔列 | 归档是用户动作，需要可逆、可筛选；不再派生状态 |
 | 第 4 步 | 纯文本 | 现有清单模块无法勾选完成，联动无法闭环 |
 | 自动保存 | 800ms 防抖 + 版本守卫 | 复用已验证的目标模块机制 |
 
@@ -271,5 +278,6 @@ export const fearSteps: FearStep[] = [
 
 - **自动保存竞态**：版本守卫 + `updatedAt` 比较；保存失败可见、可重试。
 - **空记录**：创建弹窗要求第 1 步非空；之后清空第 1 步允许保存，列表显示「未命名恐惧」。
+- **归档筛选不同步**：归档动作成功后就地更新缓存，列表按 `archived` 过滤；详情页保持当前条目可见。
 - **删除误操作**：二次确认。
-- **回滚**：前端路由/入口和 Worker 挂载可单独回退；`fears` 表为新增，可保留不删。需要彻底回滚时再执行 `DROP TABLE fears;`。
+- **回滚**：前端路由/入口和 Worker 挂载可单独回退；`fears` 表与 `archived` 列为新增，可保留不删。需要彻底回滚时再执行 `DROP TABLE fears;`。

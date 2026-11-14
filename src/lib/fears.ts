@@ -1,5 +1,5 @@
 import type { FearData, FearEntry, FearStepKey } from "../../shared/types";
-import { FEAR_UNTITLED, fearSteps, type FearStage } from "../content/fears";
+import { FEAR_UNTITLED, fearSteps } from "../content/fears";
 
 export type FearProgress = {
   completed: number;
@@ -39,11 +39,9 @@ export function fearProgress(data: FearData): FearProgress {
   };
 }
 
-/** 状态完全由内容派生：第 5 步有内容 → 已验证；第 4 步有内容 → 待验证；否则待行动。 */
-export function fearStage(data: FearData): FearStage {
-  if (hasText(data.evidence)) return "verified";
-  if (hasText(data.action)) return "pending_proof";
-  return "pending_action";
+/** 按显式归档标记过滤；列表默认只看未归档。 */
+export function filterFears(entries: FearEntry[], archived: boolean): FearEntry[] {
+  return entries.filter((entry) => entry.archived === archived);
 }
 
 /** 按更新时间倒序；时间相同再按创建时间倒序。 */

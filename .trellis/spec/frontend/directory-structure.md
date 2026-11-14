@@ -36,7 +36,7 @@ src/
 │   ├── MonthCalendar.tsx       # 周一开头的月历，标记有记录 / 已完成
 │   ├── GoalCard.tsx            # 目标摘要卡
 │   ├── GoalStepProgress.tsx    # 五步完成进度条
-│   ├── FearCard.tsx            # 恐惧清单摘要卡
+│   ├── FearCard.tsx            # 恐惧清单摘要卡（含归档标记）
 │   ├── DirectionCard.tsx       # 人生 OS 方向卡
 │   ├── PatternCard.tsx         # 模式卡字段、证据、状态流转
 │   ├── Reality*.tsx            # Reality OS：方向卡、目标摘要卡、雷达图
@@ -47,7 +47,7 @@ src/
 │       └── FearStepField.tsx   # 恐惧清单单个步骤卡 + 文本域
 ├── content/                    # 纯配置与文案（无 JSX）
 │   ├── daily.ts                # 每日仪式四模块与字段
-│   ├── fears.ts                # 恐惧清单五步定义、派生状态与文案
+│   ├── fears.ts                # 恐惧清单五步定义、归档筛选与文案
 │   ├── goals.ts                # 领域、状态、五步定义、限额与文案
 │   ├── lifeos.ts               # 方向卡与人生 OS 六栏
 │   ├── lists.ts                # 成就 / 关键改变 / 复盘动作三个清单
@@ -58,7 +58,7 @@ src/
 ├── lib/
 │   ├── api.ts                  # fetch 封装、ApiError、所有端点方法
 │   ├── queries.ts              # bootstrap 查询与各类 mutation
-│   ├── fears.ts                # 恐惧派生：标题、完成度、状态、下一步预览
+│   ├── fears.ts                # 恐惧派生：标题、完成度、归档过滤、下一步预览
 │   ├── goals.ts                # 五步派生：完成度、进度、检查清单、停滞判断
 │   ├── stats.ts                # 打卡完成判断、日期集合、月 / 总计数、连续天数
 │   ├── date.ts                 # 日期键、中文格式化、月 / ISO 周工具
@@ -72,8 +72,8 @@ src/
     ├── ReviewWizardPage.tsx    # 周复盘四步向导
     ├── GoalsPage.tsx           # 五步诊断目标列表
     ├── GoalDetailPage.tsx      # 单个目标五步工作台
-    ├── FearsPage.tsx           # 恐惧清单列表 + 新建弹窗
-    ├── FearDetailPage.tsx      # 单条恐惧五步详情 + 自动保存
+    ├── FearsPage.tsx           # 恐惧清单列表（未归档 / 已归档）+ 新建弹窗
+    ├── FearDetailPage.tsx      # 单条恐惧五步详情 + 自动保存 + 归档
     ├── ListsPage.tsx           # 清单（三个 tab）
     ├── RealityPage.tsx         # Reality OS 投资六维
     ├── AboutPage.tsx           # 静态关于页
@@ -135,7 +135,7 @@ src/
 
 - 打卡完成判断、连续天数、月度统计 → `src/lib/stats.ts`。
 - 五步完成度、进度、检查清单、停滞判断 → `src/lib/goals.ts`。
-- 恐惧标题（第 1 步首行）、完成度、派生状态、下一步预览 → `src/lib/fears.ts`。
+- 恐惧标题（第 1 步首行）、完成度、归档过滤、下一步预览 → `src/lib/fears.ts`。
 - 日期键、ISO 周、中文格式化 → `src/lib/date.ts`。
 - 页面里不要重复实现这些计算。
 

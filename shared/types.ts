@@ -247,6 +247,8 @@ export type FearData = {
 export type FearEntry = {
   id: string;
   data: FearData;
+  /** 事件是否已完全结束；归档可逆，与五步内容分开存。 */
+  archived: boolean;
   createdAt: string;
   updatedAt: string;
 };

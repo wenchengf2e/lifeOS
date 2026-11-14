@@ -46,7 +46,8 @@ export type FearCreateInput = {
 };
 
 export type FearPatch = {
-  data: FearData;
+  data?: FearData;
+  archived?: boolean;
 };
 
 export class ApiError extends Error {

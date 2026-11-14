@@ -1,11 +1,10 @@
 import { Link } from "react-router-dom";
 import type { FearEntry } from "../../shared/types";
-import { fearStageMeta, fearSteps } from "../content/fears";
+import { fearCardCopy, fearFilters, fearSteps } from "../content/fears";
 import { formatDateCN, toDateKey } from "../lib/date";
-import { fearNextStepPreview, fearProgress, fearStage, fearTitle } from "../lib/fears";
+import { fearNextStepPreview, fearProgress, fearTitle } from "../lib/fears";
 
 export function FearCard({ fear }: { fear: FearEntry }) {
-  const stage = fearStageMeta[fearStage(fear.data)];
   const progress = fearProgress(fear.data);
 
   return (
@@ -14,9 +13,13 @@ export function FearCard({ fear }: { fear: FearEntry }) {
       className="card group flex flex-col p-5 transition hover:-translate-y-0.5 hover:border-moss/30 hover:shadow-md sm:p-6"
     >
       <div className="flex items-start justify-between gap-3">
-        <span className={["rounded-full px-2.5 py-1 text-[11px] font-medium", stage.className].join(" ")}>
-          {stage.label}
-        </span>
+        {fear.archived ? (
+          <span className="rounded-full bg-paper-deep/80 px-2.5 py-1 text-[11px] font-medium text-ink-soft">
+            {fearFilters.archived}
+          </span>
+        ) : (
+          <span />
+        )}
         <span className="text-[11px] text-ink-soft">
           更新于 {formatDateCN(toDateKey(new Date(fear.updatedAt)), { withYear: true })}
         </span>
@@ -52,7 +55,9 @@ export function FearCard({ fear }: { fear: FearEntry }) {
       </div>
 
       <div className="mt-4 flex items-end justify-between gap-3 border-t border-line/60 pt-3">
-        <span className="text-xs text-ink-soft">{stage.hint}</span>
+        <span className="text-xs text-ink-soft">
+          {fear.archived ? fearCardCopy.archivedHint : fearCardCopy.activeHint}
+        </span>
         <span className="shrink-0 text-sm text-ink-soft transition group-hover:translate-x-0.5 group-hover:text-moss">
           继续 →
         </span>

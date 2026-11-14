@@ -4,8 +4,8 @@ import { createEmptyFearData } from "../../shared/types";
 import { FearCard } from "../components/FearCard";
 import { PageHeader } from "../components/PageHeader";
 import { EmptyState, ErrorState, LoadingPage } from "../components/StateViews";
-import { fearsPageCopy, newFearCopy } from "../content/fears";
-import { fearStage, sortFears } from "../lib/fears";
+import { fearFilters, fearsPageCopy, newFearCopy } from "../content/fears";
+import { filterFears, sortFears } from "../lib/fears";
 import { useBootstrap, useCreateFear } from "../lib/queries";
 
 export function FearsPage() {
@@ -13,6 +13,7 @@ export function FearsPage() {
   const createFear = useCreateFear();
   const navigate = useNavigate();
 
+  const [archivedFilter, setArchivedFilter] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   const [fearText, setFearText] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
@@ -34,11 +35,9 @@ export function FearsPage() {
   }, [showCreate]);
 
   const fears = useMemo(() => sortFears(data?.fears ?? []), [data?.fears]);
-  const stats = useMemo(() => {
-    const counts: Record<string, number> = { pending_action: 0, pending_proof: 0, verified: 0 };
-    for (const entry of fears) counts[fearStage(entry.data)] += 1;
-    return counts;
-  }, [fears]);
+  const activeCount = fears.filter((entry) => !entry.archived).length;
+  const archivedCount = fears.length - activeCount;
+  const shownFears = useMemo(() => filterFears(fears, archivedFilter), [fears, archivedFilter]);
 
   if (isLoading) return <LoadingPage label="正在读取恐惧清单…" />;
   if (error) return <ErrorState error={error} />;
@@ -81,34 +80,49 @@ export function FearsPage() {
       />
 
       <div className="mb-6 flex flex-wrap items-center gap-1.5">
-        <span className="rounded-full bg-white/70 px-3 py-1.5 text-xs text-ink-soft">
-          {fearsPageCopy.statsTotal} {fears.length} {fearsPageCopy.statsUnit}
-        </span>
-        <span className="rounded-full bg-paper-deep/80 px-3 py-1.5 text-xs text-ink-soft">
-          待行动 {stats.pending_action}
-        </span>
-        <span className="rounded-full bg-clay/10 px-3 py-1.5 text-xs text-clay">
-          待验证 {stats.pending_proof}
-        </span>
-        <span className="rounded-full bg-moss-soft px-3 py-1.5 text-xs text-moss-dark">
-          已验证 {stats.verified}
-        </span>
+        {[
+          { label: fearFilters.active, archived: false, count: activeCount },
+          { label: fearFilters.archived, archived: true, count: archivedCount },
+        ].map((item) => (
+          <button
+            key={item.label}
+            type="button"
+            onClick={() => setArchivedFilter(item.archived)}
+            className={[
+              "rounded-full px-3.5 py-2 text-sm transition",
+              item.archived === archivedFilter
+                ? "bg-ink text-paper shadow-sm"
+                : "text-ink-soft hover:bg-white/70 hover:text-ink",
+            ].join(" ")}
+          >
+            {item.label}
+            <span className="ml-1.5 text-[11px] opacity-60">{item.count}</span>
+          </button>
+        ))}
       </div>
 
-      {fears.length === 0 ? (
-        <EmptyState
-          icon="🫨"
-          title={fearsPageCopy.emptyTitle}
-          description={fearsPageCopy.emptyDesc}
-          action={
-            <button type="button" className="btn-primary" onClick={openCreate}>
-              + {fearsPageCopy.newFear}
-            </button>
-          }
-        />
+      {shownFears.length === 0 ? (
+        archivedFilter ? (
+          <EmptyState
+            icon="📦"
+            title={fearsPageCopy.archivedEmptyTitle}
+            description={fearsPageCopy.archivedEmptyDesc}
+          />
+        ) : (
+          <EmptyState
+            icon="🫨"
+            title={fearsPageCopy.emptyTitle}
+            description={fearsPageCopy.emptyDesc}
+            action={
+              <button type="button" className="btn-primary" onClick={openCreate}>
+                + {fearsPageCopy.newFear}
+              </button>
+            }
+          />
+        )
       ) : (
         <div className="grid gap-4 lg:grid-cols-2">
-          {fears.map((fear) => (
+          {shownFears.map((fear) => (
             <FearCard key={fear.id} fear={fear} />
           ))}
         </div>

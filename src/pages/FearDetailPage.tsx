@@ -3,9 +3,9 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import type { FearData, FearStepKey } from "../../shared/types";
 import { EmptyState, ErrorState, LoadingPage } from "../components/StateViews";
 import { FearStepField } from "../components/fears/FearStepField";
-import { fearDetailCopy, fearsPageCopy, fearStageMeta, fearSteps } from "../content/fears";
+import { fearDetailCopy, fearsPageCopy, fearSteps } from "../content/fears";
 import { formatDateCN, toDateKey } from "../lib/date";
-import { fearProgress, fearStage, fearTitle } from "../lib/fears";
+import { fearProgress, fearTitle } from "../lib/fears";
 import { useBootstrap, useDeleteFear, useUpdateFear } from "../lib/queries";
 
 type FearDraft = {
@@ -28,6 +28,7 @@ export function FearDetailPage() {
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [saveError, setSaveError] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [archiveError, setArchiveError] = useState<string | null>(null);
   const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
   const changeVersion = useRef(0);
   const draftRef = useRef<FearDraft | null>(null);
@@ -55,6 +56,7 @@ export function FearDetailPage() {
     setSaveError(null);
     setLastSavedAt(null);
     setDeleteError(null);
+    setArchiveError(null);
     changeVersion.current = 0;
     // 只跟着恐惧 id 重置；保存成功后 fear.updatedAt 会变，但不能重置正在编辑的内容
   }, [fear?.id]);
@@ -163,6 +165,27 @@ export function FearDetailPage() {
     }
   }
 
+  // 归档可逆，不弹确认；先落盘未保存的内容，避免归档与补保存交错。
+  async function handleArchiveToggle() {
+    if (!fearId || !fear) return;
+    setArchiveError(null);
+    if (dirtyRef.current) {
+      const ok = await save();
+      if (!ok) return;
+    }
+    try {
+      await updateFear.mutateAsync({ id: fearId, patch: { archived: !fear.archived } });
+    } catch (archiveFailure) {
+      setArchiveError(
+        archiveFailure instanceof Error
+          ? archiveFailure.message
+          : fear.archived
+            ? fearDetailCopy.unarchiveFailed
+            : fearDetailCopy.archiveFailed,
+      );
+    }
+  }
+
   if (isLoading) return <LoadingPage label="正在读取这条恐惧…" />;
   if (error) return <ErrorState error={error} />;
   if (!fear) {
@@ -184,7 +207,6 @@ export function FearDetailPage() {
   }
 
   const progress = fearProgress(draft.data);
-  const stage = fearStageMeta[fearStage(draft.data)];
 
   return (
     <div>
@@ -206,9 +228,11 @@ export function FearDetailPage() {
         </h1>
 
         <div className="mt-3 flex flex-wrap items-center gap-2">
-          <span className={["rounded-full px-2.5 py-1 text-[11px] font-medium", stage.className].join(" ")}>
-            {stage.label}
-          </span>
+          {fear.archived ? (
+            <span className="rounded-full bg-paper-deep/80 px-2.5 py-1 text-[11px] font-medium text-ink-soft">
+              {fearDetailCopy.archivedBadge}
+            </span>
+          ) : null}
           <span className="text-[11px] text-ink-soft">
             {fearDetailCopy.createdAt}{" "}
             {formatDateCN(toDateKey(new Date(fear.createdAt)), { withYear: true })}
@@ -277,6 +301,15 @@ export function FearDetailPage() {
         <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
+            className="btn-secondary"
+            onClick={() => void handleArchiveToggle()}
+            disabled={updateFear.isPending}
+            title={fear.archived ? fearDetailCopy.unarchiveHint : fearDetailCopy.archiveHint}
+          >
+            {fear.archived ? fearDetailCopy.unarchive : fearDetailCopy.archive}
+          </button>
+          <button
+            type="button"
             className="btn-ghost text-clay hover:text-clay/80"
             onClick={handleDelete}
             disabled={deleteFear.isPending}
@@ -303,6 +336,7 @@ export function FearDetailPage() {
       </div>
 
       {deleteError ? <p className="mt-2 text-[11px] text-clay">{deleteError}</p> : null}
+      {archiveError ? <p className="mt-2 text-[11px] text-clay">{archiveError}</p> : null}
     </div>
   );
 }
