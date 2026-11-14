@@ -171,7 +171,7 @@ Worker 的校验逻辑在 `worker/auth.ts`：只接受 Access 注入的邮箱头
 - `reviews`：一周 / 一月一条，`(user_id, period_type, period_key)` 唯一，`data` 是 JSON
 - `patterns`：模式卡，`evidence` 是关联的打卡日期数组
 - `goals`：一个目标一条记录，`data` 是 JSON，包含五步（目标 / 问题 / 诊断 / 方案 / 践行）；`domain` 是可选分类，`status` 是目标状态
-- `fears`：一条恐惧一条记录，`data` 是 JSON，包含五步（识别恐惧 / 寻找根因 / 定义问题 / 转化为任务 / 验证与反馈）；列表标题取第 1 步第一行；`archived` 是显式归档标记（可逆），列表默认只展示未归档条目
+- `fears`：一条恐惧一条记录，`data` 是 JSON，包含五步（识别恐惧 / 寻找根因 / 定义问题 / 转化为任务 / 验证与反馈）；第 3 步和第 4 步之间还有一块可选的 `analysis`（潜在好处 / 把握程度 / 历史案例 / 影响程度 / 6 个月、1 年、3 年的不行动代价），不计入五步进度；列表标题取第 1 步第一行；`archived` 是显式归档标记（可逆），列表默认只展示未归档条目
 
 复盘模块的设计取舍见 [docs/review-module-design.md](docs/review-module-design.md)，目标与五步诊断的设计见 [docs/goal-module-design.md](docs/goal-module-design.md)。
 
@@ -195,7 +195,7 @@ Worker 的校验逻辑在 `worker/auth.ts`：只接受 Access 注入的邮箱头
 
 - [ ] 旧 localStorage 数据导入页面
 - [x] 目标模块 + 五步诊断（方向卡、目标列表、五步工作台、践行日志）
-- [x] 恐惧清单（五步恐惧转化：识别 → 根因 → 问题 → 行动 → 验证；支持可逆归档）
+- [x] 恐惧清单（五步恐惧转化：识别 → 根因 → 问题 → 行动 → 验证；问题与行动之间有可选权衡分析；支持可逆归档）
 - [ ] 把目标的每周动作同步到清单 / 每日仪式（V1.1）
 - [ ] 诊断关联模式卡，周复盘展示进行中的目标（V1.1）
 - [ ] 清单项的编辑、勾选完成、日期分组

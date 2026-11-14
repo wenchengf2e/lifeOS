@@ -44,10 +44,11 @@ src/
 │   │   ├── fields.tsx          # FieldHeader / TextField / TextInput / TextListField / SegmentedField / StepEmpty
 │   │   └── Step*.tsx           # 五步诊断各步骤表单：目标 / 问题 / 诊断 / 方案 / 践行
 │   └── fears/
+│       ├── FearAnalysisCard.tsx # 第 3、4 步之间的可选权衡分析（折叠 / 把握 / 历史案例 / 不行动代价）
 │       └── FearStepField.tsx   # 恐惧清单单个步骤卡 + 文本域
 ├── content/                    # 纯配置与文案（无 JSX）
 │   ├── daily.ts                # 每日仪式四模块与字段
-│   ├── fears.ts                # 恐惧清单五步定义、归档筛选与文案
+│   ├── fears.ts                # 恐惧清单五步定义、归档筛选、权衡分析文案
 │   ├── goals.ts                # 领域、状态、五步定义、限额与文案
 │   ├── lifeos.ts               # 方向卡与人生 OS 六栏
 │   ├── lists.ts                # 成就 / 关键改变 / 复盘动作三个清单
@@ -58,7 +59,7 @@ src/
 ├── lib/
 │   ├── api.ts                  # fetch 封装、ApiError、所有端点方法
 │   ├── queries.ts              # bootstrap 查询与各类 mutation
-│   ├── fears.ts                # 恐惧派生：标题、完成度、归档过滤、下一步预览
+│   ├── fears.ts                # 恐惧派生：标题、完成度、归档过滤、下一步预览、分析状态
 │   ├── goals.ts                # 五步派生：完成度、进度、检查清单、停滞判断
 │   ├── stats.ts                # 打卡完成判断、日期集合、月 / 总计数、连续天数
 │   ├── date.ts                 # 日期键、中文格式化、月 / ISO 周工具
@@ -135,7 +136,7 @@ src/
 
 - 打卡完成判断、连续天数、月度统计 → `src/lib/stats.ts`。
 - 五步完成度、进度、检查清单、停滞判断 → `src/lib/goals.ts`。
-- 恐惧标题（第 1 步首行）、完成度、归档过滤、下一步预览 → `src/lib/fears.ts`。
+- 恐惧标题（第 1 步首行）、完成度、归档过滤、下一步预览、权衡分析状态 → `src/lib/fears.ts`。
 - 日期键、ISO 周、中文格式化 → `src/lib/date.ts`。
 - 页面里不要重复实现这些计算。
 

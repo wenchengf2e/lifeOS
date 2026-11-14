@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import type { FearData, FearStepKey } from "../../shared/types";
+import type { FearAnalysis, FearData, FearStepKey } from "../../shared/types";
 import { EmptyState, ErrorState, LoadingPage } from "../components/StateViews";
+import { FearAnalysisCard } from "../components/fears/FearAnalysisCard";
 import { FearStepField } from "../components/fears/FearStepField";
 import { fearDetailCopy, fearsPageCopy, fearSteps } from "../content/fears";
 import { formatDateCN, toDateKey } from "../lib/date";
@@ -135,6 +136,12 @@ export function FearDetailPage() {
     markDirty();
   }
 
+  // 分析是可选内容，和五步字段一样走防抖自动保存，但不进入 fearProgress。
+  function updateAnalysis(next: FearAnalysis) {
+    setDraft((prev) => (prev ? { ...prev, data: { ...prev.data, analysis: next } } : prev));
+    markDirty();
+  }
+
   async function finish() {
     if (dirty || dirtyRef.current) {
       const ok = await save();
@@ -262,7 +269,24 @@ export function FearDetailPage() {
       </div>
 
       <div className="space-y-4">
-        {fearSteps.map((step) => (
+        {fearSteps.slice(0, 3).map((step) => (
+          <FearStepField
+            key={step.key}
+            step={step}
+            value={draft.data[step.key]}
+            done={progress.done.includes(step.key)}
+            onChange={(value) => updateField(step.key, value)}
+          />
+        ))}
+
+        {/* key 跟记录走：切换到另一条恐惧时重新判断「有内容自动展开」 */}
+        <FearAnalysisCard
+          key={fear.id}
+          data={draft.data.analysis}
+          onChange={updateAnalysis}
+        />
+
+        {fearSteps.slice(3).map((step) => (
           <FearStepField
             key={step.key}
             step={step}

@@ -230,6 +230,26 @@ export const FEAR_STEP_KEYS = ["fear", "rootCause", "problem", "action", "eviden
 
 export type FearStepKey = (typeof FEAR_STEP_KEYS)[number];
 
+/** 可选的权衡分析：这件事值不值得做。不进入五步完成度。 */
+export type FearAnalysis = {
+  /** 潜在好处，最多 3 条；空字符串在归一化时保留，UI 负责过滤展示。 */
+  benefits: string[];
+  /** 对取得「至少还算不错」结果的把握，0 表示未评，1–5。 */
+  confidenceLevel: number;
+  /** 历史案例：更普通（甚至不如自己聪明）的人也做到过的具体例子。 */
+  precedent: string;
+  /** 这件事对用户的影响程度，0 表示未评，1–5。 */
+  impactLevel: number;
+  inaction: {
+    /** 6 个月后：保持现状会付出什么代价。 */
+    sixMonths: string;
+    /** 1 年后：会错过什么。 */
+    oneYear: string;
+    /** 3 年后：负面累积有多大。 */
+    threeYears: string;
+  };
+};
+
 export type FearData = {
   version: 1;
   /** 1 识别恐惧：我具体在害怕什么。 */
@@ -242,6 +262,8 @@ export type FearData = {
   action: string;
   /** 5 验证与反馈：我取得了什么证据。 */
   evidence: string;
+  /** 可选的权衡分析，不计入五步进度。 */
+  analysis: FearAnalysis;
 };
 
 export type FearEntry = {
@@ -253,6 +275,20 @@ export type FearEntry = {
   updatedAt: string;
 };
 
+export function createEmptyFearAnalysis(): FearAnalysis {
+  return {
+    benefits: [],
+    confidenceLevel: 0,
+    precedent: "",
+    impactLevel: 0,
+    inaction: {
+      sixMonths: "",
+      oneYear: "",
+      threeYears: "",
+    },
+  };
+}
+
 export function createEmptyFearData(): FearData {
   return {
     version: 1,
@@ -261,6 +297,7 @@ export function createEmptyFearData(): FearData {
     problem: "",
     action: "",
     evidence: "",
+    analysis: createEmptyFearAnalysis(),
   };
 }
 
@@ -440,6 +477,27 @@ export function normalizeGoalData(raw: unknown): GoalData {
   };
 }
 
+/** 评分统一夹到 0–5，0 表示未评。 */
+function normalizeFearLevel(value: unknown): number {
+  return Math.min(5, Math.max(0, Math.round(asNumber(value, 0))));
+}
+
+function normalizeFearAnalysis(raw: unknown): FearAnalysis {
+  const root = asRecord(raw);
+  const inaction = asRecord(root.inaction);
+  return {
+    benefits: asStringArray(root.benefits).slice(0, 3),
+    confidenceLevel: normalizeFearLevel(root.confidenceLevel),
+    precedent: asString(root.precedent),
+    impactLevel: normalizeFearLevel(root.impactLevel),
+    inaction: {
+      sixMonths: asString(inaction.sixMonths),
+      oneYear: asString(inaction.oneYear),
+      threeYears: asString(inaction.threeYears),
+    },
+  };
+}
+
 /** 把可能缺字段的 JSON 补成完整形状，读旧数据时也不会炸。 */
 export function normalizeFearData(raw: unknown): FearData {
   const root = asRecord(raw);
@@ -450,6 +508,7 @@ export function normalizeFearData(raw: unknown): FearData {
     problem: asString(root.problem),
     action: asString(root.action),
     evidence: asString(root.evidence),
+    analysis: normalizeFearAnalysis(root.analysis),
   };
 }
 

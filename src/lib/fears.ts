@@ -1,4 +1,4 @@
-import type { FearData, FearEntry, FearStepKey } from "../../shared/types";
+import type { FearAnalysis, FearData, FearEntry, FearStepKey } from "../../shared/types";
 import { FEAR_UNTITLED, fearSteps } from "../content/fears";
 
 export type FearProgress = {
@@ -37,6 +37,38 @@ export function fearProgress(data: FearData): FearProgress {
     done,
     nextStep: next,
   };
+}
+
+/** 任一评分、好处或不行动代价有内容，就算已经写过分析。 */
+export function hasFearAnalysis(data: FearAnalysis): boolean {
+  return (
+    data.confidenceLevel > 0 ||
+    data.impactLevel > 0 ||
+    data.benefits.some((item) => hasText(item)) ||
+    hasText(data.precedent) ||
+    hasText(data.inaction.sixMonths) ||
+    hasText(data.inaction.oneYear) ||
+    hasText(data.inaction.threeYears)
+  );
+}
+
+/** 折叠头部的状态摘要：未填写时提示可选，已填写时给出评分和条目数。 */
+export function fearAnalysisSummary(data: FearAnalysis): string {
+  if (!hasFearAnalysis(data)) return "未填写（可选）";
+
+  const parts: string[] = [];
+  if (data.confidenceLevel > 0) parts.push(`把握 ${data.confidenceLevel}`);
+  if (data.impactLevel > 0) parts.push(`影响 ${data.impactLevel}`);
+
+  const benefits = data.benefits.filter((item) => hasText(item)).length;
+  if (benefits > 0) parts.push(`好处 ${benefits} 条`);
+
+  const costs = [data.inaction.sixMonths, data.inaction.oneYear, data.inaction.threeYears].filter(
+    (item) => hasText(item),
+  ).length;
+  if (costs > 0) parts.push(`代价 ${costs} 条`);
+
+  return parts.length > 0 ? parts.join(" · ") : "已填写";
 }
 
 /** 按显式归档标记过滤；列表默认只看未归档。 */

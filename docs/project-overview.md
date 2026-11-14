@@ -155,7 +155,7 @@ npm run cf:tail            # 线上日志
 | `reviews` | 用户 + 周期 | `period_type`(`week`/`month`)、`period_key`、`data`(JSON) | 周复盘、月复盘（页面待做） |
 | `patterns` | 单条 | `title`、`trigger`、`reaction`、`payoff`、`cost`、`alternative`、`evidence`、`status` | 模式库 |
 | `goals` | 单条 | `title`、`domain`、`status`、`data`(JSON 五步) | 五步诊断目标 |
-| `fears` | 单条 | `data`(JSON 五步)、`archived` | 恐惧清单；标题从内容派生，归档是显式可逆标记 |
+| `fears` | 单条 | `data`(JSON 五步 + 可选权衡分析)、`archived` | 恐惧清单；标题从内容派生，归档是显式可逆标记 |
 
 共同约定：
 
@@ -177,7 +177,7 @@ npm run cf:tail            # 线上日志
 | 日记 | `/diary` | 只读回看有日记或想法的日期 | `checkins` |
 | 人生 OS | `/lifeos` | 方向卡 + 身份 / 阶段 / 理想 / 差距 / 策略 / 验证六栏 | `documents(module=lifeos)` |
 | 五步诊断 | `/principles`、`/principles/:id` | 目标列表 + 单目标五步工作台 | `goals` |
-| 恐惧清单 | `/fears`、`/fears/:id` | 恐惧列表 + 五步恐惧转化（识别 → 根因 → 问题 → 行动 → 验证） | `fears` |
+| 恐惧清单 | `/fears`、`/fears/:id` | 恐惧列表 + 五步恐惧转化（识别 → 根因 → 问题 → 行动 → 验证），含可选权衡分析 | `fears` |
 | 复盘 | `/review`、`/review/week/:key` | 周复盘四步向导 + 模式库 | `reviews`、`patterns`、`items` |
 | 清单 | `/lists` | 成就 / 关键改变 / 复盘动作 | `items` |
 | Reality OS | `/reality` | 投资能力六维 T 度雷达与升级 | `documents(module=reality)` |
@@ -294,6 +294,7 @@ npm run cf:tail            # 线上日志
 - `archived` 是显式的可逆标记：事件完全结束后在详情页归档，归档条目仍可查看、编辑和取消归档。
 - 新建时只填第 1 步，创建后直接进入详情页。
 - 详情页 800ms 防抖自动保存、版本守卫、离开提示与补保存；删除有二次确认。
+- 第 3 步和第 4 步之间有一块可选的「权衡分析」：最多 3 条潜在好处，把握程度 / 影响程度各 1–5 分（0 表示未评），一段历史案例，以及 6 个月 / 1 年 / 3 年后的不行动代价；存在 `data.analysis` 里，默认折叠、有内容自动展开，不计入五步进度。
 - 第 4 步只作文本记录，暂不与清单 / 五步诊断联动。
 
 ### 3.11 关于 `/about`

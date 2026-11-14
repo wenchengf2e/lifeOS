@@ -1,0 +1,2 @@
+{"file": ".trellis/spec/frontend/directory-structure.md", "reason": "检查前端分层、命名、状态与数据流是否符合规范"}
+{"file": "docs/goal-module-design.md", "reason": "对照自动保存、版本守卫和完成度派生的既有实现"}

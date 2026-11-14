@@ -40,7 +40,7 @@ export const fearSteps: FearStep[] = [
     title: "寻找根因",
     short: "根因",
     icon: "🕳",
-    prompt: "为什么害怕？如果它真的发生，最坏会怎样？",
+    prompt: "为什么害怕？如果它真的发生，最坏会怎样？发生的概率有多大？",
     hint: "继续往下问一层。答案不是「我就是胆小」，而是某个具体的失去：被否定、失去机会、失去关系。",
     placeholder:
       "例：我怕的不是答不上来，而是被当成「不专业的人」，之前被否定的感觉又回来一次。",
@@ -128,4 +128,37 @@ export const fearDetailCopy = {
   createdAt: "创建于",
   deleteTitle: "不再需要这条记录？",
   deleteHint: "删除后五步内容会一起消失，无法恢复。",
+};
+
+/** 第 3 步与第 4 步之间的可选权衡分析。 */
+export const fearAnalysisCopy = {
+  title: "权衡分析",
+  optional: "可选",
+  expand: "展开分析",
+  collapse: "收起分析",
+  benefitsLabel: "潜在好处",
+  benefitsHint: "如果这件事做成，最值得的是什么？写具体一点，最多 3 条。",
+  addBenefit: "+ 添加一条好处",
+  confidenceLabel: "你有多大的把握能取得一个「至少还算不错」的结果？",
+  confidenceHint: "不是做到最好，而是「至少不算失败」。1 = 几乎没把握，5 = 很有把握；再次点击已选值可清除。",
+  precedentLabel: "历史案例",
+  precedentHint:
+    "历史上，有没有比你更普通（甚至没你聪明）的人做过类似的事，并且成功了？写清楚是谁、做了什么、结果如何，不要只写「肯定有人做到过」。",
+  impactLabel: "这件事对我的影响程度",
+  impactHint: "如果一直不解决，它对你生活的影响有多大？",
+  inactionTitle: "如果什么都不做",
+  inaction: {
+    sixMonths: {
+      label: "6 个月后",
+      hint: "如果保持现状，半年后你的财务状况、情绪状态和身体健康会付出什么代价？",
+    },
+    oneYear: {
+      label: "1 年后",
+      hint: "一年过去，如果你依然停留在原地，会错过哪些机会或产生怎样的遗憾？",
+    },
+    threeYears: {
+      label: "3 年后",
+      hint: "三年后回望今天，维持现状会给你的人生带来多大程度的负面累积？",
+    },
+  },
 };
