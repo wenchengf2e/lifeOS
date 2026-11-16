@@ -51,7 +51,7 @@ src/
 │   ├── fears.ts                # 恐惧清单五步定义、归档筛选、权衡分析文案
 │   ├── goals.ts                # 领域、状态、五步定义、限额与文案
 │   ├── lifeos.ts               # 方向卡与人生 OS 六栏
-│   ├── lists.ts                # 成就 / 关键改变 / 复盘动作三个清单
+│   ├── lists.ts                # 成就 / 痛苦 / 关键改变 / 复盘动作四个清单
 │   ├── review.ts               # 周复盘四步、模式卡字段、状态
 │   ├── reality.ts              # Reality OS 六维、T1–T5 标准、统计
 │   ├── about.ts                # 关于页类型与解析
@@ -75,7 +75,7 @@ src/
     ├── GoalDetailPage.tsx      # 单个目标五步工作台
     ├── FearsPage.tsx           # 恐惧清单列表（未归档 / 已归档）+ 新建弹窗
     ├── FearDetailPage.tsx      # 单条恐惧五步详情 + 自动保存 + 归档
-    ├── ListsPage.tsx           # 清单（三个 tab）
+    ├── ListsPage.tsx           # 清单（四个 tab）
     ├── RealityPage.tsx         # Reality OS 投资六维
     ├── AboutPage.tsx           # 静态关于页
     └── NotFoundPage.tsx        # 404

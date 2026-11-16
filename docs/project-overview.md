@@ -14,7 +14,7 @@ LifeOS 是一个**个人心理工作台**，把「每日记录 → 每周复盘 
 - **每日**：今日行动、晚间日记、想法、今日复盘六问。
 - **每周**：四步复盘（聚焦、联结、抽象化、具体化）+ 模式库。
 - **长期**：人生 OS 六栏、五步诊断目标、恐惧清单、Reality OS 投资能力六维。
-- **沉淀**：成就 / 关键改变 / 复盘动作清单，以及全量 JSON 导出。
+- **沉淀**：成就 / 痛苦 / 关键改变 / 复盘动作清单，以及全量 JSON 导出。
 
 数据只属于站点所有者：登录由 Cloudflare Access 负责，Worker 再校验邮箱是否等于 `OWNER_EMAIL`。
 
@@ -151,7 +151,7 @@ npm run cf:tail            # 线上日志
 | --- | --- | --- | --- |
 | `checkins` | 用户 + 日期 | `checkin_date`、`data`(JSON) | 每日仪式的 `plan` / `journal` / `review` / `q1`–`q6` |
 | `documents` | 用户 + module + key | `module`、`doc_key`、`data`(JSON) | 人生 OS 六栏、方向卡、Reality OS |
-| `items` | 单条 | `module`、`content`、`item_date`、`done`、`sort_order` | 成就 / 关键改变 / 复盘动作清单 |
+| `items` | 单条 | `module`、`content`、`item_date`、`done`、`sort_order` | 成就 / 痛苦 / 关键改变 / 复盘动作清单 |
 | `reviews` | 用户 + 周期 | `period_type`(`week`/`month`)、`period_key`、`data`(JSON) | 周复盘、月复盘（页面待做） |
 | `patterns` | 单条 | `title`、`trigger`、`reaction`、`payoff`、`cost`、`alternative`、`evidence`、`status` | 模式库 |
 | `goals` | 单条 | `title`、`domain`、`status`、`data`(JSON 五步) | 五步诊断目标 |
@@ -179,7 +179,7 @@ npm run cf:tail            # 线上日志
 | 五步诊断 | `/principles`、`/principles/:id` | 目标列表 + 单目标五步工作台 | `goals` |
 | 恐惧清单 | `/fears`、`/fears/:id` | 恐惧列表 + 五步恐惧转化（识别 → 根因 → 问题 → 行动 → 验证），含可选权衡分析 | `fears` |
 | 复盘 | `/review`、`/review/week/:key` | 周复盘四步向导 + 模式库 | `reviews`、`patterns`、`items` |
-| 清单 | `/lists` | 成就 / 关键改变 / 复盘动作 | `items` |
+| 清单 | `/lists` | 成就 / 痛苦 / 关键改变 / 复盘动作 | `items` |
 | Reality OS | `/reality` | 投资能力六维 T 度雷达与升级 | `documents(module=reality)` |
 | 关于 | `/about` | 项目理念、设计说明、模块介绍 | 静态 `about.json` |
 
@@ -257,9 +257,10 @@ npm run cf:tail            # 线上日志
 
 ### 3.8 清单 `/lists`
 
-三个 tab：
+四个 tab：
 
 - **成就**（`wins`）
+- **痛苦**（`pains`）
 - **关键改变**（`changes`）
 - **复盘动作**（`review`）
 

@@ -1,6 +1,6 @@
 # LifeOS
 
-个人的 LifeOS 心理工作台：每日仪式、人生 OS、目标与五步诊断、恐惧清单、日记、复盘、成就 / 改变清单、关于。
+个人的 LifeOS 心理工作台：每日仪式、人生 OS、目标与五步诊断、恐惧清单、日记、复盘、成就 / 痛苦 / 改变清单、关于。
 
 数据保存在 Cloudflare D1，站点和 API 跑在同一个 Cloudflare Worker 上，登录由 Cloudflare Access 负责。免费额度足够个人使用。
 
