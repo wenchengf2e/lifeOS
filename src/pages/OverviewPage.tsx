@@ -47,6 +47,7 @@ export function OverviewPage() {
   const itemCount = data?.items.length ?? 0;
   const activeGoals = sortGoals(data?.goals ?? []).filter((goal) => goal.status === "active");
   const unarchivedFears = (data?.fears ?? []).filter((entry) => !entry.archived).length;
+  const energyCount = data?.energySessions?.length ?? 0;
 
   const currentWeek = isoWeekKeyOf(today);
   const weekReview = (data?.reviews ?? []).find(
@@ -294,6 +295,13 @@ export function OverviewPage() {
               >
                 <span>🫨 恐惧清单</span>
                 <span className="text-ink-soft">{unarchivedFears} 条未归档 →</span>
+              </Link>
+              <Link
+                to="/energy"
+                className="flex items-center justify-between rounded-2xl border border-line/70 bg-paper-deep/30 px-4 py-3 text-sm text-ink transition hover:border-moss/30 hover:bg-white/70"
+              >
+                <span>⚡ 能量充电屋</span>
+                <span className="text-ink-soft">{energyCount} 次充电 →</span>
               </Link>
               <Link
                 to="/lists"

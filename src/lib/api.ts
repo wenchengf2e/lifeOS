@@ -3,6 +3,9 @@ import type {
   BootstrapResponse,
   CheckinData,
   DocumentData,
+  EnergySessionData,
+  EnergySessionEntry,
+  EnergyToolKey,
   ExportResponse,
   FearData,
   FearEntry,
@@ -48,6 +51,17 @@ export type FearCreateInput = {
 export type FearPatch = {
   data?: FearData;
   archived?: boolean;
+};
+
+export type EnergySessionCreateInput = {
+  tool: EnergyToolKey;
+  data?: EnergySessionData;
+  completed?: boolean;
+};
+
+export type EnergySessionPatch = {
+  data?: EnergySessionData;
+  completed?: boolean;
 };
 
 export class ApiError extends Error {
@@ -167,6 +181,24 @@ export const api = {
 
   deleteFear(id: string) {
     return request<{ ok: true }>(`/api/fears/${encode(id)}`, { method: "DELETE" });
+  },
+
+  createEnergySession(input: EnergySessionCreateInput) {
+    return request<{ ok: true; session: EnergySessionEntry }>("/api/energy", {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+  },
+
+  updateEnergySession(id: string, patch: EnergySessionPatch) {
+    return request<{ ok: true; session: EnergySessionEntry }>(`/api/energy/${encode(id)}`, {
+      method: "PATCH",
+      body: JSON.stringify(patch),
+    });
+  },
+
+  deleteEnergySession(id: string) {
+    return request<{ ok: true }>(`/api/energy/${encode(id)}`, { method: "DELETE" });
   },
 
   createGoal(input: GoalCreateInput) {

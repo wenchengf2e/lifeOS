@@ -6,6 +6,7 @@ import { getDb } from "./db/client";
 import { loadAll } from "./db/queries";
 import checkinsRoute from "./routes/checkins";
 import docsRoute from "./routes/docs";
+import energyRoute from "./routes/energy";
 import fearsRoute from "./routes/fears";
 import goalsRoute from "./routes/goals";
 import itemsRoute from "./routes/items";
@@ -48,6 +49,7 @@ app.get("/api/export", async (c) => {
 
 app.route("/api/checkins", checkinsRoute);
 app.route("/api/docs", docsRoute);
+app.route("/api/energy", energyRoute);
 app.route("/api/fears", fearsRoute);
 app.route("/api/goals", goalsRoute);
 app.route("/api/items", itemsRoute);

@@ -4,6 +4,8 @@ import { Layout } from "./components/Layout";
 import { AboutPage } from "./pages/AboutPage";
 import { DailyPage } from "./pages/DailyPage";
 import { DiaryPage } from "./pages/DiaryPage";
+import { EnergyPage } from "./pages/EnergyPage";
+import { EnergySessionPage } from "./pages/EnergySessionPage";
 import { FearDetailPage } from "./pages/FearDetailPage";
 import { FearsPage } from "./pages/FearsPage";
 import { GoalDetailPage } from "./pages/GoalDetailPage";
@@ -40,6 +42,8 @@ export function App() {
         <Route path="/review" element={<ReviewPage />} />
         <Route path="/review/week/:key" element={<ReviewWizardPage />} />
         <Route path="/lists" element={<ListsPage />} />
+        <Route path="/energy" element={<EnergyPage />} />
+        <Route path="/energy/:sessionId" element={<EnergySessionPage />} />
         <Route path="/fears" element={<FearsPage />} />
         <Route path="/fears/:fearId" element={<FearDetailPage />} />
         <Route path="/principles" element={<GoalsPage />} />

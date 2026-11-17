@@ -1,16 +1,12 @@
 import type { ReactNode } from "react";
 import { Link, NavLink } from "react-router-dom";
 
+// 顶部菜单暂时只保留四个高频入口；其余模块路由仍在，可通过总览快捷入口或直接访问 URL 进入。
 const NAV = [
-  { to: "/", label: "总览", end: true },
   { to: "/daily", label: "每日仪式" },
+  { to: "/energy", label: "能量充电屋" },
   { to: "/fears", label: "恐惧清单" },
-  { to: "/diary", label: "日记" },
-  { to: "/review", label: "复盘" },
-  { to: "/lifeos", label: "人生 OS" },
   { to: "/lists", label: "清单" },
-  { to: "/principles", label: "五步诊断" },
-  { to: "/about", label: "关于" },
 ];
 
 export function Layout({ children }: { children: ReactNode }) {
@@ -32,7 +28,6 @@ export function Layout({ children }: { children: ReactNode }) {
               <NavLink
                 key={item.to}
                 to={item.to}
-                end={item.end}
                 className={({ isActive }) =>
                   [
                     "shrink-0 rounded-full px-3.5 py-2 text-sm transition",

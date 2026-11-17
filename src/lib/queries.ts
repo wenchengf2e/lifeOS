@@ -8,7 +8,15 @@ import type {
   ReviewData,
   ReviewPeriodType,
 } from "../../shared/types";
-import { api, type FearCreateInput, type FearPatch, type GoalPatch, type PatternDraft } from "./api";
+import {
+  api,
+  type EnergySessionCreateInput,
+  type EnergySessionPatch,
+  type FearCreateInput,
+  type FearPatch,
+  type GoalPatch,
+  type PatternDraft,
+} from "./api";
 
 export const bootstrapQueryKey = ["bootstrap"] as const;
 
@@ -209,6 +217,56 @@ export function useDeleteGoal() {
     onSuccess: (_result, id) => {
       queryClient.setQueryData<BootstrapResponse>(bootstrapQueryKey, (prev) =>
         prev ? { ...prev, goals: prev.goals.filter((item) => item.id !== id) } : prev,
+      );
+    },
+  });
+}
+
+/**
+ * 能量充电屋沿用恐惧清单的缓存策略：保存后只改这一条，不整页 refetch。
+ * 沉浸式书写会防抖自动保存（延时见 AUTOSAVE_DEBOUNCE_MS），refetch 会把正在输入的草稿覆盖成旧数据。
+ */
+export function useCreateEnergySession() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: EnergySessionCreateInput) => api.createEnergySession(input),
+    onSuccess: ({ session }) => {
+      queryClient.setQueryData<BootstrapResponse>(bootstrapQueryKey, (prev) =>
+        prev ? { ...prev, energySessions: [session, ...(prev.energySessions ?? [])] } : prev,
+      );
+    },
+  });
+}
+
+export function useUpdateEnergySession() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, patch }: { id: string; patch: EnergySessionPatch }) =>
+      api.updateEnergySession(id, patch),
+    onSuccess: ({ session }) => {
+      queryClient.setQueryData<BootstrapResponse>(bootstrapQueryKey, (prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          // 两个保存请求交错时，别让旧响应覆盖新内容。
+          energySessions: (prev.energySessions ?? []).map((item) =>
+            item.id === session.id && item.updatedAt <= session.updatedAt ? session : item,
+          ),
+        };
+      });
+    },
+  });
+}
+
+export function useDeleteEnergySession() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.deleteEnergySession(id),
+    onSuccess: (_result, id) => {
+      queryClient.setQueryData<BootstrapResponse>(bootstrapQueryKey, (prev) =>
+        prev
+          ? { ...prev, energySessions: (prev.energySessions ?? []).filter((item) => item.id !== id) }
+          : prev,
       );
     },
   });

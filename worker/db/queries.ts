@@ -4,6 +4,8 @@ import type {
   DocumentData,
   CheckinEntry,
   DocumentEntry,
+  EnergySessionEntry,
+  EnergyToolKey,
   FearEntry,
   GoalEntry,
   GoalStatus,
@@ -14,9 +16,9 @@ import type {
   ReviewEntry,
   ReviewPeriodType,
 } from "../../shared/types";
-import { normalizeFearData, normalizeGoalData } from "../../shared/types";
+import { normalizeEnergySessionData, normalizeFearData, normalizeGoalData } from "../../shared/types";
 import { getDb } from "./client";
-import { checkins, documents, fears, goals, items, patterns, reviews } from "./schema";
+import { checkins, documents, energySessions, fears, goals, items, patterns, reviews } from "./schema";
 
 type Db = ReturnType<typeof getDb>;
 
@@ -106,17 +108,43 @@ export function mapFear(row: typeof fears.$inferSelect): FearEntry {
   };
 }
 
+export function mapEnergySession(
+  row: typeof energySessions.$inferSelect,
+): EnergySessionEntry {
+  return {
+    id: row.id,
+    tool: row.tool as EnergyToolKey,
+    data: normalizeEnergySessionData(parseJson<unknown>(row.data, {})),
+    completed: row.completed,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  };
+}
+
 export async function loadAll(db: Db, userId: string) {
-  const [checkinRows, documentRows, itemRows, reviewRows, patternRows, goalRows, fearRows] =
-    await Promise.all([
-      db.select().from(checkins).where(eq(checkins.userId, userId)).orderBy(desc(checkins.checkinDate)),
-      db.select().from(documents).where(eq(documents.userId, userId)).orderBy(desc(documents.updatedAt)),
-      db.select().from(items).where(eq(items.userId, userId)).orderBy(desc(items.createdAt)),
-      db.select().from(reviews).where(eq(reviews.userId, userId)).orderBy(desc(reviews.periodKey)),
-      db.select().from(patterns).where(eq(patterns.userId, userId)).orderBy(desc(patterns.updatedAt)),
-      db.select().from(goals).where(eq(goals.userId, userId)).orderBy(desc(goals.updatedAt)),
-      db.select().from(fears).where(eq(fears.userId, userId)).orderBy(desc(fears.updatedAt)),
-    ]);
+  const [
+    checkinRows,
+    documentRows,
+    itemRows,
+    reviewRows,
+    patternRows,
+    goalRows,
+    fearRows,
+    energyRows,
+  ] = await Promise.all([
+    db.select().from(checkins).where(eq(checkins.userId, userId)).orderBy(desc(checkins.checkinDate)),
+    db.select().from(documents).where(eq(documents.userId, userId)).orderBy(desc(documents.updatedAt)),
+    db.select().from(items).where(eq(items.userId, userId)).orderBy(desc(items.createdAt)),
+    db.select().from(reviews).where(eq(reviews.userId, userId)).orderBy(desc(reviews.periodKey)),
+    db.select().from(patterns).where(eq(patterns.userId, userId)).orderBy(desc(patterns.updatedAt)),
+    db.select().from(goals).where(eq(goals.userId, userId)).orderBy(desc(goals.updatedAt)),
+    db.select().from(fears).where(eq(fears.userId, userId)).orderBy(desc(fears.updatedAt)),
+    db
+      .select()
+      .from(energySessions)
+      .where(eq(energySessions.userId, userId))
+      .orderBy(desc(energySessions.updatedAt)),
+  ]);
 
   return {
     checkins: checkinRows.map(mapCheckin),
@@ -126,5 +154,6 @@ export async function loadAll(db: Db, userId: string) {
     patterns: patternRows.map(mapPattern),
     goals: goalRows.map(mapGoal),
     fears: fearRows.map(mapFear),
+    energySessions: energyRows.map(mapEnergySession),
   };
 }

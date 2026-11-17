@@ -61,6 +61,16 @@ export const fears = sqliteTable("fears", {
   updatedAt: text("updated_at").notNull(),
 });
 
+export const energySessions = sqliteTable("energy_sessions", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  tool: text("tool").notNull(),
+  data: text("data").notNull().default("{}"),
+  completed: integer("completed", { mode: "boolean" }).notNull().default(false),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});
+
 export const patterns = sqliteTable("patterns", {
   id: text("id").primaryKey(),
   userId: text("user_id").notNull(),

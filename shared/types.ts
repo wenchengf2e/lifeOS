@@ -512,6 +512,50 @@ export function normalizeFearData(raw: unknown): FearData {
   };
 }
 
+export const ENERGY_TOOL_KEYS = ["awareness", "manifestation", "reframe", "behavior"] as const;
+
+export type EnergyToolKey = (typeof ENERGY_TOOL_KEYS)[number];
+
+/**
+ * 能量充电屋的一次练习记录。
+ *
+ * `answers` 用「问题 key -> 回答」的字典存，而不是固定字段：
+ * 题目模板由 `src/content/energy.ts` 驱动，用户随时可以改 key 或增删题目，
+ * 不需要同步改数据库 schema 或归一化逻辑。
+ */
+export type EnergySessionData = {
+  version: 1;
+  answers: Record<string, string>;
+};
+
+export type EnergySessionEntry = {
+  id: string;
+  tool: EnergyToolKey;
+  data: EnergySessionData;
+  /** 用户是否已经点击「完成本次充电」走完一轮；显式标记，不按题目填满派生。 */
+  completed: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export function createEmptyEnergySessionData(): EnergySessionData {
+  return { version: 1, answers: {} };
+}
+
+export function isEnergyToolKey(value: unknown): value is EnergyToolKey {
+  return typeof value === "string" && (ENERGY_TOOL_KEYS as readonly string[]).includes(value);
+}
+
+/** 把可能缺字段的 JSON 补成完整形状；非字符串回答丢弃，未知问题 key 原样保留。 */
+export function normalizeEnergySessionData(raw: unknown): EnergySessionData {
+  const root = asRecord(raw);
+  const answers: Record<string, string> = {};
+  for (const [key, value] of Object.entries(asRecord(root.answers))) {
+    if (typeof value === "string") answers[key] = value;
+  }
+  return { version: 1, answers };
+}
+
 export type BootstrapResponse = {
   user: { email: string };
   checkins: CheckinEntry[];
@@ -521,6 +565,7 @@ export type BootstrapResponse = {
   patterns: PatternEntry[];
   goals: GoalEntry[];
   fears: FearEntry[];
+  energySessions: EnergySessionEntry[];
 };
 
 export type ExportResponse = BootstrapResponse & {
