@@ -32,6 +32,7 @@ worker/
 └── routes/
     ├── checkins.ts       # 打卡：按日期读取 / upsert
     ├── docs.ts           # 通用文档：按 (module, key) 读取 / upsert
+    ├── energy.ts         # 能量充电屋练习记录 CRUD，answers 字典在 data JSON
     ├── fears.ts          # 恐惧清单 CRUD，五步 data 为 JSON
     ├── goals.ts          # 目标 CRUD，五步诊断 data 为 JSON
     ├── items.ts          # 清单项 CRUD
@@ -39,7 +40,7 @@ worker/
     └── reviews.ts        # 周 / 月复盘读取 / upsert
 
 shared/types.ts           # 前端与 Worker 共享的类型、常量和数据契约
-migrations/               # D1 migration：0001_init.sql / 0002_review.sql / 0003_goals.sql / 0004_fears.sql
+migrations/               # D1 migration：0001_init.sql / 0002_review.sql / 0003_goals.sql / 0004_fears.sql / 0005_energy_sessions.sql
 wrangler.jsonc            # Worker、D1 binding、静态资源、OWNER_EMAIL 配置
 ```
 
@@ -103,6 +104,12 @@ export default route;
 - 写入前统一走 `normalizeFearData`，JSON 长度上限 200,000；所有查询按 `user_id` 过滤。
 - `fears` 已加入 `loadAll()`，因此 `/api/bootstrap` 与 `/api/export` 自动包含该字段。
 
+### 能量充电屋（`energy_sessions`）
+
+- 独立表 `energy_sessions(id, user_id, tool, data, completed, created_at, updated_at)`；问题回答存在 `data.answers`（`Record<string, string>`）JSON 里，由 `src/content/energy.ts` 的配置驱动题目 `key`，修改问题模板无需改表结构。
+- 路由：`GET /api/energy`、`GET /api/energy/:id`、`POST /api/energy`（需传合法 `tool`）、`PATCH /api/energy/:id`（`data` 与 `completed` 至少传一个）、`DELETE /api/energy/:id`。
+- 写入前统一走 `normalizeEnergySessionData`，JSON 长度上限 200,000；`energySessions` 已加入 `loadAll()`，自动包含在 `/api/bootstrap` 与 `/api/export` 中。
+
 ---
 
 ## 命名约定
@@ -139,5 +146,6 @@ export default route;
 - `0002_review.sql` — `reviews` / `patterns`
 - `0003_goals.sql` — `goals`
 - `0004_fears.sql` — `fears`（含 `archived` 列与归档索引）
+- `0005_energy_sessions.sql` — `energy_sessions`（含 `tool`、`completed` 与组合索引）
 
 每个 migration 文件开头保留 `PRAGMA foreign_keys = ON;`。

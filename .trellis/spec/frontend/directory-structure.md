@@ -37,6 +37,7 @@ src/
 │   ├── GoalCard.tsx            # 目标摘要卡
 │   ├── GoalStepProgress.tsx    # 五步完成进度条
 │   ├── FearCard.tsx            # 恐惧清单摘要卡（含归档标记）
+│   ├── EnergySessionCard.tsx   # 能量充电屋练习记录摘要卡
 │   ├── DirectionCard.tsx       # 人生 OS 方向卡
 │   ├── PatternCard.tsx         # 模式卡字段、证据、状态流转
 │   ├── Reality*.tsx            # Reality OS：方向卡、目标摘要卡、雷达图
@@ -47,7 +48,9 @@ src/
 │       ├── FearAnalysisCard.tsx # 第 3、4 步之间的可选权衡分析（折叠 / 把握 / 历史案例 / 不行动代价）
 │       └── FearStepField.tsx   # 恐惧清单单个步骤卡 + 文本域
 ├── content/                    # 纯配置与文案（无 JSX）
+│   ├── autosave.ts             # 自动保存防抖延时（能量充电屋 / 恐惧 / 五步诊断共用）
 │   ├── daily.ts                # 每日仪式四模块与字段
+│   ├── energy.ts               # 能量充电屋四工具与默认问题模板
 │   ├── fears.ts                # 恐惧清单五步定义、归档筛选、权衡分析文案
 │   ├── goals.ts                # 领域、状态、五步定义、限额与文案
 │   ├── lifeos.ts               # 方向卡与人生 OS 六栏
@@ -59,6 +62,7 @@ src/
 ├── lib/
 │   ├── api.ts                  # fetch 封装、ApiError、所有端点方法
 │   ├── queries.ts              # bootstrap 查询与各类 mutation
+│   ├── energy.ts               # 能量充电屋派生：工具查找、答题进度、摘要、时间格式化
 │   ├── fears.ts                # 恐惧派生：标题、完成度、归档过滤、下一步预览、分析状态
 │   ├── goals.ts                # 五步派生：完成度、进度、检查清单、停滞判断
 │   ├── stats.ts                # 打卡完成判断、日期集合、月 / 总计数、连续天数
@@ -75,6 +79,8 @@ src/
     ├── GoalDetailPage.tsx      # 单个目标五步工作台
     ├── FearsPage.tsx           # 恐惧清单列表（未归档 / 已归档）+ 新建弹窗
     ├── FearDetailPage.tsx      # 单条恐惧五步详情 + 自动保存 + 归档
+    ├── EnergyPage.tsx          # 能量充电屋主页（四大工具入口 + 历史练习记录筛选）
+    ├── EnergySessionPage.tsx   # 单次充电练习（一步一问沉浸书写 + 全文回看双模式）
     ├── ListsPage.tsx           # 清单（四个 tab）
     ├── RealityPage.tsx         # Reality OS 投资六维
     ├── AboutPage.tsx           # 静态关于页
@@ -95,6 +101,8 @@ src/
 | `/lists` | `ListsPage` |
 | `/fears` | `FearsPage` |
 | `/fears/:fearId` | `FearDetailPage` |
+| `/energy` | `EnergyPage` |
+| `/energy/:sessionId` | `EnergySessionPage`（`?mode=write\|read&step=1..N`） |
 | `/principles` | `GoalsPage` |
 | `/principles/:goalId` | `GoalDetailPage`（`?step=1..5`） |
 | `/reality` | `RealityPage` |
@@ -131,6 +139,8 @@ src/
   - 目标、恐惧清单：用 `setQueryData` 就地更新缓存，避免覆盖正在编辑的草稿。
 - 页面内表单使用局部 state；日期、步骤等领域选择状态用 `useSearchParams` 保存，保证刷新和分享链接可恢复。
 - 长表单（如 `GoalDetailPage`）使用防抖自动保存和版本守卫，避免旧响应覆盖新输入。
+- 防抖延时统一用 `src/content/autosave.ts` 的 `AUTOSAVE_DEBOUNCE_MS`，不要在页面里写死数字。
+- 能量充电屋单次练习页（`EnergySessionPage`）用 URL `?mode=write|read&step=1..N` 同时记录「书写 / 回看」模式和当前题号，刷新或分享链接都能回到同一题。
 
 ### 派生逻辑
 
@@ -166,4 +176,5 @@ src/
 | 派生统计 | `src/lib/stats.ts`、`src/lib/goals.ts` |
 | 新模块复用 documents + localStorage 兜底 | `src/lib/useReality.ts`、`src/pages/RealityPage.tsx` |
 | 列表 + 详情 + 自动保存 + 派生状态的新模块 | `src/pages/FearsPage.tsx`、`src/pages/FearDetailPage.tsx`、`src/lib/fears.ts` |
+| 配置驱动的一步一问沉浸式书写 + 回看双模式 | `src/pages/EnergyPage.tsx`、`src/pages/EnergySessionPage.tsx`、`src/content/energy.ts`、`src/lib/energy.ts` |
 | 静态内容页 | `src/pages/AboutPage.tsx` + `src/content/about.json` |

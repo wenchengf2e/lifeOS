@@ -32,7 +32,7 @@ LifeOS 是一个**个人心理工作台**，把「每日记录 → 每周复盘 
 | 样式 | Tailwind CSS 4（`@theme` token） | 语义色 `paper` / `ink` / `moss` / `clay` / `line` |
 | 构建 | Vite 8 + `@cloudflare/vite-plugin` | 本地同时跑前端与 Worker |
 | API | Hono 4（`worker/`） | REST API，与静态资源同一个 Worker |
-| 数据库 | Cloudflare D1（SQLite） | 七张业务表 |
+| 数据库 | Cloudflare D1（SQLite） | 八张业务表 |
 | ORM | Drizzle ORM（`drizzle-orm/d1`） | 表定义与查询 |
 | 校验 | Zod 4 | Worker 侧请求体校验 |
 | 鉴权 | Cloudflare Access + 邮箱头 | 仅所有者可访问 |
@@ -62,7 +62,7 @@ Cloudflare Worker（Hono，worker/index.ts）
   │  Zod 校验 → Drizzle 查询
   ▼
 Cloudflare D1（SQLite，lifeos-db）
-  checkins · documents · items · reviews · patterns · goals · fears
+  checkins · documents · items · reviews · patterns · goals · fears · energy_sessions
 ```
 
 前端静态资源与 Worker 同属一个 Cloudflare Worker：
@@ -73,7 +73,7 @@ Cloudflare D1（SQLite，lifeos-db）
 
 ### 2.3 请求与数据流
 
-1. SPA 启动后调用一次 `GET /api/bootstrap`，Worker 用 `loadAll()` 并行读取七张表，返回当前用户的全部数据。
+1. SPA 启动后调用一次 `GET /api/bootstrap`，Worker 用 `loadAll()` 并行读取八张表，返回当前用户的全部数据。
 2. 前端把结果放在 TanStack Query 的 `["bootstrap"]` 缓存里，`staleTime: 15s`。
 3. 写操作分两类：
    - **自然键资源**用 `PUT` upsert：打卡按日期、文档按 `(module, key)`、复盘按 `(period_type, period_key)`。
@@ -86,21 +86,20 @@ Cloudflare D1（SQLite，lifeos-db）
 ```
 lifeos/
 ├── src/                    # React 前端
-│   ├── components/         # 可复用组件（含 goals/ 五步表单、fears/ 恐惧步骤卡）
-│   ├── content/            # 纯配置与文案
+│   ├── components/         # 可复用组件（含 goals/ 五步表单、fears/ 恐惧步骤卡）│   ├── content/            # 纯配置与文案
 │   ├── lib/                # API、Query、日期、统计、派生逻辑
 │   ├── pages/              # 路由页面（XxxPage.tsx）
 │   ├── App.tsx             # 路由表
 │   ├── main.tsx            # 入口与 Provider
 │   └── index.css           # Tailwind 4 + 设计 token
 ├── worker/                 # Hono API Worker
-│   ├── routes/             # checkins / docs / fears / goals / items / reviews / patterns
+│   ├── routes/             # checkins / docs / energy / fears / goals / items / reviews / patterns
 │   ├── db/                 # schema、client、queries
 │   ├── auth.ts             # requireUser 身份中间件
 │   ├── types.ts            # AppEnv（Bindings / Variables）
 │   └── index.ts            # Worker 入口与路由挂载
 ├── shared/types.ts         # 前后端共享类型与常量
-├── migrations/             # D1 migration（0001–0004）
+├── migrations/             # D1 migration（0001–0005）
 ├── public/                 # favicon、manifest、关于页图片
 ├── docs/                   # 设计、运维与开发流程文档
 ├── index.html              # SPA 壳
@@ -156,6 +155,7 @@ npm run cf:tail            # 线上日志
 | `patterns` | 单条 | `title`、`trigger`、`reaction`、`payoff`、`cost`、`alternative`、`evidence`、`status` | 模式库 |
 | `goals` | 单条 | `title`、`domain`、`status`、`data`(JSON 五步) | 五步诊断目标 |
 | `fears` | 单条 | `data`(JSON 五步 + 可选权衡分析)、`archived` | 恐惧清单；标题从内容派生，归档是显式可逆标记 |
+| `energy_sessions` | 单条 | `tool`、`data`(JSON `answers` 字典)、`completed` | 能量充电屋带时间戳的独立练习记录 |
 
 共同约定：
 
@@ -178,6 +178,7 @@ npm run cf:tail            # 线上日志
 | 人生 OS | `/lifeos` | 方向卡 + 身份 / 阶段 / 理想 / 差距 / 策略 / 验证六栏 | `documents(module=lifeos)` |
 | 五步诊断 | `/principles`、`/principles/:id` | 目标列表 + 单目标五步工作台 | `goals` |
 | 恐惧清单 | `/fears`、`/fears/:id` | 恐惧列表 + 五步恐惧转化（识别 → 根因 → 问题 → 行动 → 验证），含可选权衡分析 | `fears` |
+| 能量充电屋 | `/energy`、`/energy/:sessionId` | 自我觉察训练 / 显化日记 / 认知重塑书写 / 行为模式分析四工具，一步一问沉浸式书写 + 全文回看 | `energy_sessions` |
 | 复盘 | `/review`、`/review/week/:key` | 周复盘四步向导 + 模式库 | `reviews`、`patterns`、`items` |
 | 清单 | `/lists` | 成就 / 痛苦 / 关键改变 / 复盘动作 | `items` |
 | Reality OS | `/reality` | 投资能力六维 T 度雷达与升级 | `documents(module=reality)` |
@@ -352,8 +353,7 @@ npm run cf:tail            # 线上日志
 | 文档 | 内容 |
 | --- | --- |
 | [`README.md`](../README.md) | 项目介绍、API 表、首次部署、备份 |
-| [`docs/development-workflow.md`](./development-workflow.md) | 开发流程、测试现状、风险与建议 |
-| [`docs/goal-module-design.md`](./goal-module-design.md) | 目标模块与五步诊断的设计取舍 |
+| [`docs/development-workflow.md`](./development-workflow.md) | 开发流程、测试现状、风险与建议 || [`docs/goal-module-design.md`](./goal-module-design.md) | 目标模块与五步诊断的设计取舍 |
 | [`docs/review-module-design.md`](./review-module-design.md) | 周复盘与模式库的设计依据 |
 | [`docs/about-content.md`](./about-content.md) | 关于页 JSON 结构与图片规范 |
 | [`docs/custom-domain.md`](./custom-domain.md) | 自定义域名与国内访问 |
