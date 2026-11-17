@@ -11,16 +11,19 @@ import {
   energyToolCounts,
   type EnergyToolFilter,
 } from "../lib/energy";
-import { useBootstrap, useCreateEnergySession } from "../lib/queries";
+import { useBootstrap, useCreateEnergySession, useDeleteEnergySession } from "../lib/queries";
 
 export function EnergyPage() {
   const { data, isLoading, error } = useBootstrap();
   const createEnergySession = useCreateEnergySession();
+  const deleteEnergySession = useDeleteEnergySession();
   const navigate = useNavigate();
 
   const [toolFilter, setToolFilter] = useState<EnergyToolFilter>("all");
   const [creatingTool, setCreatingTool] = useState<EnergyToolKey | null>(null);
   const [createError, setCreateError] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const sessions = useMemo(
     () => sortEnergySessions(data?.energySessions ?? []),
@@ -48,6 +51,22 @@ export function EnergyPage() {
     } catch (startError) {
       setCreatingTool(null);
       setCreateError(startError instanceof Error ? startError.message : energyPageCopy.createFailed);
+    }
+  }
+
+  async function handleDelete(sessionId: string) {
+    if (deletingId) return;
+    if (!window.confirm(energyPageCopy.listDeleteConfirm)) return;
+    setDeletingId(sessionId);
+    setDeleteError(null);
+    try {
+      await deleteEnergySession.mutateAsync(sessionId);
+    } catch (deleteFailure) {
+      setDeleteError(
+        deleteFailure instanceof Error ? deleteFailure.message : energyPageCopy.listDeleteFailed,
+      );
+    } finally {
+      setDeletingId(null);
     }
   }
 
@@ -166,11 +185,19 @@ export function EnergyPage() {
             </button>
           </div>
         ) : (
-          <div className="grid gap-4 lg:grid-cols-2">
-            {shownSessions.map((session) => (
-              <EnergySessionCard key={session.id} session={session} />
-            ))}
-          </div>
+          <>
+            {deleteError ? <p className="mb-3 text-sm text-clay">{deleteError}</p> : null}
+            <div className="grid gap-3 sm:gap-4 lg:grid-cols-2">
+              {shownSessions.map((session) => (
+                <EnergySessionCard
+                  key={session.id}
+                  session={session}
+                  deleting={deletingId === session.id}
+                  onDelete={() => void handleDelete(session.id)}
+                />
+              ))}
+            </div>
+          </>
         )}
       </section>
     </>

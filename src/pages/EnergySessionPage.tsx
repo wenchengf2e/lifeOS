@@ -174,7 +174,7 @@ export function EnergySessionPage() {
     const element = textareaRef.current;
     if (!element) return;
     element.style.height = "auto";
-    element.style.height = `${Math.min(Math.max(element.scrollHeight, 200), 560)}px`;
+    element.style.height = `${Math.min(Math.max(element.scrollHeight, 180), 560)}px`;
   }, [mode, step, currentValue]);
 
   function goToStep(next: number, nextMode: Mode = "write") {
@@ -307,7 +307,7 @@ export function EnergySessionPage() {
             : energySessionCopy.saveIdle;
 
   const headerMeta = (
-    <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px] text-ink-soft">
+    <div className="mt-2 flex flex-wrap items-center gap-2 text-[10px] text-ink-soft sm:mt-3 sm:text-[11px]">
       <span>
         {energySessionCopy.createdAt} {formatEnergyTimestamp(session.createdAt)}
       </span>
@@ -345,13 +345,13 @@ export function EnergySessionPage() {
           ← {energySessionCopy.back}
         </Link>
 
-        <header className="mb-6 rounded-[2rem] border border-line/60 bg-white/60 p-6 shadow-sm sm:p-8">
+        <header className="mb-5 rounded-3xl border border-line/60 bg-white/60 p-5 shadow-sm sm:mb-6 sm:rounded-[2rem] sm:p-8">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-moss">
+            <div className="min-w-0">
+              <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-moss sm:text-[11px] sm:tracking-[0.22em]">
                 {tool.icon} {tool.badge} · {tool.subtitle}
               </p>
-              <h1 className="mt-2 font-display text-3xl leading-tight text-ink sm:text-4xl">
+              <h1 className="mt-2 font-display text-2xl leading-tight text-ink sm:text-4xl">
                 {tool.title}
               </h1>
               {headerMeta}
@@ -359,7 +359,7 @@ export function EnergySessionPage() {
             </div>
             <button
               type="button"
-              className="btn-primary shrink-0"
+              className="btn-primary w-full shrink-0 sm:w-auto"
               onClick={() => goToStep(1, "write")}
             >
               {energySessionCopy.toWriteMode}
@@ -380,29 +380,29 @@ export function EnergySessionPage() {
             const answer = draft.data.answers[item.key] ?? "";
             const done = Boolean(answer.trim());
             return (
-              <article key={item.key} className="card p-6 sm:p-8">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <p className="text-[11px] uppercase tracking-[0.16em] text-ink-soft">
+              <article key={item.key} className="card p-4 sm:p-8">
+                <div className="flex flex-wrap items-start justify-between gap-2 sm:gap-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[10px] uppercase tracking-[0.14em] text-ink-soft sm:text-[11px] sm:tracking-[0.16em]">
                       第 {index + 1} 题 · {item.title}
                     </p>
-                    <h2 className="mt-1 font-display text-lg leading-snug text-ink">
+                    <h2 className="mt-1 font-display text-base leading-snug text-ink sm:text-lg">
                       {item.prompt}
                     </h2>
                   </div>
-                  <div className="flex shrink-0 items-center gap-2">
+                  <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
                     <span
                       className={
                         done
                           ? "chip"
-                          : "rounded-full bg-paper-deep/70 px-2.5 py-1 text-[11px] text-ink-soft"
+                          : "rounded-full bg-paper-deep/70 px-2 py-0.5 text-[10px] text-ink-soft sm:px-2.5 sm:py-1 sm:text-[11px]"
                       }
                     >
                       {done ? "已填写" : "待填写"}
                     </span>
                     <button
                       type="button"
-                      className="btn-ghost text-xs"
+                      className="btn-ghost px-2 py-1 text-[11px] sm:px-3 sm:py-2 sm:text-xs"
                       onClick={() => goToStep(index + 1, "write")}
                     >
                       {energySessionCopy.editQuestion}
@@ -412,7 +412,7 @@ export function EnergySessionPage() {
 
                 <p
                   className={[
-                    "mt-4 whitespace-pre-wrap text-sm leading-8",
+                    "mt-3 whitespace-pre-wrap text-sm leading-7 sm:mt-4 sm:leading-8",
                     done ? "text-ink" : "text-ink-soft/70",
                   ].join(" ")}
                 >
@@ -423,9 +423,9 @@ export function EnergySessionPage() {
           })}
         </div>
 
-        <div className="card mt-6 p-6">
+        <div className="card mt-5 p-4 sm:mt-6 sm:p-6">
           <p className="text-sm leading-7 text-ink-soft">{energySessionCopy.footerHint}</p>
-          <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+          <div className="mt-4 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center sm:justify-between sm:gap-3">
             <Link to="/energy" className="btn-secondary">
               {energySessionCopy.back}
             </Link>
@@ -452,26 +452,26 @@ export function EnergySessionPage() {
         ← {energySessionCopy.back}
       </Link>
 
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-moss">
+      <div className="mb-5 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+        <div className="min-w-0">
+          <p className="truncate text-[10px] font-medium uppercase tracking-[0.18em] text-moss sm:text-[11px] sm:tracking-[0.22em]">
             {tool.icon} {tool.badge} · {tool.subtitle}
           </p>
-          <h1 className="mt-2 font-display text-2xl leading-tight text-ink sm:text-3xl">
+          <h1 className="mt-1.5 font-display text-xl leading-tight text-ink sm:mt-2 sm:text-3xl">
             {tool.title}
           </h1>
           {headerMeta}
         </div>
         <button
           type="button"
-          className="btn-secondary shrink-0"
+          className="btn-secondary shrink-0 self-start px-3 py-1.5 text-xs sm:px-4 sm:py-2 sm:text-sm"
           onClick={() => goToStep(1, "read")}
         >
           {energySessionCopy.toReadMode}
         </button>
       </div>
 
-      <div className="mb-5 flex flex-wrap items-center gap-2">
+      <div className="mb-4 flex flex-wrap items-center gap-1.5 sm:mb-5 sm:gap-2">
         {questions.map((item, index) => {
           const current = index + 1 === step;
           const done = progress.doneKeys.includes(item.key);
@@ -482,7 +482,7 @@ export function EnergySessionPage() {
               onClick={() => goToStep(index + 1)}
               title={`第 ${index + 1} 题 · ${item.title}${done ? "（已填写）" : ""}`}
               className={[
-                "flex h-8 min-w-8 items-center justify-center rounded-full px-2 text-xs tabular-nums transition",
+                "flex h-7 min-w-7 items-center justify-center rounded-full px-1.5 text-[11px] tabular-nums transition sm:h-8 sm:min-w-8 sm:px-2 sm:text-xs",
                 current
                   ? "bg-ink text-paper shadow-sm"
                   : done
@@ -494,32 +494,34 @@ export function EnergySessionPage() {
             </button>
           );
         })}
-        <span className="ml-auto text-xs tabular-nums text-ink-soft">
+        <span className="ml-auto text-[11px] tabular-nums text-ink-soft sm:text-xs">
           {energyQuestionProgressLabel(step, questions.length)}
         </span>
       </div>
 
-      <div className="mb-5 h-1.5 overflow-hidden rounded-full bg-paper-deep">
+      <div className="mb-4 h-1 overflow-hidden rounded-full bg-paper-deep sm:mb-5 sm:h-1.5">
         <div
           className="h-full rounded-full bg-moss transition-all"
           style={{ width: `${Math.round((step / questions.length) * 100)}%` }}
         />
       </div>
 
-      <article className="card p-6 sm:p-9">
-        <p className="text-[11px] uppercase tracking-[0.2em] text-moss">
+      <article className="card p-4 sm:p-9">
+        <p className="text-[10px] uppercase tracking-[0.16em] text-moss sm:text-[11px] sm:tracking-[0.2em]">
           第 {step} 题 · {question.title}
         </p>
-        <h2 className="mt-3 font-display text-xl leading-relaxed text-ink sm:text-2xl">
+        <h2 className="mt-2 font-display text-lg leading-relaxed text-ink sm:mt-3 sm:text-2xl">
           {question.prompt}
         </h2>
-        <p className="mt-3 text-sm leading-7 text-ink-soft">{question.hint}</p>
+        <p className="mt-2 text-xs leading-6 text-ink-soft sm:mt-3 sm:text-sm sm:leading-7">
+          {question.hint}
+        </p>
 
-        <label className="mt-6 block">
+        <label className="mt-4 block sm:mt-6">
           <textarea
             ref={textareaRef}
-            className="field resize-none text-base leading-8"
-            rows={6}
+            className="field resize-none text-base leading-7 sm:leading-8"
+            rows={5}
             maxLength={20000}
             aria-label={`第 ${step} 题：${question.title}`}
             placeholder={question.placeholder}
@@ -533,39 +535,40 @@ export function EnergySessionPage() {
             }}
           />
         </label>
-        <div className="mt-2 flex items-center justify-between text-[11px] text-ink-soft">
-          <span>{energySessionCopy.shortcutHint}</span>
-          <span className="tabular-nums">{currentValue.trim().length} 字</span>
+        <div className="mt-2 flex items-center justify-between text-[10px] text-ink-soft sm:text-[11px]">
+          <span className="pr-3">{energySessionCopy.shortcutHint}</span>
+          <span className="shrink-0 tabular-nums">{currentValue.trim().length} 字</span>
         </div>
       </article>
 
-      <div className="card mt-4 flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="text-xs text-ink-soft">
+      {/* 移动端固定在底部，拇指可及；桌面端回到卡片布局。 */}
+      <div className="sticky bottom-0 z-20 -mx-4 mt-4 border-t border-line/60 bg-paper/95 px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3 backdrop-blur sm:static sm:mx-0 sm:flex sm:items-center sm:justify-between sm:gap-3 sm:rounded-[1.5rem] sm:border sm:border-line/70 sm:bg-white/60 sm:p-4 sm:pb-4 sm:backdrop-blur-none">
+        <div className="flex items-center justify-between gap-2 text-[11px] text-ink-soft sm:order-none sm:text-xs">
           {saveState === "error" ? (
             <button
               type="button"
               onClick={() => void save()}
-              className="text-clay underline-offset-2 hover:underline"
+              className="text-left text-clay underline-offset-2 hover:underline"
             >
               {energySessionCopy.saveError}
               {saveError ? `：${saveError}` : ""}
             </button>
           ) : (
-            <span>{saveLabel}</span>
+            <span className="truncate">{saveLabel}</span>
           )}
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
-            className="btn-ghost"
+            className="shrink-0 text-moss underline-offset-2 hover:underline sm:hidden"
             onClick={() => goToStep(1, "read")}
           >
             {energySessionCopy.toReadMode}
           </button>
+        </div>
+
+        <div className="mt-2.5 flex items-center gap-2 sm:mt-0">
           <button
             type="button"
-            className="btn-secondary"
+            className="btn-secondary shrink-0 px-3 py-1.5 text-xs sm:px-4 sm:py-2 sm:text-sm"
             onClick={() => goToStep(step - 1)}
             disabled={step <= 1}
           >
@@ -573,26 +576,24 @@ export function EnergySessionPage() {
           </button>
           <button
             type="button"
-            className="btn-secondary"
+            className="btn-secondary shrink-0 px-3 py-1.5 text-xs sm:px-4 sm:py-2 sm:text-sm"
             onClick={handleManualSave}
             disabled={updateSession.isPending || (!dirty && saveState !== "error")}
           >
             {energySessionCopy.saveDraft}
           </button>
           {step < questions.length ? (
-            <button type="button" className="btn-primary" onClick={handleNext}>
+            <button type="button" className="btn-primary min-w-0 flex-1 sm:flex-none" onClick={handleNext}>
               {energySessionCopy.next}
             </button>
           ) : (
             <button
               type="button"
-              className="btn-primary"
+              className="btn-primary min-w-0 flex-1 sm:flex-none"
               onClick={() => void finish()}
               disabled={updateSession.isPending}
             >
-              {updateSession.isPending
-                ? energySessionCopy.finishing
-                : energySessionCopy.finish}
+              {updateSession.isPending ? energySessionCopy.finishing : energySessionCopy.finish}
             </button>
           )}
         </div>

@@ -234,6 +234,10 @@ export const energyPageCopy = {
   emptyDesc: "从上面选一个工具开始第一次练习。不需要写得完整，先回答第一个问题就够了。",
   filteredEmpty: "这个工具下还没有练习记录。",
   createFailed: "开启练习失败，请重试",
+  listDelete: "删除记录",
+  listDeleting: "删除中…",
+  listDeleteConfirm: "删除后，这次练习的所有回答都会消失，无法恢复。确定吗？",
+  listDeleteFailed: "删除失败，请重试",
 };
 
 export const energySessionCopy = {
