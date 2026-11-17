@@ -4,6 +4,7 @@ import type { FearAnalysis, FearData, FearStepKey } from "../../shared/types";
 import { EmptyState, ErrorState, LoadingPage } from "../components/StateViews";
 import { FearAnalysisCard } from "../components/fears/FearAnalysisCard";
 import { FearStepField } from "../components/fears/FearStepField";
+import { AUTOSAVE_DEBOUNCE_MS } from "../content/autosave";
 import { fearDetailCopy, fearsPageCopy, fearSteps } from "../content/fears";
 import { formatDateCN, toDateKey } from "../lib/date";
 import { fearProgress, fearTitle } from "../lib/fears";
@@ -106,7 +107,7 @@ export function FearDetailPage() {
     if (!dirty || !draft || updateFear.isPending || saveState === "error") return;
     const timer = window.setTimeout(() => {
       void save();
-    }, 800);
+    }, AUTOSAVE_DEBOUNCE_MS);
     return () => window.clearTimeout(timer);
   }, [draft, dirty, save, saveState, updateFear.isPending]);
 

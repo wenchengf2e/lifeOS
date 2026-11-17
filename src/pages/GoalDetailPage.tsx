@@ -8,6 +8,7 @@ import { StepGoal } from "../components/goals/StepGoal";
 import { StepPlan } from "../components/goals/StepPlan";
 import { StepPractice } from "../components/goals/StepPractice";
 import { StepProblem } from "../components/goals/StepProblem";
+import { AUTOSAVE_DEBOUNCE_MS } from "../content/autosave";
 import {
   goalDetailCopy,
   goalDomains,
@@ -171,7 +172,7 @@ export function GoalDetailPage() {
     if (!dirty || !draft || updateGoal.isPending || saveState === "error") return;
     const timer = window.setTimeout(() => {
       void save();
-    }, 800);
+    }, AUTOSAVE_DEBOUNCE_MS);
     return () => window.clearTimeout(timer);
   }, [draft, dirty, save, saveState, updateGoal.isPending]);
 
