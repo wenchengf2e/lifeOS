@@ -60,16 +60,16 @@ export function DirectionCard({ doc }: { doc: DocumentEntry | undefined }) {
   }
 
   return (
-    <section className="mb-6 overflow-hidden rounded-[2rem] border border-line/60 bg-white/60 p-6 shadow-sm sm:p-8">
+    <section className="mb-6 overflow-hidden rounded-[2rem] border border-line/60 bg-white/60 p-5 shadow-sm sm:p-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="max-w-2xl">
           <p className="text-[11px] font-medium uppercase tracking-[0.24em] text-moss">
             {lifeosDirection.eyebrow}
           </p>
-          <h2 className="mt-2 text-2xl text-ink">{lifeosDirection.title}</h2>
+          <h2 className="mt-2 text-xl text-ink sm:text-2xl">{lifeosDirection.title}</h2>
           <p className="mt-2 text-sm leading-7 text-ink-soft">{lifeosDirection.desc}</p>
         </div>
-        <Link to="/principles" className="btn-secondary shrink-0">
+        <Link to="/principles" className="btn-secondary w-full shrink-0 sm:w-auto">
           {lifeosDirection.linkLabel}
         </Link>
       </div>
@@ -80,7 +80,7 @@ export function DirectionCard({ doc }: { doc: DocumentEntry | undefined }) {
             <span className="block text-sm font-medium text-ink">{field.label}</span>
             <span className="mt-1 block text-[11px] leading-6 text-ink-soft">{field.hint}</span>
             <textarea
-              className="field mt-2 resize-y"
+              className="field mt-2 resize-y text-base sm:text-sm"
               rows={field.rows}
               placeholder={field.placeholder}
               value={form[field.key] ?? ""}
@@ -94,7 +94,7 @@ export function DirectionCard({ doc }: { doc: DocumentEntry | undefined }) {
       </div>
 
       <div className="mt-4 flex flex-col gap-3 border-t border-line/60 pt-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="text-xs text-ink-soft">
+        <div className="text-center text-xs text-ink-soft sm:text-left">
           {status.type === "error" ? (
             <span className="text-clay">{status.message}</span>
           ) : status.type === "saved" ? (
@@ -107,7 +107,7 @@ export function DirectionCard({ doc }: { doc: DocumentEntry | undefined }) {
         </div>
         <button
           type="button"
-          className="btn-primary"
+          className="btn-primary w-full sm:w-auto"
           onClick={handleSave}
           disabled={saveDocument.isPending}
         >

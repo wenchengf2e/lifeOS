@@ -69,8 +69,8 @@ export function LifeOSPage() {
       <DirectionCard doc={directionDoc} />
 
       <div className="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
-        <aside className="card p-4 lg:sticky lg:top-24 lg:self-start">
-          <div className="mb-4 hidden px-2 lg:block">
+        <aside className="card min-w-0 p-4 lg:sticky lg:top-24 lg:self-start">
+          <div className="mb-3 px-1 lg:mb-4 lg:px-2">
             <div className="flex items-center justify-between text-xs text-ink-soft">
               <span>完成进度</span>
               <span>
@@ -85,7 +85,7 @@ export function LifeOSPage() {
             </div>
           </div>
 
-          <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 lg:mx-0 lg:flex-col lg:gap-1 lg:overflow-visible lg:px-0 lg:pb-0">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:flex lg:flex-col lg:gap-1">
             {lifeosSections.map((item) => {
               const filled = String(
                 docs.find((doc) => doc.key === item.key)?.data.notes ?? "",
@@ -98,14 +98,14 @@ export function LifeOSPage() {
                   type="button"
                   onClick={() => setSelectedKey(item.key)}
                   className={[
-                    "flex shrink-0 items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-sm transition lg:w-full",
+                    "flex min-w-0 items-center gap-2 rounded-2xl px-3 py-2.5 text-left text-xs transition sm:text-sm lg:w-full",
                     active
                       ? "bg-ink text-paper shadow-sm"
                       : "text-ink-soft hover:bg-white/80 hover:text-ink",
                   ].join(" ")}
                 >
                   <span className="text-base">{item.icon}</span>
-                  <span className="flex-1 whitespace-nowrap lg:whitespace-normal">{item.title}</span>
+                  <span className="flex-1 truncate lg:whitespace-normal">{item.title}</span>
                   {filled > 0 ? (
                     <span
                       className={[
@@ -120,25 +120,25 @@ export function LifeOSPage() {
           </div>
         </aside>
 
-        <section className="space-y-4">
-          <article className="card p-6 sm:p-8">
+        <section className="min-w-0 space-y-4">
+          <article className="card p-5 sm:p-8">
             <div className="flex flex-wrap items-center gap-3">
               <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-moss-soft text-xl">
                 {section.icon}
               </span>
               <div>
-                <h2 className="text-2xl text-ink">{section.title}</h2>
+                <h2 className="text-xl text-ink sm:text-2xl">{section.title}</h2>
                 <p className="mt-1 text-xs text-ink-soft">先写事实，再写判断。</p>
               </div>
             </div>
 
-            <p className="mt-5 text-sm leading-7 text-ink-soft">{section.desc}</p>
+            <p className="mt-5 text-sm leading-6 text-ink-soft sm:leading-7">{section.desc}</p>
 
             <div className="mt-6 rounded-2xl bg-paper-deep/55 p-4 sm:p-5">
               <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-moss">
                 核心问题
               </p>
-              <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-7 text-ink-soft">
+              <ol className="mt-3 list-decimal space-y-1.5 pl-5 text-sm leading-6 text-ink-soft sm:space-y-2 sm:leading-7">
                 {section.questions.map((question) => (
                   <li key={question} className="pl-1">
                     {question}
@@ -152,7 +152,7 @@ export function LifeOSPage() {
                 我的回答
               </span>
               <textarea
-                className="field min-h-64 resize-y"
+                className="field min-h-56 resize-y text-base sm:min-h-64 sm:text-sm"
                 rows={14}
                 placeholder={section.placeholder}
                 value={notes}
@@ -163,14 +163,14 @@ export function LifeOSPage() {
               />
             </label>
 
-            <div className="mt-4 rounded-2xl border border-moss/15 bg-moss-soft/45 p-4 text-sm leading-7 text-moss-dark">
+            <div className="mt-4 rounded-2xl border border-moss/15 bg-moss-soft/45 p-4 text-sm leading-6 text-moss-dark sm:leading-7">
               <span className="font-medium">输出：</span>
               {section.output}
             </div>
           </article>
 
           <div className="card flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="text-xs text-ink-soft">
+            <div className="text-center text-xs text-ink-soft sm:text-left">
               {status.type === "error" ? (
                 <span className="text-clay">{status.message}</span>
               ) : status.type === "saved" ? (
@@ -183,7 +183,7 @@ export function LifeOSPage() {
             </div>
             <button
               type="button"
-              className="btn-primary"
+              className="btn-primary w-full sm:w-auto"
               onClick={handleSave}
               disabled={saveDocument.isPending}
             >
