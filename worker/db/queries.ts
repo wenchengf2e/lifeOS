@@ -1,4 +1,4 @@
-import { desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq } from "drizzle-orm";
 import type {
   CheckinData,
   DocumentData,
@@ -15,10 +15,44 @@ import type {
   ReviewData,
   ReviewEntry,
   ReviewPeriodType,
+  TelosChallengeStatus,
+  TelosGoalStatus,
+  TelosItemEntry,
+  TelosProblemStatus,
+  TelosProfileData,
+  TelosProjectStatus,
+  TelosRiskStatus,
+  TelosSnapshotEntry,
+  TelosSnapshotMeta,
+  TelosStrategyStatus,
 } from "../../shared/types";
-import { normalizeEnergySessionData, normalizeFearData, normalizeGoalData } from "../../shared/types";
+import {
+  normalizeEnergySessionData,
+  normalizeFearData,
+  normalizeGoalData,
+  normalizeTelosChallengeData,
+  normalizeTelosGoalData,
+  normalizeTelosProblemData,
+  normalizeTelosProfile,
+  normalizeTelosProjectData,
+  normalizeTelosRiskData,
+  normalizeTelosSnapshotData,
+  normalizeTelosStrategyData,
+} from "../../shared/types";
 import { getDb } from "./client";
-import { checkins, documents, energySessions, fears, goals, items, patterns, reviews } from "./schema";
+import {
+  checkins,
+  documents,
+  energySessions,
+  fears,
+  goals,
+  items,
+  patterns,
+  reviews,
+  telosItems,
+  telosProfiles,
+  telosSnapshots,
+} from "./schema";
 
 type Db = ReturnType<typeof getDb>;
 
@@ -118,6 +152,131 @@ export function mapEnergySession(
     completed: row.completed,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
+  };
+}
+
+export function mapTelosProfile(row: typeof telosProfiles.$inferSelect): TelosProfileData {
+  return normalizeTelosProfile({
+    version: row.version,
+    mission: row.mission,
+    currentState: row.currentState,
+    idealState: row.idealState,
+  });
+}
+
+export function mapTelosItem(row: typeof telosItems.$inferSelect): TelosItemEntry {
+  const base = {
+    id: row.id,
+    parentId: row.parentId,
+    title: row.title,
+    sortOrder: row.sortOrder,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  };
+  const raw = parseJson<unknown>(row.data, {});
+
+  // category 由 API 按白名单写入；这里用 switch 把 data 收窄成判别联合。
+  switch (row.category) {
+    case "problem":
+      return {
+        ...base,
+        category: "problem",
+        status: row.status as TelosProblemStatus,
+        data: normalizeTelosProblemData(raw),
+      };
+    case "goal":
+      return {
+        ...base,
+        category: "goal",
+        status: row.status as TelosGoalStatus,
+        data: normalizeTelosGoalData(raw),
+      };
+    case "challenge":
+      return {
+        ...base,
+        category: "challenge",
+        status: row.status as TelosChallengeStatus,
+        data: normalizeTelosChallengeData(raw),
+      };
+    case "strategy":
+      return {
+        ...base,
+        category: "strategy",
+        status: row.status as TelosStrategyStatus,
+        data: normalizeTelosStrategyData(raw),
+      };
+    case "project":
+      return {
+        ...base,
+        category: "project",
+        status: row.status as TelosProjectStatus,
+        data: normalizeTelosProjectData(raw),
+      };
+    case "risk":
+      return {
+        ...base,
+        category: "risk",
+        status: row.status as TelosRiskStatus,
+        data: normalizeTelosRiskData(raw),
+      };
+    default:
+      // 理论上不会出现未知分类；兜底成 problem，保证整页数据仍能读出来。
+      return {
+        ...base,
+        category: "problem",
+        status: row.status as TelosProblemStatus,
+        data: normalizeTelosProblemData(raw),
+      };
+  }
+}
+
+export function mapTelosSnapshotMeta(
+  row: Pick<typeof telosSnapshots.$inferSelect, "id" | "itemCount" | "createdAt">,
+): TelosSnapshotMeta {
+  return {
+    id: row.id,
+    createdAt: row.createdAt,
+    itemCount: row.itemCount,
+  };
+}
+
+export function mapTelosSnapshot(
+  row: typeof telosSnapshots.$inferSelect,
+): TelosSnapshotEntry {
+  return {
+    ...mapTelosSnapshotMeta(row),
+    data: normalizeTelosSnapshotData(parseJson<unknown>(row.data, {})),
+  };
+}
+
+/**
+ * 罗盘数据独立导出：不参与 `loadAll()`，`/api/bootstrap` 的体积与故障面不受影响。
+ * 只有手动导出备份时才一起读取。
+ */
+export async function loadTelosExport(db: Db, userId: string) {
+  const [profileRows, itemRows, snapshotRows] = await Promise.all([
+    db
+      .select()
+      .from(telosProfiles)
+      .where(and(eq(telosProfiles.userId, userId), eq(telosProfiles.isActive, true)))
+      .limit(1),
+    db
+      .select()
+      .from(telosItems)
+      .where(eq(telosItems.userId, userId))
+      .orderBy(asc(telosItems.category), asc(telosItems.sortOrder), asc(telosItems.createdAt)),
+    db
+      .select()
+      .from(telosSnapshots)
+      .where(eq(telosSnapshots.userId, userId))
+      .orderBy(desc(telosSnapshots.createdAt)),
+  ]);
+
+  const [profileRow] = profileRows;
+  return {
+    telosProfile: profileRow ? mapTelosProfile(profileRow) : normalizeTelosProfile({}),
+    telosItems: itemRows.map(mapTelosItem),
+    telosSnapshots: snapshotRows.map(mapTelosSnapshot),
   };
 }
 

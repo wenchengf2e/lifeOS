@@ -2,6 +2,9 @@ import { useEffect } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { Layout } from "./components/Layout";
 import { AboutPage } from "./pages/AboutPage";
+import { CompassItemPage } from "./pages/CompassItemPage";
+import { CompassPage } from "./pages/CompassPage";
+import { CompassSnapshotsPage } from "./pages/CompassSnapshotsPage";
 import { DailyPage } from "./pages/DailyPage";
 import { DiaryPage } from "./pages/DiaryPage";
 import { EnergyPage } from "./pages/EnergyPage";
@@ -34,6 +37,9 @@ export function App() {
       <Routes>
         <Route path="/" element={<OverviewPage />} />
         <Route path="/daily" element={<DailyPage />} />
+        <Route path="/compass" element={<CompassPage />} />
+        <Route path="/compass/items/:itemId" element={<CompassItemPage />} />
+        <Route path="/compass/snapshots" element={<CompassSnapshotsPage />} />
         {/* 旧地址：信念重写 → 每日仪式，晚间日记 → 并入每日仪式 */}
         <Route path="/belief" element={<Navigate to="/daily" replace />} />
         <Route path="/evening" element={<Navigate to="/daily" replace />} />

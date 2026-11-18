@@ -17,6 +17,11 @@ import type {
   PatternStatus,
   ReviewData,
   ReviewPeriodType,
+  TelosCategory,
+  TelosItemEntry,
+  TelosProfileData,
+  TelosSnapshotEntry,
+  TelosSnapshotMeta,
 } from "../../shared/types";
 
 export type PatternDraft = {
@@ -62,6 +67,29 @@ export type EnergySessionCreateInput = {
 export type EnergySessionPatch = {
   data?: EnergySessionData;
   completed?: boolean;
+};
+
+export type TelosProfileInput = {
+  mission: string;
+  currentState: string;
+  idealState: string;
+};
+
+export type TelosItemCreateInput = {
+  category: TelosCategory;
+  parentId?: string | null;
+  title: string;
+  status?: string;
+  sortOrder?: number;
+  data?: unknown;
+};
+
+export type TelosItemPatch = {
+  title?: string;
+  status?: string;
+  parentId?: string | null;
+  sortOrder?: number;
+  data?: unknown;
 };
 
 export class ApiError extends Error {
@@ -199,6 +227,63 @@ export const api = {
 
   deleteEnergySession(id: string) {
     return request<{ ok: true }>(`/api/energy/${encode(id)}`, { method: "DELETE" });
+  },
+
+  getTelosProfile() {
+    return request<{ profile: TelosProfileData }>("/api/telos/profile");
+  },
+
+  saveTelosProfile(input: TelosProfileInput) {
+    return request<{ ok: true; profile: TelosProfileData }>("/api/telos/profile", {
+      method: "PUT",
+      body: JSON.stringify(input),
+    });
+  },
+
+  listTelosItems() {
+    return request<{ items: TelosItemEntry[] }>("/api/telos/items");
+  },
+
+  createTelosItem(input: TelosItemCreateInput) {
+    return request<{ ok: true; item: TelosItemEntry }>("/api/telos/items", {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+  },
+
+  updateTelosItem(id: string, patch: TelosItemPatch) {
+    return request<{ ok: true; item: TelosItemEntry }>(`/api/telos/items/${encode(id)}`, {
+      method: "PATCH",
+      body: JSON.stringify(patch),
+    });
+  },
+
+  deleteTelosItem(id: string) {
+    return request<{ ok: true; deletedIds: string[]; deletedCount: number }>(
+      `/api/telos/items/${encode(id)}`,
+      { method: "DELETE" },
+    );
+  },
+
+  listTelosSnapshots() {
+    return request<{ snapshots: TelosSnapshotMeta[] }>("/api/telos/snapshots");
+  },
+
+  getTelosSnapshot(id: string) {
+    return request<{ snapshot: TelosSnapshotEntry | null }>(
+      `/api/telos/snapshots/${encode(id)}`,
+    );
+  },
+
+  // 快照由服务端抓取当前档案与全部条目，客户端不传任何内容。
+  createTelosSnapshot() {
+    return request<{ ok: true; snapshot: TelosSnapshotMeta }>("/api/telos/snapshots", {
+      method: "POST",
+    });
+  },
+
+  deleteTelosSnapshot(id: string) {
+    return request<{ ok: true }>(`/api/telos/snapshots/${encode(id)}`, { method: "DELETE" });
   },
 
   createGoal(input: GoalCreateInput) {

@@ -1,9 +1,10 @@
 import type { ReactNode } from "react";
 import { Link, NavLink } from "react-router-dom";
 
-// 顶部菜单暂时只保留四个高频入口；其余模块路由仍在，可通过总览快捷入口或直接访问 URL 进入。
+// 顶部菜单只保留高频入口；其余模块路由仍在，可通过总览快捷入口或直接访问 URL 进入。
 const NAV = [
   { to: "/daily", label: "每日仪式" },
+  { to: "/compass", label: "人生罗盘" },
   { to: "/energy", label: "能量充电屋" },
   { to: "/fears", label: "恐惧清单" },
   { to: "/lists", label: "清单" },

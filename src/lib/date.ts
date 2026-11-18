@@ -29,6 +29,17 @@ export function formatDateCN(key: string, opts?: { withWeekday?: boolean; withYe
   return opts?.withWeekday ? `${base} · ${WEEKDAYS[date.getDay()]}` : base;
 }
 
+/** ISO 时间戳 → 「2026 年 11 月 18 日 14:05」，用于快照等带时刻的记录。 */
+export function formatDateTimeCN(iso: string) {
+  const date = new Date(iso);
+  const day = formatDateCN(toDateKey(date), { withYear: true });
+  const time = date.toLocaleTimeString("zh-CN", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  return `${day} ${time}`;
+}
+
 export function shiftDate(key: string, deltaDays: number) {
   const date = parseDateKey(key);
   date.setDate(date.getDate() + deltaDays);

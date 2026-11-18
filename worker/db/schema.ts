@@ -71,6 +71,39 @@ export const energySessions = sqliteTable("energy_sessions", {
   updatedAt: text("updated_at").notNull(),
 });
 
+export const telosProfiles = sqliteTable("telos_profiles", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  mission: text("mission").notNull().default(""),
+  currentState: text("current_state").notNull().default(""),
+  idealState: text("ideal_state").notNull().default(""),
+  version: integer("version").notNull().default(1),
+  isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});
+
+export const telosItems = sqliteTable("telos_items", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  parentId: text("parent_id"),
+  category: text("category").notNull(),
+  title: text("title").notNull(),
+  status: text("status").notNull(),
+  sortOrder: integer("sort_order").notNull().default(0),
+  data: text("data").notNull().default("{}"),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});
+
+export const telosSnapshots = sqliteTable("telos_snapshots", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  itemCount: integer("item_count").notNull().default(0),
+  data: text("data").notNull(),
+  createdAt: text("created_at").notNull(),
+});
+
 export const patterns = sqliteTable("patterns", {
   id: text("id").primaryKey(),
   userId: text("user_id").notNull(),

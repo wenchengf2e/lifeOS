@@ -556,6 +556,327 @@ export function normalizeEnergySessionData(raw: unknown): EnergySessionData {
   return { version: 1, answers };
 }
 
+export const TELOS_CATEGORIES = [
+  "problem",
+  "goal",
+  "challenge",
+  "strategy",
+  "project",
+  "risk",
+] as const;
+
+export type TelosCategory = (typeof TELOS_CATEGORIES)[number];
+
+/** 每类实体唯一合法的父级分类；problem / risk 是根节点。 */
+export const TELOS_PARENT_CATEGORY: Record<TelosCategory, TelosCategory | null> = {
+  problem: null,
+  goal: "problem",
+  challenge: "goal",
+  strategy: "challenge",
+  project: "strategy",
+  risk: null,
+};
+
+/** 状态按分类区分，不允许跨分类的非法状态。 */
+export const TELOS_STATUSES = {
+  problem: ["active", "addressed", "archived"],
+  goal: ["draft", "active", "paused", "achieved", "abandoned"],
+  challenge: ["active", "resolved", "accepted"],
+  strategy: ["draft", "active", "validated", "invalidated", "retired"],
+  project: ["planned", "active", "paused", "completed", "abandoned"],
+  risk: ["watching", "mitigated", "realized", "accepted"],
+} as const satisfies Record<TelosCategory, readonly string[]>;
+
+export type TelosProblemStatus = (typeof TELOS_STATUSES.problem)[number];
+export type TelosGoalStatus = (typeof TELOS_STATUSES.goal)[number];
+export type TelosChallengeStatus = (typeof TELOS_STATUSES.challenge)[number];
+export type TelosStrategyStatus = (typeof TELOS_STATUSES.strategy)[number];
+export type TelosProjectStatus = (typeof TELOS_STATUSES.project)[number];
+export type TelosRiskStatus = (typeof TELOS_STATUSES.risk)[number];
+
+export const TELOS_DEFAULT_STATUS = {
+  problem: "active",
+  goal: "draft",
+  challenge: "active",
+  strategy: "draft",
+  project: "planned",
+  risk: "watching",
+} as const satisfies Record<TelosCategory, string>;
+
+export type TelosControllability = "in" | "partial" | "out";
+
+export type TelosRiskControlState = "none" | "partial" | "ready";
+
+export type TelosProblemData = {
+  description: string;
+  whyItMatters: string;
+  evidence: string[];
+  scope: string;
+};
+
+export type TelosGoalMetric = {
+  name: string;
+  target: string;
+  cadence: string;
+};
+
+export type TelosGoalData = {
+  successCriteria: string[];
+  metric: TelosGoalMetric;
+  deadline: string;
+  tradeoffs: string;
+  notDoing: string[];
+};
+
+export type TelosChallengeData = {
+  evidence: string;
+  rootCause: string;
+  controllability: TelosControllability;
+  /** 1–5，未评时取中间值 3。 */
+  severity: number;
+};
+
+export type TelosStrategyData = {
+  hypothesis: string;
+  assumptions: string[];
+  leadingIndicators: string[];
+  stopConditions: string[];
+};
+
+export type TelosProjectMilestone = {
+  id: string;
+  text: string;
+  due: string;
+  done: boolean;
+};
+
+export type TelosProjectData = {
+  nextAction: string;
+  milestones: TelosProjectMilestone[];
+};
+
+export type TelosRiskControl = {
+  state: TelosRiskControlState;
+  note: string;
+};
+
+export type TelosRiskData = {
+  scenario: string;
+  /** 1–5，未评时取中间值 3。 */
+  probability: number;
+  /** 1–5，未评时取中间值 3。 */
+  impact: number;
+  prevent: TelosRiskControl;
+  detect: TelosRiskControl;
+  respond: TelosRiskControl;
+};
+
+export type TelosData =
+  | TelosProblemData
+  | TelosGoalData
+  | TelosChallengeData
+  | TelosStrategyData
+  | TelosProjectData
+  | TelosRiskData;
+
+export type TelosItemBase = {
+  id: string;
+  parentId: string | null;
+  title: string;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type TelosItemEntry =
+  | (TelosItemBase & {
+      category: "problem";
+      status: TelosProblemStatus;
+      data: TelosProblemData;
+    })
+  | (TelosItemBase & { category: "goal"; status: TelosGoalStatus; data: TelosGoalData })
+  | (TelosItemBase & {
+      category: "challenge";
+      status: TelosChallengeStatus;
+      data: TelosChallengeData;
+    })
+  | (TelosItemBase & { category: "strategy"; status: TelosStrategyStatus; data: TelosStrategyData })
+  | (TelosItemBase & { category: "project"; status: TelosProjectStatus; data: TelosProjectData })
+  | (TelosItemBase & { category: "risk"; status: TelosRiskStatus; data: TelosRiskData });
+
+/** 罗盘档案：每用户一条当前档案，历史交给快照。 */
+export type TelosProfileData = {
+  /** 每次保存 +1，仅作展示 / 调试。 */
+  version: number;
+  mission: string;
+  currentState: string;
+  idealState: string;
+};
+
+export type TelosSnapshotData = {
+  version: 1;
+  profile: TelosProfileData;
+  items: TelosItemEntry[];
+};
+
+export type TelosSnapshotMeta = {
+  id: string;
+  createdAt: string;
+  itemCount: number;
+};
+
+export type TelosSnapshotEntry = TelosSnapshotMeta & {
+  data: TelosSnapshotData;
+};
+
+export function isTelosCategory(value: unknown): value is TelosCategory {
+  return typeof value === "string" && (TELOS_CATEGORIES as readonly string[]).includes(value);
+}
+
+export function isTelosStatus(category: TelosCategory, value: unknown): boolean {
+  return typeof value === "string" && (TELOS_STATUSES[category] as readonly string[]).includes(value);
+}
+
+/** 评分统一四舍五入并夹到 1–5；缺省时取中间值 3。 */
+function normalizeTelosScale(value: unknown): number {
+  return Math.min(5, Math.max(1, Math.round(asNumber(value, 3))));
+}
+
+function normalizeTelosMilestones(value: unknown): TelosProjectMilestone[] {
+  if (!Array.isArray(value)) return [];
+  return value.map((raw, index) => {
+    const item = asRecord(raw);
+    return {
+      id: asString(item.id) || `milestone-${index}`,
+      text: asString(item.text),
+      due: asString(item.due),
+      done: item.done === true,
+    };
+  });
+}
+
+function normalizeTelosRiskControl(raw: unknown): TelosRiskControl {
+  const root = asRecord(raw);
+  const state = root.state;
+  return {
+    state: state === "none" || state === "partial" || state === "ready" ? state : "none",
+    note: asString(root.note),
+  };
+}
+
+export function normalizeTelosProblemData(raw: unknown): TelosProblemData {
+  const root = asRecord(raw);
+  return {
+    description: asString(root.description),
+    whyItMatters: asString(root.whyItMatters),
+    evidence: asStringArray(root.evidence),
+    scope: asString(root.scope),
+  };
+}
+
+export function normalizeTelosGoalData(raw: unknown): TelosGoalData {
+  const root = asRecord(raw);
+  const metric = asRecord(root.metric);
+  return {
+    successCriteria: asStringArray(root.successCriteria),
+    metric: {
+      name: asString(metric.name),
+      target: asString(metric.target),
+      cadence: asString(metric.cadence),
+    },
+    deadline: asString(root.deadline),
+    tradeoffs: asString(root.tradeoffs),
+    notDoing: asStringArray(root.notDoing),
+  };
+}
+
+export function normalizeTelosChallengeData(raw: unknown): TelosChallengeData {
+  const root = asRecord(raw);
+  const controllability = root.controllability;
+  return {
+    evidence: asString(root.evidence),
+    rootCause: asString(root.rootCause),
+    controllability:
+      controllability === "in" || controllability === "partial" || controllability === "out"
+        ? controllability
+        : "in",
+    severity: normalizeTelosScale(root.severity),
+  };
+}
+
+export function normalizeTelosStrategyData(raw: unknown): TelosStrategyData {
+  const root = asRecord(raw);
+  return {
+    hypothesis: asString(root.hypothesis),
+    assumptions: asStringArray(root.assumptions),
+    leadingIndicators: asStringArray(root.leadingIndicators),
+    stopConditions: asStringArray(root.stopConditions),
+  };
+}
+
+export function normalizeTelosProjectData(raw: unknown): TelosProjectData {
+  const root = asRecord(raw);
+  return {
+    nextAction: asString(root.nextAction),
+    milestones: normalizeTelosMilestones(root.milestones),
+  };
+}
+
+export function normalizeTelosRiskData(raw: unknown): TelosRiskData {
+  const root = asRecord(raw);
+  return {
+    scenario: asString(root.scenario),
+    probability: normalizeTelosScale(root.probability),
+    impact: normalizeTelosScale(root.impact),
+    prevent: normalizeTelosRiskControl(root.prevent),
+    detect: normalizeTelosRiskControl(root.detect),
+    respond: normalizeTelosRiskControl(root.respond),
+  };
+}
+
+/** 按分类把 data 归一化成稳定的 JSON 形状，读旧数据时也不会炸。 */
+export function normalizeTelosItemData(category: TelosCategory, raw: unknown): TelosData {
+  switch (category) {
+    case "problem":
+      return normalizeTelosProblemData(raw);
+    case "goal":
+      return normalizeTelosGoalData(raw);
+    case "challenge":
+      return normalizeTelosChallengeData(raw);
+    case "strategy":
+      return normalizeTelosStrategyData(raw);
+    case "project":
+      return normalizeTelosProjectData(raw);
+    case "risk":
+      return normalizeTelosRiskData(raw);
+  }
+}
+
+export function createEmptyTelosData(category: TelosCategory): TelosData {
+  return normalizeTelosItemData(category, {});
+}
+
+/** 把可能缺字段的档案补成完整形状；version 至少为 1。 */
+export function normalizeTelosProfile(raw: unknown): TelosProfileData {
+  const root = asRecord(raw);
+  return {
+    version: Math.max(1, Math.round(asNumber(root.version, 1))),
+    mission: asString(root.mission),
+    currentState: asString(root.currentState),
+    idealState: asString(root.idealState),
+  };
+}
+
+/** 快照由服务端写入，这里只做最低限度的结构兜底。 */
+export function normalizeTelosSnapshotData(raw: unknown): TelosSnapshotData {
+  const root = asRecord(raw);
+  return {
+    version: 1,
+    profile: normalizeTelosProfile(root.profile),
+    items: Array.isArray(root.items) ? (root.items as TelosItemEntry[]) : [],
+  };
+}
+
 export type BootstrapResponse = {
   user: { email: string };
   checkins: CheckinEntry[];
@@ -571,6 +892,9 @@ export type BootstrapResponse = {
 export type ExportResponse = BootstrapResponse & {
   version: 1;
   exportedAt: string;
+  telosProfile: TelosProfileData;
+  telosItems: TelosItemEntry[];
+  telosSnapshots: TelosSnapshotEntry[];
 };
 
 export type ApiErrorBody = {
