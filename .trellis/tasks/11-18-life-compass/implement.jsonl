@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/backend/directory-structure.md", "reason": "Worker 路由、D1 表/迁移、bootstrap 聚合与命名约定"}
+{"file": ".trellis/spec/frontend/directory-structure.md", "reason": "前端页面/组件/content/lib 分层、路由与状态管理约定"}
+{"file": "docs/project-overview.md", "reason": "现有数据模型、bootstrap 数据流、模块边界与当前限制"}
+{"file": "docs/development-workflow.md", "reason": "验证命令（typecheck/build）与无自动化测试的质量门"}

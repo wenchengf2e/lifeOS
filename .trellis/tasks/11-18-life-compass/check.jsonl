@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/backend/directory-structure.md", "reason": "检查后端路由、查询、迁移是否符合项目约定"}
+{"file": ".trellis/spec/frontend/directory-structure.md", "reason": "检查前端分层、命名、缓存策略与样式约定"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "检查类型/API/数据库/前端之间的数据契约一致性"}
+{"file": "docs/development-workflow.md", "reason": "按项目现行质量门执行 typecheck 与 build"}
