@@ -321,11 +321,11 @@ export const compassFieldCopy = {
   },
 } as const;
 
+/** 当前结构统计暂时隐藏；需要恢复时改为 true。 */
+export const COMPASS_SHOW_STATS: boolean = false;
+
 export const compassPageCopy = {
-  eyebrow: "Life Compass",
   title: "人生罗盘",
-  description:
-    "把「我在解决什么问题」一路拆到这周要做的项目：问题 → 目标 → 挑战 → 策略 → 项目。风险单独登记，随时看见预防、检测和应对的缺口。",
   newProblem: "新建问题",
   newRisk: "新建风险",
   statsTitle: "当前结构",

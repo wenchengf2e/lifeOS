@@ -5,9 +5,9 @@ import { CompassCreateDialog } from "../components/compass/CompassCreateDialog";
 import { CompassProfileCard } from "../components/compass/CompassProfileCard";
 import { CompassTree } from "../components/compass/CompassTree";
 import { RiskCard } from "../components/compass/RiskCard";
-import { PageHeader } from "../components/PageHeader";
 import { EmptyState, ErrorState, LoadingPage } from "../components/StateViews";
 import {
+  COMPASS_SHOW_STATS,
   compassCategoryMeta,
   compassCategoryOrder,
   compassCreateCopy,
@@ -167,71 +167,53 @@ export function CompassPage() {
 
   return (
     <>
-      <PageHeader
-        eyebrow={compassPageCopy.eyebrow}
-        title={compassPageCopy.title}
-        description={compassPageCopy.description}
-        action={
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              className="btn-secondary"
-              onClick={() => openRoot("risk")}
-            >
-              + {compassPageCopy.newRisk}
-            </button>
-            <button
-              type="button"
-              className="btn-primary"
-              onClick={() => openRoot("problem")}
-            >
-              + {compassPageCopy.newProblem}
-            </button>
-          </div>
-        }
-      />
+      <h1 className="sr-only">{compassPageCopy.title}</h1>
 
       <CompassProfileCard />
 
-      <section className="mt-6">
-        <p className="mb-3 text-[11px] uppercase tracking-[0.2em] text-moss">
-          {compassPageCopy.statsTitle}
-        </p>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-7">
-          {compassCategoryOrder.map((category) => (
-            <div key={category} className="card p-4">
-              <p className="text-[11px] text-ink-soft">
-                {compassCategoryMeta[category].icon} {compassCategoryMeta[category].label}
-              </p>
-              <p className="mt-1 font-display text-2xl tabular-nums text-ink">
-                {counts[category]}
+      {COMPASS_SHOW_STATS ? (
+        <section className="mt-6">
+          <p className="mb-3 text-[11px] uppercase tracking-[0.2em] text-moss">
+            {compassPageCopy.statsTitle}
+          </p>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-7">
+            {compassCategoryOrder.map((category) => (
+              <div key={category} className="card p-4">
+                <p className="text-[11px] text-ink-soft">
+                  {compassCategoryMeta[category].icon} {compassCategoryMeta[category].label}
+                </p>
+                <p className="mt-1 font-display text-2xl tabular-nums text-ink">
+                  {counts[category]}
+                </p>
+              </div>
+            ))}
+            <div className="card p-4" title={compassPageCopy.blindSpotHint}>
+              <p className="text-[11px] text-ink-soft">⚠ {compassPageCopy.blindSpotLabel}</p>
+              <p
+                className={[
+                  "mt-1 font-display text-2xl tabular-nums",
+                  detectMissing > 0 ? "text-clay" : "text-ink",
+                ].join(" ")}
+              >
+                {detectMissing}
               </p>
             </div>
-          ))}
-          <div
-            className="card p-4"
-            title={compassPageCopy.blindSpotHint}
-          >
-            <p className="text-[11px] text-ink-soft">⚠ {compassPageCopy.blindSpotLabel}</p>
-            <p
-              className={[
-                "mt-1 font-display text-2xl tabular-nums",
-                detectMissing > 0 ? "text-clay" : "text-ink",
-              ].join(" ")}
-            >
-              {detectMissing}
-            </p>
           </div>
-        </div>
-      </section>
+        </section>
+      ) : null}
 
       <section className="mt-10">
-        <div className="mb-4">
-          <p className="text-[11px] uppercase tracking-[0.2em] text-moss">Problem → Project</p>
-          <h2 className="mt-1 text-xl text-ink">{compassPageCopy.treeTitle}</h2>
-          <p className="mt-1 max-w-2xl text-xs leading-6 text-ink-soft">
-            {compassPageCopy.treeDesc}
-          </p>
+        <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.2em] text-moss">Problem → Project</p>
+            <h2 className="mt-1 text-xl text-ink">{compassPageCopy.treeTitle}</h2>
+            <p className="mt-1 max-w-2xl text-xs leading-6 text-ink-soft">
+              {compassPageCopy.treeDesc}
+            </p>
+          </div>
+          <button type="button" className="btn-primary" onClick={() => openRoot("problem")}>
+            + {compassPageCopy.newProblem}
+          </button>
         </div>
 
         {counts.problem === 0 ? (
