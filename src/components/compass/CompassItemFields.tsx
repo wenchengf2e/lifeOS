@@ -93,6 +93,7 @@ function ProblemFields({
         onChange={(evidence) => onChange({ ...data, evidence })}
         placeholder={copy.evidence.placeholder}
         addLabel={copy.evidence.add}
+        addVariant="text"
         max={5}
       />
       <TextField
@@ -124,6 +125,7 @@ function GoalFields({
         onChange={(successCriteria) => onChange({ ...data, successCriteria })}
         placeholder={copy.successCriteria.placeholder}
         addLabel={copy.successCriteria.add}
+        addVariant="text"
         max={5}
       />
 
@@ -177,6 +179,7 @@ function GoalFields({
         onChange={(notDoing) => onChange({ ...data, notDoing })}
         placeholder={copy.notDoing.placeholder}
         addLabel={copy.notDoing.add}
+        addVariant="text"
         max={5}
       />
     </div>
@@ -248,6 +251,7 @@ function StrategyFields({
         onChange={(assumptions) => onChange({ ...data, assumptions })}
         placeholder={copy.assumptions.placeholder}
         addLabel={copy.assumptions.add}
+        addVariant="text"
         max={5}
       />
       <TextListField
@@ -257,6 +261,7 @@ function StrategyFields({
         onChange={(leadingIndicators) => onChange({ ...data, leadingIndicators })}
         placeholder={copy.leadingIndicators.placeholder}
         addLabel={copy.leadingIndicators.add}
+        addVariant="text"
         max={5}
       />
       <TextListField
@@ -266,6 +271,7 @@ function StrategyFields({
         onChange={(stopConditions) => onChange({ ...data, stopConditions })}
         placeholder={copy.stopConditions.placeholder}
         addLabel={copy.stopConditions.add}
+        addVariant="text"
         max={5}
       />
     </div>
@@ -356,7 +362,7 @@ function MilestonesField({
       )}
       <button
         type="button"
-        className="btn-secondary mt-2 text-xs"
+        className="mt-2 pl-3 text-xs font-medium text-moss underline-offset-4 transition hover:text-moss-dark hover:underline"
         onClick={() => onChange([...milestones, createMilestone()])}
       >
         {copy.add}

@@ -93,6 +93,7 @@ export function TextListField({
   onChange,
   placeholder,
   addLabel,
+  addVariant = "button",
   max = 5,
   rows = 2,
 }: {
@@ -102,6 +103,7 @@ export function TextListField({
   onChange: (values: string[]) => void;
   placeholder?: string;
   addLabel: string;
+  addVariant?: "button" | "text";
   max?: number;
   rows?: number;
 }) {
@@ -147,13 +149,25 @@ export function TextListField({
         ))}
       </div>
       {values.length > 0 && values.length < max ? (
-        <button
-          type="button"
-          className="btn-secondary mt-2 text-xs"
-          onClick={() => onChange([...values, ""])}
-        >
-          {addLabel}
-        </button>
+        addVariant === "text" ? (
+          <div className="mt-2 pl-6">
+            <button
+              type="button"
+              className="text-xs font-medium text-moss underline-offset-4 transition hover:text-moss-dark hover:underline"
+              onClick={() => onChange([...values, ""])}
+            >
+              {addLabel}
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            className="btn-secondary mt-2 text-xs"
+            onClick={() => onChange([...values, ""])}
+          >
+            {addLabel}
+          </button>
+        )
       ) : null}
     </div>
   );

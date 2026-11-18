@@ -332,13 +332,10 @@ export const compassPageCopy = {
   blindSpotLabel: "检测缺口",
   blindSpotHint: "有预防意识、但没有检测手段的风险数量",
   treeTitle: "五级链",
-  treeDesc: "从问题往下生长。默认只展开问题层，点开某一级看下一层。",
   treeEmptyTitle: "还没有问题",
   treeEmptyDesc:
     "罗盘的起点是一个你想解决的真实问题。先写下它，再往下长目标、挑战、策略和项目。",
   riskTitle: "风险登记册",
-  riskDesc:
-    "风险不挂在目标链下，独立对照理想状态。按概率 × 影响排序，先处理可能造成大损失、但还没有检测手段的风险。",
   riskEmptyTitle: "还没有登记风险",
   riskEmptyDesc:
     "想想什么情况会让你偏离理想状态。写下场景，再标出预防、检测、应对各做到什么程度。",

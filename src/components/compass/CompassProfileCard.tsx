@@ -7,6 +7,8 @@ type ProfileDraft = {
   idealState: string;
 };
 
+type ProfileMode = "preview" | "edit";
+
 const PROFILE_FIELDS = [
   {
     key: "mission",
@@ -28,6 +30,12 @@ const PROFILE_FIELDS = [
   },
 ] as const;
 
+const EMPTY_HINTS: Record<keyof ProfileDraft, string> = {
+  mission: "还没有写使命。点「编辑」写下你想解决的问题。",
+  currentState: "还没有描述当前状态。点「编辑」补充。",
+  idealState: "还没有描述理想状态。点「编辑」补充。",
+};
+
 export function CompassProfileCard() {
   const { data: profile, isLoading, error, refetch, isFetching } = useTelosProfile();
   const saveProfile = useSaveTelosProfile();
@@ -37,6 +45,7 @@ export function CompassProfileCard() {
     currentState: "",
     idealState: "",
   });
+  const [mode, setMode] = useState<ProfileMode>("preview");
   const [dirty, setDirty] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [savedAt, setSavedAt] = useState<string | null>(null);
@@ -77,20 +86,45 @@ export function CompassProfileCard() {
           minute: "2-digit",
         }),
       );
+      setMode("preview");
     } catch (saveFailure) {
       setSaveError(saveFailure instanceof Error ? saveFailure.message : "保存失败，请重试");
     }
   }
 
+  const missionField = PROFILE_FIELDS[0];
+  const sideFields = PROFILE_FIELDS.slice(1);
+
   return (
     <section className="card p-5 sm:p-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-moss">Profile</p>
-          <h2 className="mt-1 text-xl text-ink">罗盘档案</h2>
-          <p className="mt-1 max-w-2xl text-xs leading-6 text-ink-soft">
-            三段文字描述你为什么做这件事、现在在哪里、想去哪里。历史不在这里堆叠，交给快照。
-          </p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="inline-flex rounded-full border border-line/70 bg-paper-deep/40 p-0.5">
+          <button
+            type="button"
+            aria-pressed={mode === "preview"}
+            className={[
+              "rounded-full px-2.5 py-1 text-[11px] transition",
+              mode === "preview"
+                ? "bg-ink text-paper shadow-sm"
+                : "text-ink-soft hover:text-ink",
+            ].join(" ")}
+            onClick={() => setMode("preview")}
+          >
+            预览
+          </button>
+          <button
+            type="button"
+            aria-pressed={mode === "edit"}
+            className={[
+              "rounded-full px-2.5 py-1 text-[11px] transition",
+              mode === "edit"
+                ? "bg-ink text-paper shadow-sm"
+                : "text-ink-soft hover:text-ink",
+            ].join(" ")}
+            onClick={() => setMode("edit")}
+          >
+            编辑
+          </button>
         </div>
         <span className="rounded-full bg-paper-deep/80 px-2.5 py-1 text-[11px] text-ink-soft">
           v{profile?.version ?? 1}
@@ -113,6 +147,43 @@ export function CompassProfileCard() {
 
       {isLoading ? (
         <p className="mt-4 text-xs text-ink-soft">正在读取档案…</p>
+      ) : mode === "preview" ? (
+        <div className="mt-5 space-y-4">
+          <div className="rounded-2xl border border-moss/15 bg-moss-soft/30 p-5 sm:p-6">
+            <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-moss">
+              {missionField.label}
+            </p>
+            <p
+              className={[
+                "mt-3 min-h-[7rem] whitespace-pre-wrap font-display text-lg leading-8 sm:text-xl sm:leading-9",
+                draft.mission.trim() ? "text-ink" : "text-ink-soft/70",
+              ].join(" ")}
+            >
+              {draft.mission.trim() || EMPTY_HINTS.mission}
+            </p>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            {sideFields.map((field) => (
+              <div
+                key={field.key}
+                className="rounded-2xl border border-line/70 bg-white/50 p-5 sm:p-6"
+              >
+                <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-moss">
+                  {field.label}
+                </p>
+                <p
+                  className={[
+                    "mt-3 min-h-[8rem] whitespace-pre-wrap text-sm leading-7 sm:text-base sm:leading-8",
+                    draft[field.key].trim() ? "text-ink" : "text-ink-soft/70",
+                  ].join(" ")}
+                >
+                  {draft[field.key].trim() || EMPTY_HINTS[field.key]}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
       ) : (
         <div className="mt-5 grid gap-4 md:grid-cols-3">
           {PROFILE_FIELDS.map((field) => (
@@ -120,8 +191,8 @@ export function CompassProfileCard() {
               <span className="block text-sm font-medium text-ink">{field.label}</span>
               <span className="mt-1 block text-[11px] leading-6 text-ink-soft">{field.hint}</span>
               <textarea
-                className="field mt-2 resize-y"
-                rows={4}
+                className="field mt-2 min-h-[11rem] resize-y"
+                rows={9}
                 maxLength={20000}
                 placeholder={field.placeholder}
                 value={draft[field.key]}
@@ -132,29 +203,33 @@ export function CompassProfileCard() {
         </div>
       )}
 
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-        <p className="text-xs text-ink-soft">
-          {saveError ? (
-            <span className="text-clay">保存失败：{saveError}</span>
-          ) : saveProfile.isPending ? (
-            "保存中…"
-          ) : dirty ? (
-            "有未保存的改动"
-          ) : savedAt ? (
-            <span className="text-moss-dark">已保存 · {savedAt}</span>
-          ) : (
-            "改动需要手动保存"
-          )}
-        </p>
-        <button
-          type="button"
-          className="btn-primary"
-          onClick={() => void handleSave()}
-          disabled={saveProfile.isPending || !dirty}
-        >
-          {saveProfile.isPending ? "保存中…" : dirty ? "保存档案" : savedAt ? "已保存 ✓" : "保存档案"}
-        </button>
-      </div>
+      {mode === "edit" || dirty || saveProfile.isPending || saveError || savedAt ? (
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+          <p className="text-xs text-ink-soft">
+            {saveError ? (
+              <span className="text-clay">保存失败：{saveError}</span>
+            ) : saveProfile.isPending ? (
+              "保存中…"
+            ) : dirty ? (
+              "有未保存的改动"
+            ) : savedAt ? (
+              <span className="text-moss-dark">已保存 · {savedAt}</span>
+            ) : (
+              "改动需要手动保存"
+            )}
+          </p>
+          {mode === "edit" || dirty ? (
+            <button
+              type="button"
+              className="btn-primary"
+              onClick={() => void handleSave()}
+              disabled={saveProfile.isPending || !dirty}
+            >
+              {saveProfile.isPending ? "保存中…" : dirty ? "保存档案" : "已保存 ✓"}
+            </button>
+          ) : null}
+        </div>
+      ) : null}
     </section>
   );
 }

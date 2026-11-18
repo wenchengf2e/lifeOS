@@ -430,7 +430,7 @@ export function CompassItemPage() {
             value={draft.status}
             aria-label={compassItemCopy.statusLabel}
             onChange={(event) => updateMeta({ status: event.target.value })}
-            className="rounded-full border border-line bg-white/70 px-3 py-1.5 text-xs text-ink-soft outline-none transition focus:border-moss/50"
+            className="select-pill"
           >
             {TELOS_STATUSES[draft.category].map((status) => (
               <option key={status} value={status}>
@@ -446,7 +446,7 @@ export function CompassItemPage() {
                 value={draft.parentId ?? ""}
                 aria-label={compassItemCopy.parentLabel}
                 onChange={(event) => updateMeta({ parentId: event.target.value || null })}
-                className="max-w-52 rounded-full border border-line bg-white/70 px-3 py-1.5 text-xs text-ink-soft outline-none transition focus:border-moss/50"
+                className="select-pill max-w-52"
               >
                 {allowedParents.length === 0 ? (
                   <option value="">{compassItemCopy.parentEmpty}</option>

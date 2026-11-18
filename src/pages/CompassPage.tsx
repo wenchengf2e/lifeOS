@@ -204,13 +204,7 @@ export function CompassPage() {
 
       <section className="mt-10">
         <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <p className="text-[11px] uppercase tracking-[0.2em] text-moss">Problem → Project</p>
-            <h2 className="mt-1 text-xl text-ink">{compassPageCopy.treeTitle}</h2>
-            <p className="mt-1 max-w-2xl text-xs leading-6 text-ink-soft">
-              {compassPageCopy.treeDesc}
-            </p>
-          </div>
+          <h2 className="text-xl text-ink">{compassPageCopy.treeTitle}</h2>
           <button type="button" className="btn-primary" onClick={() => openRoot("problem")}>
             + {compassPageCopy.newProblem}
           </button>
@@ -234,13 +228,7 @@ export function CompassPage() {
 
       <section className="mt-10">
         <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <p className="text-[11px] uppercase tracking-[0.2em] text-moss">Risk Register</p>
-            <h2 className="mt-1 text-xl text-ink">{compassPageCopy.riskTitle}</h2>
-            <p className="mt-1 max-w-2xl text-xs leading-6 text-ink-soft">
-              {compassPageCopy.riskDesc}
-            </p>
-          </div>
+          <h2 className="text-xl text-ink">{compassPageCopy.riskTitle}</h2>
           <button type="button" className="btn-secondary" onClick={() => openRoot("risk")}>
             + {compassPageCopy.newRisk}
           </button>
