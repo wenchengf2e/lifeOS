@@ -399,7 +399,7 @@ export function CompassItemPage() {
               meta.className,
             ].join(" ")}
           >
-            {meta.icon} {meta.label} · {meta.english}
+            {meta.icon} {meta.label}
           </span>
           <span
             className={[
@@ -511,11 +511,7 @@ export function CompassItemPage() {
               {meta.icon}
             </span>
             <div>
-              <p className="text-[11px] uppercase tracking-[0.16em] text-ink-soft">
-                {meta.english}
-              </p>
               <h2 className="text-2xl text-ink">{meta.label}内容</h2>
-              <p className="mt-1 text-sm leading-7 text-ink-soft">{meta.description}</p>
             </div>
           </div>
 
@@ -526,11 +522,7 @@ export function CompassItemPage() {
 
         <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
           <section className="card p-5">
-            <p className="text-[11px] uppercase tracking-[0.18em] text-moss">Next level</p>
-            <h2 className="mt-1 text-base text-ink">{compassItemCopy.childrenTitle}</h2>
-            <p className="mt-1 text-[11px] leading-6 text-ink-soft">
-              {compassItemCopy.childrenDesc}
-            </p>
+            <h2 className="text-base text-ink">{compassItemCopy.childrenTitle}</h2>
 
             {children.length === 0 ? (
               <p className="mt-3 rounded-2xl border border-dashed border-line bg-paper-deep/30 px-3 py-3 text-xs leading-6 text-ink-soft">
@@ -654,7 +646,6 @@ export function CompassItemPage() {
       {childTarget ? (
         <CompassCreateDialog
           category={childTarget}
-          parentTitle={draft.title}
           submitting={createItem.isPending}
           error={childError}
           onClose={() => {

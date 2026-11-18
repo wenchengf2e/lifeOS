@@ -40,7 +40,7 @@ export function RiskCard({ risk }: { risk: TelosRiskItem }) {
 
       <div className="mt-3 flex flex-wrap gap-1.5">
         <span className="rounded-full bg-ink px-2.5 py-1 text-[11px] tabular-nums text-paper">
-          P{risk.data.probability} × I{risk.data.impact} = {riskScore(risk)}
+          概率 {risk.data.probability} × 影响 {risk.data.impact} = {riskScore(risk)}
         </span>
         {CONTROL_KEYS.map((key) => {
           const stateMeta = compassRiskControlStateMeta[risk.data[key].state];
@@ -53,7 +53,7 @@ export function RiskCard({ risk }: { risk: TelosRiskItem }) {
                 stateMeta.className,
               ].join(" ")}
             >
-              {compassRiskControlMeta[key].label.split(" ")[0]} · {stateMeta.label}
+              {compassRiskControlMeta[key].label} · {stateMeta.label}
             </span>
           );
         })}
@@ -67,7 +67,7 @@ export function RiskCard({ risk }: { risk: TelosRiskItem }) {
             return (
               <div key={key} className="flex gap-1.5">
                 <dt className="shrink-0 text-ink-soft/70">
-                  {compassRiskControlMeta[key].label.split(" ")[0]}
+                  {compassRiskControlMeta[key].label}
                 </dt>
                 <dd className="min-w-0 break-words">{note}</dd>
               </div>

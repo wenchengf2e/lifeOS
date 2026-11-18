@@ -4,7 +4,6 @@ import { compassCategoryMeta, compassCreateCopy, compassCreatePlaceholder } from
 
 type CompassCreateDialogProps = {
   category: TelosCategory;
-  parentTitle: string | null;
   submitting: boolean;
   error: string | null;
   onClose: () => void;
@@ -13,7 +12,6 @@ type CompassCreateDialogProps = {
 
 export function CompassCreateDialog({
   category,
-  parentTitle,
   submitting,
   error,
   onClose,
@@ -72,13 +70,9 @@ export function CompassCreateDialog({
       >
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-[11px] uppercase tracking-[0.2em] text-moss">
-              {meta.english} · New
-            </p>
-            <h2 id="compass-create-title" className="mt-1 text-2xl text-ink">
+            <h2 id="compass-create-title" className="text-2xl text-ink">
               {compassCreateCopy.title} · {meta.label}
             </h2>
-            <p className="mt-2 text-sm leading-7 text-ink-soft">{compassCreateCopy.desc}</p>
           </div>
           <button
             type="button"
@@ -89,16 +83,6 @@ export function CompassCreateDialog({
             ×
           </button>
         </div>
-
-        <p className="mt-4 rounded-2xl bg-paper-deep/55 px-4 py-3 text-xs leading-6 text-ink-soft">
-          {parentTitle ? (
-            <>
-              {compassCreateCopy.childHintPrefix}「{parentTitle}」{compassCreateCopy.childHintSuffix}
-            </>
-          ) : (
-            compassCreateCopy.rootHint
-          )}
-        </p>
 
         <label className="mt-5 block">
           <span className="block text-sm font-medium text-ink">

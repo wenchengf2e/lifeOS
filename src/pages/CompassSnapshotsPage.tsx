@@ -113,9 +113,7 @@ export function CompassSnapshotsPage() {
   return (
     <>
       <PageHeader
-        eyebrow={compassSnapshotsCopy.eyebrow}
         title={compassSnapshotsCopy.title}
-        description={compassSnapshotsCopy.description}
         action={
           <Link to="/compass" className="btn-secondary">
             {compassSnapshotsCopy.back}
@@ -138,11 +136,7 @@ export function CompassSnapshotsPage() {
         <div className="space-y-10">
           <section>
             <div className="mb-4">
-              <p className="text-[11px] uppercase tracking-[0.2em] text-moss">Archive</p>
-              <h2 className="mt-1 text-xl text-ink">{compassSnapshotsCopy.listTitle}</h2>
-              <p className="mt-1 max-w-2xl text-xs leading-6 text-ink-soft">
-                {compassSnapshotsCopy.listDesc}
-              </p>
+              <h2 className="text-xl text-ink">{compassSnapshotsCopy.listTitle}</h2>
             </div>
 
             {deleteError ? <p className="mb-3 text-sm text-clay">{deleteError}</p> : null}
@@ -212,14 +206,8 @@ export function CompassSnapshotsPage() {
           </section>
 
           <section>
-            <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
-              <div>
-                <p className="text-[11px] uppercase tracking-[0.2em] text-moss">Compare</p>
-                <h2 className="mt-1 text-xl text-ink">{compassSnapshotsCopy.compareTitle}</h2>
-                <p className="mt-1 max-w-2xl text-xs leading-6 text-ink-soft">
-                  {compassSnapshotsCopy.compareHint}
-                </p>
-              </div>
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <h2 className="text-xl text-ink">{compassSnapshotsCopy.compareTitle}</h2>
               {selectedA && selectedB ? (
                 <button
                   type="button"

@@ -17,7 +17,6 @@ export const compassCategoryOrder: TelosCategory[] = [
 
 export type CompassCategoryMeta = {
   label: string;
-  english: string;
   icon: string;
   description: string;
   /** 分类标签的胶囊样式。 */
@@ -27,42 +26,36 @@ export type CompassCategoryMeta = {
 export const compassCategoryMeta: Record<TelosCategory, CompassCategoryMeta> = {
   problem: {
     label: "问题",
-    english: "Problem",
     icon: "🌍",
     description: "你要解决的世界问题，罗盘链的起点。",
     className: "bg-ink text-paper",
   },
   goal: {
     label: "目标",
-    english: "Goal",
     icon: "🎯",
     description: "朝问题推进的可衡量里程碑。",
     className: "bg-moss-soft text-moss-dark",
   },
   challenge: {
     label: "挑战",
-    english: "Challenge",
     icon: "🧱",
     description: "挡住目标、需要被解决的障碍。",
     className: "bg-clay/10 text-clay",
   },
   strategy: {
     label: "策略",
-    english: "Strategy",
     icon: "🧭",
     description: "克服挑战的方法与假设。",
     className: "bg-paper-deep/90 text-ink-soft",
   },
   project: {
     label: "项目",
-    english: "Project",
     icon: "🛠",
     description: "推进策略的具体项目与下一步行动。",
     className: "bg-moss-soft text-moss-dark",
   },
   risk: {
     label: "风险",
-    english: "Risk",
     icon: "⚠️",
     description: "可能让你偏离理想状态的场景，独立于五级链。",
     className: "bg-clay/15 text-clay",
@@ -138,15 +131,15 @@ export const compassRiskControlMeta: Record<
   { label: string; hint: string }
 > = {
   prevent: {
-    label: "预防 Prevent",
+    label: "预防",
     hint: "做什么能降低它发生的概率？",
   },
   detect: {
-    label: "检测 Detect",
+    label: "检测",
     hint: "怎么尽早知道它正在发生？没有检测手段是最危险的盲区。",
   },
   respond: {
-    label: "应对 Respond",
+    label: "应对",
     hint: "真的发生后，怎么把损失控制住？",
   },
 };
@@ -332,6 +325,7 @@ export const compassPageCopy = {
   blindSpotLabel: "检测缺口",
   blindSpotHint: "有预防意识、但没有检测手段的风险数量",
   treeTitle: "五级链",
+  activeProjectsTitle: "进行中的项目",
   treeEmptyTitle: "还没有问题",
   treeEmptyDesc:
     "罗盘的起点是一个你想解决的真实问题。先写下它，再往下长目标、挑战、策略和项目。",
@@ -341,7 +335,6 @@ export const compassPageCopy = {
     "想想什么情况会让你偏离理想状态。写下场景，再标出预防、检测、应对各做到什么程度。",
   riskAll: "全部风险",
   snapshotsTitle: "快照",
-  snapshotsDesc: "手动记录当前档案和全部条目，之后可以两两对比，看到自己的变化。",
   createSnapshot: "记录这一刻",
   creatingSnapshot: "记录中…",
   snapshotCreated: "已记录当前状态",
@@ -353,15 +346,11 @@ export const compassPageCopy = {
 
 export const compassCreateCopy = {
   title: "新建条目",
-  desc: "先只写标题。建好之后进入详情页，再补这一类需要的字段。",
   titleLabel: "标题",
   submit: "创建并开始填写",
   creating: "创建中…",
   cancel: "取消",
   failed: "创建失败，请重试",
-  rootHint: "这是一个根级条目。",
-  childHintPrefix: "它会被挂在",
-  childHintSuffix: "的下一级。",
 };
 
 export const compassCreatePlaceholder: Record<TelosCategory, string> = {
@@ -391,7 +380,6 @@ export const compassItemCopy = {
   saveAction: "保存",
   savePending: "保存中…",
   childrenTitle: "下一级",
-  childrenDesc: "这一条往下拆出的内容。",
   childrenEmpty: "还没有下一级。先加一个，把它继续往下拆。",
   addChild: "添加",
   deleteTitle: "删除这一条",
@@ -405,12 +393,9 @@ export const compassItemCopy = {
 };
 
 export const compassSnapshotsCopy = {
-  eyebrow: "Snapshots",
   title: "快照对比",
-  description: "快照不可变。选两份对比，看看这段时间新增、删除、改动了什么。",
   back: "返回人生罗盘",
   listTitle: "全部快照",
-  listDesc: "按记录时间倒序。A 是变更前，B 是变更后。",
   emptyTitle: "还没有快照",
   emptyDesc: "回到人生罗盘，点「记录这一刻」保存当前档案和全部条目。",
   emptyAction: "返回人生罗盘",

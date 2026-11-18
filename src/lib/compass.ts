@@ -57,6 +57,21 @@ export function buildCompassForest(items: TelosItemEntry[]): CompassForest {
   };
 }
 
+export type TelosProjectItem = Extract<TelosItemEntry, { category: "project" }>;
+
+/** 进行中的项目，平铺视图用；按最近更新时间倒序。 */
+export function activeCompassProjects(items: TelosItemEntry[]): TelosProjectItem[] {
+  return items
+    .filter(
+      (item): item is TelosProjectItem =>
+        item.category === "project" && item.status === "active",
+    )
+    .sort((a, b) => {
+      if (a.updatedAt !== b.updatedAt) return a.updatedAt < b.updatedAt ? 1 : -1;
+      return a.title.localeCompare(b.title, "zh-CN");
+    });
+}
+
 /** 从根到当前条目（含当前）的祖先链，用于面包屑。 */
 export function getAncestorChain(items: TelosItemEntry[], id: string): TelosItemEntry[] {
   const byId = new Map(items.map((item) => [item.id, item] as const));

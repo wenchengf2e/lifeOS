@@ -17,6 +17,7 @@ import {
   compassStatusMeta,
 } from "../content/compass";
 import {
+  activeCompassProjects,
   countDescendants,
   countDetectMissingRisks,
   describeCompassDescendants,
@@ -53,6 +54,7 @@ export function CompassPage() {
   const [createTarget, setCreateTarget] = useState<CreateTarget | null>(null);
   const [dialogError, setDialogError] = useState<string | null>(null);
   const [riskFilter, setRiskFilter] = useState<TelosRiskStatus | "all">("all");
+  const [showActiveProjectsOnly, setShowActiveProjectsOnly] = useState(false);
   const [flash, setFlash] = useState<Flash | null>(null);
 
   const items = itemsQuery.data ?? [];
@@ -70,6 +72,8 @@ export function CompassPage() {
     for (const item of items) result[item.category] += 1;
     return result;
   }, [items]);
+
+  const activeProjects = useMemo(() => activeCompassProjects(items), [items]);
 
   const allRisks = useMemo(() => sortRisks(items), [items]);
   const shownRisks = useMemo(() => sortRisks(items, riskFilter), [items, riskFilter]);
@@ -203,14 +207,78 @@ export function CompassPage() {
       ) : null}
 
       <section className="mt-10">
-        <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
-          <h2 className="text-xl text-ink">{compassPageCopy.treeTitle}</h2>
-          <button type="button" className="btn-primary px-3.5 py-1.5 text-xs" onClick={() => openRoot("problem")}>
-            + {compassPageCopy.newProblem}
-          </button>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-xl text-ink">
+            {showActiveProjectsOnly
+              ? compassPageCopy.activeProjectsTitle
+              : compassPageCopy.treeTitle}
+          </h2>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              aria-pressed={showActiveProjectsOnly}
+              className={[
+                "rounded-full border px-3 py-1.5 text-xs transition",
+                showActiveProjectsOnly
+                  ? "border-moss/30 bg-moss-soft text-moss-dark"
+                  : "border-line bg-white/70 text-ink-soft hover:text-ink",
+              ].join(" ")}
+              onClick={() => setShowActiveProjectsOnly((prev) => !prev)}
+            >
+              只看进行中项目
+            </button>
+            <button type="button" className="btn-primary px-3.5 py-1.5 text-xs" onClick={() => openRoot("problem")}>
+              + {compassPageCopy.newProblem}
+            </button>
+          </div>
         </div>
 
-        {counts.problem === 0 ? (
+        {showActiveProjectsOnly ? (
+          activeProjects.length > 0 ? (
+            <ul className="space-y-2">
+              {activeProjects.map((project) => (
+                <li key={project.id}>
+                  <Link
+                    to={`/compass/items/${project.id}`}
+                    className="flex items-center justify-between gap-3 rounded-2xl border border-line/70 bg-white/60 px-4 py-3 transition hover:border-moss/30"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-sm text-ink">{project.title}</p>
+                      {project.data.nextAction.trim() ? (
+                        <p className="mt-0.5 truncate text-[11px] text-ink-soft">
+                          {project.data.nextAction}
+                        </p>
+                      ) : null}
+                    </div>
+                    <span
+                      className={[
+                        "shrink-0 rounded-full px-2 py-0.5 text-[11px]",
+                        compassStatusMeta.project.active.className,
+                      ].join(" ")}
+                    >
+                      {compassStatusMeta.project.active.label}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <EmptyState
+              icon="🌍"
+              title="没有进行中的项目"
+              description="当前没有状态为「进行中」的项目。可以清除筛选查看全部。"
+              action={
+                <button
+                  type="button"
+                  className="btn-secondary px-3 py-1.5 text-xs"
+                  onClick={() => setShowActiveProjectsOnly(false)}
+                >
+                  清除筛选
+                </button>
+              }
+            />
+          )
+        ) : counts.problem === 0 ? (
           <EmptyState
             icon="🌍"
             title={compassPageCopy.treeEmptyTitle}
@@ -304,14 +372,8 @@ export function CompassPage() {
       </section>
 
       <section className="mt-10">
-        <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <p className="text-[11px] uppercase tracking-[0.2em] text-moss">Snapshots</p>
-            <h2 className="mt-1 text-xl text-ink">{compassPageCopy.snapshotsTitle}</h2>
-            <p className="mt-1 max-w-2xl text-xs leading-6 text-ink-soft">
-              {compassPageCopy.snapshotsDesc}
-            </p>
-          </div>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-xl text-ink">{compassPageCopy.snapshotsTitle}</h2>
           <div className="flex flex-wrap gap-2">
             <Link to="/compass/snapshots" className="btn-secondary">
               {compassPageCopy.snapshotViewAll}
@@ -363,7 +425,6 @@ export function CompassPage() {
       {createTarget ? (
         <CompassCreateDialog
           category={createTarget.category}
-          parentTitle={createTarget.parent?.title ?? null}
           submitting={createItem.isPending}
           error={dialogError}
           onClose={closeDialog}
