@@ -37,10 +37,11 @@ worker/
     ├── goals.ts          # 目标 CRUD，五步诊断 data 为 JSON
     ├── items.ts          # 清单项 CRUD
     ├── patterns.ts       # 模式卡 CRUD 与状态流转
-    └── reviews.ts        # 周 / 月复盘读取 / upsert
+    ├── reviews.ts        # 周 / 月复盘读取 / upsert
+    └── telos.ts          # 人生罗盘：档案 / 五级链实体 / 整图快照
 
 shared/types.ts           # 前端与 Worker 共享的类型、常量和数据契约
-migrations/               # D1 migration：0001_init.sql / 0002_review.sql / 0003_goals.sql / 0004_fears.sql / 0005_energy_sessions.sql
+migrations/               # D1 migration：0001_init.sql / 0002_review.sql / 0003_goals.sql / 0004_fears.sql / 0005_energy_sessions.sql / 0006_telos.sql
 wrangler.jsonc            # Worker、D1 binding、静态资源、OWNER_EMAIL 配置
 ```
 
@@ -109,6 +110,22 @@ export default route;
 - 独立表 `energy_sessions(id, user_id, tool, data, completed, created_at, updated_at)`；问题回答存在 `data.answers`（`Record<string, string>`）JSON 里，由 `src/content/energy.ts` 的配置驱动题目 `key`，修改问题模板无需改表结构。
 - 路由：`GET /api/energy`、`GET /api/energy/:id`、`POST /api/energy`（需传合法 `tool`）、`PATCH /api/energy/:id`（`data` 与 `completed` 至少传一个）、`DELETE /api/energy/:id`。
 - 写入前统一走 `normalizeEnergySessionData`，JSON 长度上限 200,000；`energySessions` 已加入 `loadAll()`，自动包含在 `/api/bootstrap` 与 `/api/export` 中。
+
+### 何时进入 `bootstrap`，何时独立加载
+
+- 默认：首屏需要、多个页面共用的资源加入 `loadAll()`，随 `/api/bootstrap` 返回。
+- 例外：数据可能持续增长、页面独立、故障面需要隔离的模块，使用独立接口和独立前端缓存，**不要**修改 `loadAll()` / `BootstrapResponse`。
+- 独立模块仍应进入 `/api/export`：在导出路由里单独查询并附加字段，保持备份完整。
+- 人生罗盘是第一个独立加载模块，详细契约见 [`telos-module.md`](./telos-module.md)。
+
+### 人生罗盘（`telos_*`）
+
+- 三张表：`telos_profiles`（每用户一条 active 档案）、`telos_items`（单父指针 + `data` JSON）、`telos_snapshots`（不可变整图快照）。
+- 五级链：`problem → goal → challenge → strategy → project`；`risk` 是独立根节点。父级和状态由 `worker/routes/telos.ts` 校验。
+- 路由：`GET/PUT /api/telos/profile`、`/api/telos/items`、`/api/telos/snapshots`。
+- `loadAll()` 与 `/api/bootstrap` 不包含任何 telos 字段；`/api/export` 单独附加 `telosProfile` / `telosItems` / `telosSnapshots`。
+- 删除父节点走服务端 BFS 级联，返回 `deletedIds`；快照由服务端抓取，不信任客户端。
+- 档案用独立 `telos_profiles` 表，不要复用 `documents`。
 
 ---
 

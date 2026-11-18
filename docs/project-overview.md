@@ -2,7 +2,7 @@
 
 > 一份面向新成员和 AI 助手的项目说明：技术架构、业务功能、数据模型与当前边界。
 >
-> 更新时间：2026-11-14
+> 更新时间：2026-11-18
 > 详细代码规范见 [`.trellis/spec/frontend/directory-structure.md`](../.trellis/spec/frontend/directory-structure.md) 与 [`.trellis/spec/backend/directory-structure.md`](../.trellis/spec/backend/directory-structure.md)。
 
 ---
@@ -32,7 +32,7 @@ LifeOS 是一个**个人心理工作台**，把「每日记录 → 每周复盘 
 | 样式 | Tailwind CSS 4（`@theme` token） | 语义色 `paper` / `ink` / `moss` / `clay` / `line` |
 | 构建 | Vite 8 + `@cloudflare/vite-plugin` | 本地同时跑前端与 Worker |
 | API | Hono 4（`worker/`） | REST API，与静态资源同一个 Worker |
-| 数据库 | Cloudflare D1（SQLite） | 八张业务表 |
+| 数据库 | Cloudflare D1（SQLite） | 十一张业务表 |
 | ORM | Drizzle ORM（`drizzle-orm/d1`） | 表定义与查询 |
 | 校验 | Zod 4 | Worker 侧请求体校验 |
 | 鉴权 | Cloudflare Access + 邮箱头 | 仅所有者可访问 |
@@ -56,13 +56,14 @@ Cloudflare Worker（Hono，worker/index.ts）
   ├─ 公开路由   /health
   ├─ 全局 API   /api/me · /api/bootstrap · /api/export
   ├─ 资源路由   /api/checkins · /api/docs · /api/fears · /api/goals
-  │             /api/items · /api/reviews · /api/patterns
+  │             /api/items · /api/reviews · /api/patterns · /api/telos
   │
   │  requireUser：邮箱头 → 与 OWNER_EMAIL 比对
   │  Zod 校验 → Drizzle 查询
   ▼
 Cloudflare D1（SQLite，lifeos-db）
   checkins · documents · items · reviews · patterns · goals · fears · energy_sessions
+  telos_profiles · telos_items · telos_snapshots
 ```
 
 前端静态资源与 Worker 同属一个 Cloudflare Worker：
@@ -73,33 +74,34 @@ Cloudflare D1（SQLite，lifeos-db）
 
 ### 2.3 请求与数据流
 
-1. SPA 启动后调用一次 `GET /api/bootstrap`，Worker 用 `loadAll()` 并行读取八张表，返回当前用户的全部数据。
+1. SPA 启动后调用一次 `GET /api/bootstrap`，Worker 用 `loadAll()` 并行读取现有八张核心业务表，返回当前用户的核心数据。人生罗盘不在其中：进入 `/compass` 时才请求 `/api/telos/*`。
 2. 前端把结果放在 TanStack Query 的 `["bootstrap"]` 缓存里，`staleTime: 15s`。
 3. 写操作分两类：
    - **自然键资源**用 `PUT` upsert：打卡按日期、文档按 `(module, key)`、复盘按 `(period_type, period_key)`。
    - **自增 ID 资源**用 `POST` / `PATCH` / `DELETE`：目标、恐惧条目、清单项、模式卡。
-4. 多数 mutation 成功后 invalidate bootstrap；目标与恐惧相关 mutation 用 `setQueryData` 就地更新，避免覆盖正在编辑的草稿。
-5. `GET /api/export` 返回与 bootstrap 相同的数据，外加 `version` 和 `exportedAt`，用于备份。
+4. 多数 mutation 成功后 invalidate bootstrap；目标与恐惧相关 mutation 用 `setQueryData` 就地更新，避免覆盖正在编辑的草稿。人生罗盘 mutation 只更新自己的 `["telos", ...]` 缓存。
+5. `GET /api/export` 返回 bootstrap 的核心数据，外加 `telosProfile` / `telosItems` / `telosSnapshots`、`version` 和 `exportedAt`，用于备份。
 
 ### 2.4 目录结构
 
 ```
 lifeos/
 ├── src/                    # React 前端
-│   ├── components/         # 可复用组件（含 goals/ 五步表单、fears/ 恐惧步骤卡）│   ├── content/            # 纯配置与文案
-│   ├── lib/                # API、Query、日期、统计、派生逻辑
-│   ├── pages/              # 路由页面（XxxPage.tsx）
+│   ├── components/         # 可复用组件（含 goals/ 五步表单、fears/ 恐惧步骤卡、compass/ 罗盘组件）
+│   ├── content/            # 纯配置与文案（含 compass.ts）
+│   ├── lib/                # API、Query、日期、统计、派生逻辑（含 compass.ts）
+│   ├── pages/              # 路由页面（XxxPage.tsx，含 Compass*.tsx）
 │   ├── App.tsx             # 路由表
 │   ├── main.tsx            # 入口与 Provider
 │   └── index.css           # Tailwind 4 + 设计 token
 ├── worker/                 # Hono API Worker
-│   ├── routes/             # checkins / docs / energy / fears / goals / items / reviews / patterns
+│   ├── routes/             # checkins / docs / energy / fears / goals / items / reviews / patterns / telos
 │   ├── db/                 # schema、client、queries
 │   ├── auth.ts             # requireUser 身份中间件
 │   ├── types.ts            # AppEnv（Bindings / Variables）
 │   └── index.ts            # Worker 入口与路由挂载
 ├── shared/types.ts         # 前后端共享类型与常量
-├── migrations/             # D1 migration（0001–0005）
+├── migrations/             # D1 migration（0001–0006）
 ├── public/                 # favicon、manifest、关于页图片
 ├── docs/                   # 设计、运维与开发流程文档
 ├── index.html              # SPA 壳
@@ -156,6 +158,9 @@ npm run cf:tail            # 线上日志
 | `goals` | 单条 | `title`、`domain`、`status`、`data`(JSON 五步) | 五步诊断目标 |
 | `fears` | 单条 | `data`(JSON 五步 + 可选权衡分析)、`archived` | 恐惧清单；标题从内容派生，归档是显式可逆标记 |
 | `energy_sessions` | 单条 | `tool`、`data`(JSON `answers` 字典)、`completed` | 能量充电屋带时间戳的独立练习记录 |
+| `telos_profiles` | 用户 + active 档案 | `mission`、`current_state`、`ideal_state`、`version`、`is_active` | 人生罗盘档案；部分唯一索引保证每用户一条 active |
+| `telos_items` | 单条 | `parent_id`、`category`、`title`、`status`、`sort_order`、`data`(JSON) | 人生罗盘五级链实体与风险 |
+| `telos_snapshots` | 单条 | `item_count`、`data`(JSON `{profile, items}`) | 人生罗盘整图快照，不可变 |
 
 共同约定：
 
@@ -176,6 +181,7 @@ npm run cf:tail            # 线上日志
 | 每日仪式 | `/daily` | 今日行动 / 晚间日记 / 想法 / 今日复盘六问 | `checkins` |
 | 日记 | `/diary` | 只读回看有日记或想法的日期 | `checkins` |
 | 人生 OS | `/lifeos` | 方向卡 + 身份 / 阶段 / 理想 / 差距 / 策略 / 验证六栏 | `documents(module=lifeos)` |
+| 人生罗盘 | `/compass`、`/compass/items/:id`、`/compass/snapshots` | 五级链战略树 + 风险登记册 + 整图快照对比 | `telos_profiles`、`telos_items`、`telos_snapshots` |
 | 五步诊断 | `/principles`、`/principles/:id` | 目标列表 + 单目标五步工作台 | `goals` |
 | 恐惧清单 | `/fears`、`/fears/:id` | 恐惧列表 + 五步恐惧转化（识别 → 根因 → 问题 → 行动 → 验证），含可选权衡分析 | `fears` |
 | 能量充电屋 | `/energy`、`/energy/:sessionId` | 自我觉察训练 / 显化日记 / 认知重塑书写 / 行为模式分析四工具，一步一问沉浸式书写 + 全文回看 | `energy_sessions` |
@@ -277,7 +283,20 @@ npm run cf:tail            # 线上日志
 - 数据写入 `documents(module=reality, key=trading)`，并镜像到 `localStorage`；写入失败时先用本地状态兜底。
 - 当前为未提交功能，README 与相关文档尚未同步。
 
-### 3.10 恐惧清单 `/fears`
+### 3.10 人生罗盘 `/compass`
+
+业务意图：用 Problem → Goal → Challenge → Strategy → Project 五级链把「我在解决什么问题」到「这周在做什么项目」串成一条线；Risk 独立登记，用 prevent / detect / respond 暴露「有预防但没检测」的盲区；快照对比看见长期变化。
+
+机制：
+
+- 三张独立表：`telos_profiles`（每用户一条 active 档案）、`telos_items`（单父指针 + `data` JSON）、`telos_snapshots`（不可变整图快照）。
+- 实体严格按五级链挂父级；`risk` 是独立根节点。父级、状态和 `data` 由 Worker 校验。
+- 页面通过 `/api/telos/*` 独立加载，不进入 `/api/bootstrap`；`/api/export` 单独包含罗盘数据。
+- 删除父节点级联整棵子树，二次确认显示后代数量。
+- 快照仅手动创建，整图存档；diff 在前端确定性计算，不依赖 AI。
+- 档案（mission / currentState / idealState）每用户一条 active 行，历史由快照承担。
+
+### 3.11 恐惧清单 `/fears`
 
 业务意图：把一条模糊的恐惧拆成五步，最后变成可以验证的下一步行动。恐惧写下来、拆开之后，才有机会被处理，而不是一直在脑子里放大。
 
@@ -299,14 +318,14 @@ npm run cf:tail            # 线上日志
 - 第 3 步和第 4 步之间有一块可选的「权衡分析」：最多 3 条潜在好处，把握程度 / 影响程度各 1–5 分（0 表示未评），一段历史案例，以及 6 个月 / 1 年 / 3 年后的不行动代价；存在 `data.analysis` 里，默认折叠、有内容自动展开，不计入五步进度。
 - 第 4 步只作文本记录，暂不与清单 / 五步诊断联动。
 
-### 3.11 关于 `/about`
+### 3.12 关于 `/about`
 
 - 静态内容页，不读写 D1。
 - 内容在 `src/content/about.json`，支持段落、小节、列表、引用、提示框、图片。
 - 图片放 `public/about/`，随静态资源发布。
 - 仓库公开，**不要放私人日记或真实联系方式**。
 
-### 3.12 业务闭环
+### 3.13 业务闭环
 
 ```
 人生 OS（方向）
@@ -338,6 +357,7 @@ npm run cf:tail            # 线上日志
 - **月复盘只有数据结构**：API 支持 `period_type = "month"`，没有页面。
 - **清单能力不完整**：缺少勾选完成、日期分组。
 - **旧 localStorage 数据没有导入页面**。
+- **人生罗盘与旧模块不联动**：独立表、独立加载，旧的人生 OS / 五步诊断 / 恐惧清单暂不迁移。
 
 ### 4.2 后续方向（来自 README）
 

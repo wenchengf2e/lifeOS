@@ -17,7 +17,7 @@
 - `src/App.tsx`：唯一的扁平路由表；所有页面都包在 `Layout` 里。
 - `src/index.css`：Tailwind 4 入口、`@theme` 设计 token、`.card` / `.field` / `.btn-*` 等共享类。
 
-没有 Redux / Zustand 之类的全局状态库。服务端数据只有一份 `["bootstrap"]` 查询缓存；页面内的编辑状态用 `useState` 或 `useReducer` 局部管理，当前日期 / 步骤等选择状态放在 URL 查询参数里。
+没有 Redux / Zustand 之类的全局状态库。默认使用一份 `["bootstrap"]` 查询缓存；独立加载模块（人生罗盘）使用自己的 query key（`["telos", ...]`）。页面内的编辑状态用 `useState` 或 `useReducer` 局部管理，当前日期 / 步骤等选择状态放在 URL 查询参数里。
 
 ---
 
@@ -44,13 +44,15 @@ src/
 │   ├── goals/
 │   │   ├── fields.tsx          # FieldHeader / TextField / TextInput / TextListField / SegmentedField / StepEmpty
 │   │   └── Step*.tsx           # 五步诊断各步骤表单：目标 / 问题 / 诊断 / 方案 / 践行
-│   └── fears/
-│       ├── FearAnalysisCard.tsx # 第 3、4 步之间的可选权衡分析（折叠 / 把握 / 历史案例 / 不行动代价）
-│       └── FearStepField.tsx   # 恐惧清单单个步骤卡 + 文本域
+│   ├── fears/
+│   │   ├── FearAnalysisCard.tsx # 第 3、4 步之间的可选权衡分析（折叠 / 把握 / 历史案例 / 不行动代价）
+│   │   └── FearStepField.tsx   # 恐惧清单单个步骤卡 + 文本域
+│   └── compass/                # 人生罗盘：档案卡 / 递归树 / 分类字段 / 风险卡 / 快照 diff
 ├── content/                    # 纯配置与文案（无 JSX）
 │   ├── autosave.ts             # 自动保存防抖延时（能量充电屋 / 恐惧 / 五步诊断共用）
 │   ├── daily.ts                # 每日仪式四模块与字段
 │   ├── energy.ts               # 能量充电屋四工具与默认问题模板
+│   ├── compass.ts              # 人生罗盘分类 / 状态 / 字段 / 文案
 │   ├── fears.ts                # 恐惧清单五步定义、归档筛选、权衡分析文案
 │   ├── goals.ts                # 领域、状态、五步定义、限额与文案
 │   ├── lifeos.ts               # 方向卡与人生 OS 六栏
@@ -61,8 +63,9 @@ src/
 │   └── about.json              # 关于页静态内容
 ├── lib/
 │   ├── api.ts                  # fetch 封装、ApiError、所有端点方法
-│   ├── queries.ts              # bootstrap 查询与各类 mutation
+│   ├── queries.ts              # bootstrap 查询、独立模块查询与各类 mutation
 │   ├── energy.ts               # 能量充电屋派生：工具查找、答题进度、摘要、时间格式化
+│   ├── compass.ts              # 人生罗盘派生：建树、祖先链、后代计数、风险排序、快照 diff
 │   ├── fears.ts                # 恐惧派生：标题、完成度、归档过滤、下一步预览、分析状态
 │   ├── goals.ts                # 五步派生：完成度、进度、检查清单、停滞判断
 │   ├── stats.ts                # 打卡完成判断、日期集合、月 / 总计数、连续天数
@@ -83,6 +86,9 @@ src/
     ├── EnergySessionPage.tsx   # 单次充电练习（一步一问沉浸书写 + 全文回看双模式）
     ├── ListsPage.tsx           # 清单（四个 tab）
     ├── RealityPage.tsx         # Reality OS 投资六维
+    ├── CompassPage.tsx         # 人生罗盘主页（档案 + 五级树 + 风险登记册 + 快照）
+    ├── CompassItemPage.tsx     # 罗盘实体详情（分类字段 + 自动保存 + 级联删除）
+    ├── CompassSnapshotsPage.tsx # 快照列表 + A/B 对比
     ├── AboutPage.tsx           # 静态关于页
     └── NotFoundPage.tsx        # 404
 ```
@@ -106,6 +112,9 @@ src/
 | `/principles` | `GoalsPage` |
 | `/principles/:goalId` | `GoalDetailPage`（`?step=1..5`） |
 | `/reality` | `RealityPage` |
+| `/compass` | `CompassPage` |
+| `/compass/items/:itemId` | `CompassItemPage` |
+| `/compass/snapshots` | `CompassSnapshotsPage`（`?a=&b=` 选择两份快照） |
 | `/about` | `AboutPage` |
 | `*` | `NotFoundPage` |
 
@@ -133,7 +142,7 @@ src/
 
 ### 状态与数据流
 
-- 服务端状态统一通过 `useBootstrap()` 读取，查询键固定为 `["bootstrap"]`，`staleTime: 15s`。
+- 默认服务端状态通过 `useBootstrap()` 读取，查询键固定为 `["bootstrap"]`，`staleTime: 15s`；独立加载模块见下文。
 - 写操作分两类：
   - 打卡、文档、清单、复盘、模式卡：mutation 成功后 invalidate `["bootstrap"]`。
   - 目标、恐惧清单：用 `setQueryData` 就地更新缓存，避免覆盖正在编辑的草稿。
@@ -142,11 +151,24 @@ src/
 - 防抖延时统一用 `src/content/autosave.ts` 的 `AUTOSAVE_DEBOUNCE_MS`，不要在页面里写死数字。
 - 能量充电屋单次练习页（`EnergySessionPage`）用 URL `?mode=write|read&step=1..N` 同时记录「书写 / 回看」模式和当前题号，刷新或分享链接都能回到同一题。
 
+### 独立加载模块（人生罗盘）
+
+- 罗盘数据不进入 bootstrap，使用独立 query key：
+  - `["telos","items"]` → `GET /api/telos/items`
+  - `["telos","profile"]` → `GET /api/telos/profile`
+  - `["telos","snapshots"]`、`["telos","snapshot", id]` → 快照
+- mutation 只更新对应的 `["telos", ...]` 缓存；不要 invalidate `["bootstrap"]`。
+- 档案保存是显式按钮，不是自动保存；保存中继续输入时，旧响应不得清除 dirty 或覆盖新草稿。
+- 详情页自动保存沿用 `AUTOSAVE_DEBOUNCE_MS` + 版本守卫 + 离开补保存。
+- 级联删除确认框显示后代数量；成功后按响应 `deletedIds` 精确移除缓存。
+- 快照对比从 URL `?a=&b=` 恢复选择；移动端纵向堆叠，不能横向滚动。
+
 ### 派生逻辑
 
 - 打卡完成判断、连续天数、月度统计 → `src/lib/stats.ts`。
 - 五步完成度、进度、检查清单、停滞判断 → `src/lib/goals.ts`。
 - 恐惧标题（第 1 步首行）、完成度、归档过滤、下一步预览、权衡分析状态 → `src/lib/fears.ts`。
+- 罗盘建树、祖先链、后代计数、风险排序、快照 diff → `src/lib/compass.ts`。
 - 日期键、ISO 周、中文格式化 → `src/lib/date.ts`。
 - 页面里不要重复实现这些计算。
 
@@ -177,4 +199,6 @@ src/
 | 新模块复用 documents + localStorage 兜底 | `src/lib/useReality.ts`、`src/pages/RealityPage.tsx` |
 | 列表 + 详情 + 自动保存 + 派生状态的新模块 | `src/pages/FearsPage.tsx`、`src/pages/FearDetailPage.tsx`、`src/lib/fears.ts` |
 | 配置驱动的一步一问沉浸式书写 + 回看双模式 | `src/pages/EnergyPage.tsx`、`src/pages/EnergySessionPage.tsx`、`src/content/energy.ts`、`src/lib/energy.ts` |
+| 独立加载模块 + 独立 query key | `src/pages/CompassPage.tsx`、`src/lib/queries.ts` |
+| 整图快照 diff | `src/lib/compass.ts`、`src/pages/CompassSnapshotsPage.tsx` |
 | 静态内容页 | `src/pages/AboutPage.tsx` + `src/content/about.json` |
