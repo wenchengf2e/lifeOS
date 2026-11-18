@@ -155,7 +155,7 @@ export function CompassProfileCard() {
             </p>
             <p
               className={[
-                "mt-3 min-h-[7rem] whitespace-pre-wrap font-display text-lg leading-8 sm:text-xl sm:leading-9",
+                "mt-3 min-h-[7rem] whitespace-pre-wrap text-sm leading-7",
                 draft.mission.trim() ? "text-ink" : "text-ink-soft/70",
               ].join(" ")}
             >
@@ -174,7 +174,7 @@ export function CompassProfileCard() {
                 </p>
                 <p
                   className={[
-                    "mt-3 min-h-[8rem] whitespace-pre-wrap text-sm leading-7 sm:text-base sm:leading-8",
+                    "mt-3 min-h-[8rem] whitespace-pre-wrap text-sm leading-7",
                     draft[field.key].trim() ? "text-ink" : "text-ink-soft/70",
                   ].join(" ")}
                 >
