@@ -96,7 +96,7 @@ export function CompassProfileCard() {
   const sideFields = PROFILE_FIELDS.slice(1);
 
   return (
-    <section className="card p-5 sm:p-6">
+    <section className="card p-3 sm:p-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="inline-flex rounded-full border border-line/70 bg-paper-deep/40 p-0.5">
           <button
@@ -148,14 +148,14 @@ export function CompassProfileCard() {
       {isLoading ? (
         <p className="mt-4 text-xs text-ink-soft">正在读取档案…</p>
       ) : mode === "preview" ? (
-        <div className="mt-5 space-y-4">
-          <div className="rounded-2xl border border-moss/15 bg-moss-soft/30 p-5 sm:p-6">
+        <div className="mt-3 space-y-3">
+          <div className="rounded-2xl border border-moss/15 bg-moss-soft/30 p-3 sm:p-4">
             <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-moss">
               {missionField.label}
             </p>
             <p
               className={[
-                "mt-3 min-h-[7rem] whitespace-pre-wrap text-sm leading-7",
+                "mt-2 min-h-[7rem] whitespace-pre-wrap text-sm leading-7",
                 draft.mission.trim() ? "text-ink" : "text-ink-soft/70",
               ].join(" ")}
             >
@@ -163,18 +163,18 @@ export function CompassProfileCard() {
             </p>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-3 md:grid-cols-2">
             {sideFields.map((field) => (
               <div
                 key={field.key}
-                className="rounded-2xl border border-line/70 bg-white/50 p-5 sm:p-6"
+                className="rounded-2xl border border-line/70 bg-white/50 p-3 sm:p-4"
               >
                 <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-moss">
                   {field.label}
                 </p>
                 <p
                   className={[
-                    "mt-3 min-h-[8rem] whitespace-pre-wrap text-sm leading-7",
+                    "mt-2 min-h-[8rem] whitespace-pre-wrap text-sm leading-7",
                     draft[field.key].trim() ? "text-ink" : "text-ink-soft/70",
                   ].join(" ")}
                 >
@@ -185,7 +185,7 @@ export function CompassProfileCard() {
           </div>
         </div>
       ) : (
-        <div className="mt-5 grid gap-4 md:grid-cols-3">
+        <div className="mt-3 grid gap-3 md:grid-cols-3">
           {PROFILE_FIELDS.map((field) => (
             <label key={field.key} className="block">
               <span className="block text-sm font-medium text-ink">{field.label}</span>
@@ -204,7 +204,7 @@ export function CompassProfileCard() {
       )}
 
       {mode === "edit" || dirty || saveProfile.isPending || saveError || savedAt ? (
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
           <p className="text-xs text-ink-soft">
             {saveError ? (
               <span className="text-clay">保存失败：{saveError}</span>
