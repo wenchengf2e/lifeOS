@@ -2,7 +2,7 @@
 
 > 一份面向新成员和 AI 助手的项目说明：技术架构、业务功能、数据模型与当前边界。
 >
-> 更新时间：2026-11-18
+> 更新时间：2026-11-20
 > 详细代码规范见 [`.trellis/spec/frontend/directory-structure.md`](../.trellis/spec/frontend/directory-structure.md) 与 [`.trellis/spec/backend/directory-structure.md`](../.trellis/spec/backend/directory-structure.md)。
 
 ---
@@ -35,6 +35,7 @@ LifeOS 是一个**个人心理工作台**，把「每日记录 → 每周复盘 
 | 数据库 | Cloudflare D1（SQLite） | 十一张业务表 |
 | ORM | Drizzle ORM（`drizzle-orm/d1`） | 表定义与查询 |
 | 校验 | Zod 4 | Worker 侧请求体校验 |
+| AI | OpenAI 兼容 Chat Completions（可选） | AI 教练；未配置 Key 时降级为本地启发式引擎 |
 | 鉴权 | Cloudflare Access + 邮箱头 | 仅所有者可访问 |
 | 部署 | Cloudflare Workers Static Assets | SPA + API 一体部署 |
 | 配置 | Wrangler 4 | D1 binding、静态资源、环境变量 |
@@ -56,7 +57,7 @@ Cloudflare Worker（Hono，worker/index.ts）
   ├─ 公开路由   /health
   ├─ 全局 API   /api/me · /api/bootstrap · /api/export
   ├─ 资源路由   /api/checkins · /api/docs · /api/fears · /api/goals
-  │             /api/items · /api/reviews · /api/patterns · /api/telos
+  │             /api/items · /api/reviews · /api/patterns · /api/telos · /api/coach
   │
   │  requireUser：邮箱头 → 与 OWNER_EMAIL 比对
   │  Zod 校验 → Drizzle 查询
@@ -64,6 +65,7 @@ Cloudflare Worker（Hono，worker/index.ts）
 Cloudflare D1（SQLite，lifeos-db）
   checkins · documents · items · reviews · patterns · goals · fears · energy_sessions
   telos_profiles · telos_items · telos_snapshots
+  coach_profiles · chat_sessions · chat_messages
 ```
 
 前端静态资源与 Worker 同属一个 Cloudflare Worker：
@@ -87,21 +89,22 @@ Cloudflare D1（SQLite，lifeos-db）
 ```
 lifeos/
 ├── src/                    # React 前端
-│   ├── components/         # 可复用组件（含 goals/ 五步表单、fears/ 恐惧步骤卡、compass/ 罗盘组件）
-│   ├── content/            # 纯配置与文案（含 compass.ts）
+│   ├── components/         # 可复用组件（含 goals/ 五步表单、fears/ 恐惧步骤卡、compass/ 罗盘组件、coach/ 教练组件）
+│   ├── content/            # 纯配置与文案（含 compass.ts、coach.ts）
 │   ├── lib/                # API、Query、日期、统计、派生逻辑（含 compass.ts）
-│   ├── pages/              # 路由页面（XxxPage.tsx，含 Compass*.tsx）
+│   ├── pages/              # 路由页面（XxxPage.tsx，含 Compass*.tsx、CoachPage.tsx）
 │   ├── App.tsx             # 路由表
 │   ├── main.tsx            # 入口与 Provider
 │   └── index.css           # Tailwind 4 + 设计 token
 ├── worker/                 # Hono API Worker
-│   ├── routes/             # checkins / docs / energy / fears / goals / items / reviews / patterns / telos
+│   ├── routes/             # checkins / coach / docs / energy / fears / goals / items / reviews / patterns / telos
+│   ├── coach/              # 7 大成长模型、主动洞察、上下文装配、LLM 与本地引擎
 │   ├── db/                 # schema、client、queries
 │   ├── auth.ts             # requireUser 身份中间件
 │   ├── types.ts            # AppEnv（Bindings / Variables）
 │   └── index.ts            # Worker 入口与路由挂载
 ├── shared/types.ts         # 前后端共享类型与常量
-├── migrations/             # D1 migration（0001–0006）
+├── migrations/             # D1 migration（0001–0007）
 ├── public/                 # favicon、manifest、关于页图片
 ├── docs/                   # 设计、运维与开发流程文档
 ├── index.html              # SPA 壳
@@ -161,6 +164,9 @@ npm run cf:tail            # 线上日志
 | `telos_profiles` | 用户 + active 档案 | `mission`、`current_state`、`ideal_state`、`version`、`is_active` | 人生罗盘档案；部分唯一索引保证每用户一条 active |
 | `telos_items` | 单条 | `parent_id`、`category`、`title`、`status`、`sort_order`、`data`(JSON) | 人生罗盘五级链实体与风险 |
 | `telos_snapshots` | 单条 | `item_count`、`data`(JSON `{profile, items}`) | 人生罗盘整图快照，不可变 |
+| `coach_profiles` | 用户 + active 画像 | `data`(JSON 作息 / 能量窗口 / 沟通偏好 / 执行线索 / 长期洞察)、`version`、`is_active` | AI 教练画像；部分唯一索引保证每用户一条 active |
+| `chat_sessions` | 单条 | `mode`、`skill`、`stage`、`title`、`summary`、`trigger_ref_json`、`status` | 教练话题单元；前端默认续接最近 active |
+| `chat_messages` | 单条 | `session_id`、`seq`、`role`、`content`、`skill`、`stage`、`quick_replies_json`、`proposals_json`、`refs_json`、`context_snapshot_json`、`model`、`token_usage` | append-only 消息流水；只有提案状态会更新 |
 
 共同约定：
 
@@ -188,6 +194,7 @@ npm run cf:tail            # 线上日志
 | 复盘 | `/review`、`/review/week/:key` | 周复盘四步向导 + 模式库 | `reviews`、`patterns`、`items` |
 | 清单 | `/lists` | 成就 / 痛苦 / 关键改变 / 复盘动作 | `items` |
 | Reality OS | `/reality` | 投资能力六维 T 度雷达与升级 | `documents(module=reality)` |
+| AI 教练 | `/coach` | 主动洞察 + 单一连续对话主线 + 成长模型路由 + 确认后回写业务表 | `coach_profiles`、`chat_sessions`、`chat_messages` |
 | 关于 | `/about` | 项目理念、设计说明、模块介绍 | 静态 `about.json` |
 
 ### 3.2 总览 `/`
@@ -318,14 +325,32 @@ npm run cf:tail            # 线上日志
 - 第 3 步和第 4 步之间有一块可选的「权衡分析」：最多 3 条潜在好处，把握程度 / 影响程度各 1–5 分（0 表示未评），一段历史案例，以及 6 个月 / 1 年 / 3 年后的不行动代价；存在 `data.analysis` 里，默认折叠、有内容自动展开，不计入五步进度。
 - 第 4 步只作文本记录，暂不与清单 / 五步诊断联动。
 
-### 3.12 关于 `/about`
+### 3.12 AI 智能教练 `/coach`
+
+业务意图：把 `life-coach-main` 的 7 大成长模型与 LifeOS 沉淀的数据接起来，让教练主动发现卡点、按成长循环推进对话，并把结论落回业务表，降低「每次自己从头想」的心智负担。
+
+机制：
+
+- **单一连续主线 + 底层话题分段**：默认续接最近一条 `active` 会话；点「完成本轮」或「换个话题」才归档为历史话题并生成一句话 `summary`。
+- **主动洞察**：服务端确定性扫描打卡断签、停滞目标 / 罗盘项目、未拆解恐惧、待复盘周、画像空缺，生成最多 3 张卡片；客户端不能伪造 `signalId`。
+- **成长模型路由**：7 个 Skill（人生愿景 / 拖延执行 / 计划 / 复盘 / 习惯 / 精力 / 复杂问题）× 5 个阶段（接住 → 澄清 → 觉察 → 小实验 → 收尾）。显式 Skill 芯片优先于关键词路由。
+- **上下文注入**：按 Skill 场景从 D1 抽取画像、最近打卡、目标、罗盘、恐惧、模式与周复盘摘要，写入 `context_snapshot_json`。
+- **低负担交互**：每轮 2–4 个快捷回复胶囊；回复以纯文本 / Markdown 原样换行展示。
+- **确认后回写**：四类提案（今日行动 / 模式卡 / 恐惧行动 / 教练画像）默认 `pending`，用户点「采纳并写入」才落库，并记录 `refs`；重复采纳幂等。
+- **模型调用**：配置 `AI_API_KEY` 时走 OpenAI 兼容接口（`AI_BASE_URL` / `AI_MODEL` 可选）；未配置或失败时自动降级为本地启发式教练引擎。
+- **独立加载**：不进 `/api/bootstrap`，使用 `["coach","state"]` 与 `["coach","session",id]`；`/api/export` 完整附加三表数据。
+- **日期**：请求携带客户端本地 `date` / `localDate`，避免 Worker UTC 在凌晨把行动写到前一天。
+
+详细契约见 [`.trellis/spec/backend/coach-module.md`](../.trellis/spec/backend/coach-module.md)。
+
+### 3.13 关于 `/about`
 
 - 静态内容页，不读写 D1。
 - 内容在 `src/content/about.json`，支持段落、小节、列表、引用、提示框、图片。
 - 图片放 `public/about/`，随静态资源发布。
 - 仓库公开，**不要放私人日记或真实联系方式**。
 
-### 3.13 业务闭环
+### 3.14 业务闭环
 
 ```
 人生 OS（方向）
@@ -343,6 +368,11 @@ npm run cf:tail            # 线上日志
 清单（成就 / 改变 / 动作）      月复盘（待实现）
 
 恐惧清单（回避 → 行动） ──► 第 4 步动作 ──► 每日仪式 / 清单
+
+AI 教练（主动洞察 → 成长模型对话 → 小实验提案）
+    │  采纳后回写
+    ▼
+今日行动 / 模式库 / 恐惧清单 / 教练画像 ──► 下一轮复盘与对话
 ```
 
 ---
@@ -358,6 +388,8 @@ npm run cf:tail            # 线上日志
 - **清单能力不完整**：缺少勾选完成、日期分组。
 - **旧 localStorage 数据没有导入页面**。
 - **人生罗盘与旧模块不联动**：独立表、独立加载，旧的人生 OS / 五步诊断 / 恐惧清单暂不迁移。
+- **AI 教练依赖可选的外部模型**：未配置 `AI_API_KEY` 时使用本地启发式引擎，回复质量与灵活性低于真实模型；上游模型不可用时不会报错，但会退回本地模式。
+- **AI 教练回写非事务**：业务行写入与消息提案状态更新是两条语句，极端失败下可能留下「已写入但提案仍 pending」；单用户顺序操作下影响很小。
 
 ### 4.2 后续方向（来自 README）
 
@@ -373,10 +405,11 @@ npm run cf:tail            # 线上日志
 | 文档 | 内容 |
 | --- | --- |
 | [`README.md`](../README.md) | 项目介绍、API 表、首次部署、备份 |
-| [`docs/development-workflow.md`](./development-workflow.md) | 开发流程、测试现状、风险与建议 || [`docs/goal-module-design.md`](./goal-module-design.md) | 目标模块与五步诊断的设计取舍 |
+| [`docs/development-workflow.md`](./development-workflow.md) | 开发流程、测试现状、风险与建议 |
+| [`docs/goal-module-design.md`](./goal-module-design.md) | 目标模块与五步诊断的设计取舍 |
 | [`docs/review-module-design.md`](./review-module-design.md) | 周复盘与模式库的设计依据 |
 | [`docs/about-content.md`](./about-content.md) | 关于页 JSON 结构与图片规范 |
 | [`docs/custom-domain.md`](./custom-domain.md) | 自定义域名与国内访问 |
-| [`docs/coach-skill.md`](./coach-skill.md) | 教练能力草案（未实现） |
+| [`.trellis/spec/backend/coach-module.md`](../.trellis/spec/backend/coach-module.md) | AI 教练模块的 DB / API / 提案回写 / LLM 降级契约 |
 | [`.trellis/spec/frontend/directory-structure.md`](../.trellis/spec/frontend/directory-structure.md) | 前端目录与命名规范 |
 | [`.trellis/spec/backend/directory-structure.md`](../.trellis/spec/backend/directory-structure.md) | 后端目录、模块与迁移规范 |

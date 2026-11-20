@@ -18,13 +18,14 @@
 
 ```
 src/             React 前端
-  components/    布局、日历、状态组件（含 goals/ 五步表单、fears/ 恐惧步骤卡）
-  content/       每日仪式、人生 OS、目标、恐惧清单、复盘、清单的文案配置；关于页静态内容
+  components/    布局、日历、状态组件（含 goals/ 五步表单、fears/ 恐惧步骤卡、coach/ 教练组件）
+  content/       每日仪式、人生 OS、目标、恐惧清单、复盘、清单、AI 教练的文案配置；关于页静态内容
   lib/           API 客户端、查询 hooks、日期与统计工具
-  pages/         总览、每日仪式、日记、复盘、人生 OS、目标与五步诊断、恐惧清单、清单、关于
+  pages/         总览、每日仪式、日记、复盘、人生 OS、目标与五步诊断、恐惧清单、清单、AI 教练、关于
 public/          静态资源：favicon / site.webmanifest、关于页图片（public/about/）
 worker/          Hono API Worker
-  routes/        checkins / docs / fears / goals / items / reviews / patterns
+  routes/        checkins / coach / docs / fears / goals / items / reviews / patterns / telos
+  coach/         7 大成长模型、主动洞察、上下文装配、LLM 与本地引擎
   db/            Drizzle schema、client、查询
 shared/          前后端共享类型
 migrations/      D1 migration
@@ -54,6 +55,26 @@ npm run cf:tail         # 线上日志
 
 当前开发流程、自动化测试现状和待补测试，见
 [docs/development-workflow.md](docs/development-workflow.md)。
+
+### AI 教练模型配置（可选）
+
+`/coach` 不配置模型也能用：没有 `AI_API_KEY` 时自动降级为本地启发式教练引擎。要接入真实模型，配置三个环境变量（OpenAI 兼容接口）：
+
+| 变量 | 必填 | 说明 |
+| --- | --- | --- |
+| `AI_API_KEY` | 否 | 模型 API Key；线上用 `npx wrangler secret put AI_API_KEY`，本地写 `.dev.vars` |
+| `AI_BASE_URL` | 否 | 默认 `https://api.openai.com/v1`；也可填 DeepSeek、OpenRouter 等兼容端点 |
+| `AI_MODEL` | 否 | 默认 `deepseek-chat` |
+
+```bash
+# 本地 .dev.vars（不要提交）
+AI_API_KEY=sk-...
+AI_BASE_URL=https://api.deepseek.com/v1
+AI_MODEL=deepseek-chat
+
+# 线上
+npx wrangler secret put AI_API_KEY
+```
 
 ## 首次部署
 
@@ -157,6 +178,12 @@ Worker 的校验逻辑在 `worker/auth.ts`：只接受 Access 注入的邮箱头
 | POST | `/api/patterns` | 新建模式卡 |
 | PATCH | `/api/patterns/:id` | 修改模式卡（含状态流转） |
 | DELETE | `/api/patterns/:id` | 删除模式卡 |
+| GET | `/api/coach/state?date=` | 教练画像 / 活跃会话 / 最近话题 / 主动洞察 |
+| PUT | `/api/coach/profile` | 保存教练画像（version + 1） |
+| GET | `/api/coach/sessions/:id` | 读取指定会话与消息 |
+| POST | `/api/coach/chat` | 发送消息（可带 `skill` / `signalId` / `startNewSession` / `localDate`） |
+| POST | `/api/coach/sessions/:id/complete` | 结束当前话题并生成小结 |
+| POST | `/api/coach/messages/:messageId/proposals/:proposalId` | 采纳 / 忽略回写提案 |
 
 数据模型：
 
@@ -172,6 +199,7 @@ Worker 的校验逻辑在 `worker/auth.ts`：只接受 Access 注入的邮箱头
 - `patterns`：模式卡，`evidence` 是关联的打卡日期数组
 - `goals`：一个目标一条记录，`data` 是 JSON，包含五步（目标 / 问题 / 诊断 / 方案 / 践行）；`domain` 是可选分类，`status` 是目标状态
 - `fears`：一条恐惧一条记录，`data` 是 JSON，包含五步（识别恐惧 / 寻找根因 / 定义问题 / 转化为任务 / 验证与反馈）；第 3 步和第 4 步之间还有一块可选的 `analysis`（潜在好处 / 把握程度 / 历史案例 / 影响程度 / 6 个月、1 年、3 年的不行动代价），不计入五步进度；列表标题取第 1 步第一行；`archived` 是显式归档标记（可逆），列表默认只展示未归档条目
+- `coach_profiles`：每用户一条 active 教练画像，`data` 存作息、能量窗口、沟通偏好、执行 / 拖延线索和长期洞察；`chat_sessions` 是话题单元，`chat_messages` 是 append-only 消息流水（`seq` 保序，含快捷回复、回写提案、上下文快照和已回写引用）。AI 教练不进入 `/api/bootstrap`，但会完整包含在 `/api/export`
 
 复盘模块的设计取舍见 [docs/review-module-design.md](docs/review-module-design.md)，目标与五步诊断的设计见 [docs/goal-module-design.md](docs/goal-module-design.md)。
 
@@ -201,5 +229,6 @@ Worker 的校验逻辑在 `worker/auth.ts`：只接受 Access 注入的邮箱头
 - [ ] 清单项的编辑、勾选完成、日期分组
 - [x] 周复盘（四步向导 + 模式库）
 - [ ] 月复盘（表结构和 API 已支持 `period_type = "month"`，页面待做）
+- [x] AI 智能教练（主动洞察 + 7 大成长模型对话 + 快捷回复 + 确认后回写）
 - [ ] PWA 离线壳
 - [ ] Access JWT 签名校验（`jose` 已安装，等 Access 应用创建后配置 `ACCESS_TEAM_DOMAIN` / `ACCESS_AUD` 再启用）

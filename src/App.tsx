@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { Layout } from "./components/Layout";
 import { AboutPage } from "./pages/AboutPage";
+import { CoachPage } from "./pages/CoachPage";
 import { CompassItemPage } from "./pages/CompassItemPage";
 import { CompassPage } from "./pages/CompassPage";
 import { CompassSnapshotsPage } from "./pages/CompassSnapshotsPage";
@@ -37,6 +38,7 @@ export function App() {
       <Routes>
         <Route path="/" element={<OverviewPage />} />
         <Route path="/daily" element={<DailyPage />} />
+        <Route path="/coach" element={<CoachPage />} />
         <Route path="/compass" element={<CompassPage />} />
         <Route path="/compass/items/:itemId" element={<CompassItemPage />} />
         <Route path="/compass/snapshots" element={<CompassSnapshotsPage />} />

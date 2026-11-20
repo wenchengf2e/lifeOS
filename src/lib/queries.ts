@@ -1,7 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
   BootstrapResponse,
+  ChatSessionDetailResponse,
   CheckinData,
+  CoachStateResponse,
   DocumentData,
   GoalData,
   GoalStatus,
@@ -13,6 +15,8 @@ import type {
 } from "../../shared/types";
 import {
   api,
+  type CoachChatInput,
+  type CoachProfileInput,
   type EnergySessionCreateInput,
   type EnergySessionPatch,
   type FearCreateInput,
@@ -24,6 +28,7 @@ import {
   type TelosProfileInput,
 } from "./api";
 import { readTelosProfile } from "./compass";
+import { todayKey } from "./date";
 
 export const bootstrapQueryKey = ["bootstrap"] as const;
 
@@ -400,6 +405,170 @@ export function useDeleteTelosSnapshot() {
         prev ? prev.filter((snapshot) => snapshot.id !== id) : prev,
       );
       queryClient.removeQueries({ queryKey: ["telos", "snapshot", id] });
+    },
+  });
+}
+
+// ---- AI 智能教练 ----
+//
+// 教练数据不进入 bootstrap：使用独立的 ["coach", ...] 查询键。
+// 写操作只改对应缓存，避免整页 refetch 覆盖正在输入的对话草稿。
+
+export const coachStateQueryKey = ["coach", "state"] as const;
+
+const RECENT_SESSION_LIMIT = 10;
+
+export function useCoachState() {
+  return useQuery({
+    queryKey: coachStateQueryKey,
+    // 显式传本地日期：Worker 时钟是 UTC，直接算「今天」会在 CST 凌晨差一天。
+    queryFn: () => api.getCoachState(todayKey()),
+    staleTime: 15_000,
+    retry: 1,
+  });
+}
+
+export function useCoachSession(id: string | null) {
+  return useQuery({
+    queryKey: ["coach", "session", id ?? ""] as const,
+    queryFn: async () => {
+      if (!id) return null;
+      return api.getCoachSession(id);
+    },
+    enabled: Boolean(id),
+    staleTime: 60_000,
+    retry: 1,
+  });
+}
+
+export function useSaveCoachProfile() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: CoachProfileInput) => api.saveCoachProfile(input),
+    onSuccess: ({ profile }) => {
+      // 画像变化只影响「先让教练认识你」这条主动洞察，就地更新即可，
+      // 避免整体 refetch 让画像面板的「已保存」提示被重置。
+      const calibrated = profile.energyWindows.trim().length > 0 || profile.executionClues.length > 0;
+      queryClient.setQueryData<CoachStateResponse>(coachStateQueryKey, (prev) =>
+        prev
+          ? {
+              ...prev,
+              profile,
+              signals: calibrated
+                ? prev.signals.filter((signal) => signal.id !== "profile-calibration")
+                : prev.signals,
+            }
+          : prev,
+      );
+    },
+  });
+}
+
+/**
+ * 发送消息后把两条新消息追加进缓存，不整页 refetch。
+ * 换话题时旧会话归档进历史列表；主动洞察发出后从信号列表里移除。
+ */
+export function useSendCoachChat() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: CoachChatInput) =>
+      api.sendCoachChat({ ...input, localDate: input.localDate ?? todayKey() }),
+    onSuccess: ({ session, userMessage, assistantMessage, archivedSession }, input) => {
+      queryClient.setQueryData<CoachStateResponse>(coachStateQueryKey, (prev) => {
+        if (!prev) return prev;
+
+        const previousActive = prev.activeSession;
+        const sameSession = previousActive?.id === session.id;
+        const baseMessages = sameSession ? prev.activeMessages : [];
+        const recentSessions = archivedSession
+          ? [
+              archivedSession,
+              ...prev.recentSessions.filter((item) => item.id !== archivedSession.id),
+            ].slice(0, RECENT_SESSION_LIMIT)
+          : prev.recentSessions;
+
+        return {
+          ...prev,
+          activeSession: session,
+          activeMessages: [...baseMessages, userMessage, assistantMessage],
+          recentSessions,
+          signals: input.signalId
+            ? prev.signals.filter((signal) => signal.id !== input.signalId)
+            : prev.signals,
+        };
+      });
+    },
+  });
+}
+
+export function useCompleteCoachSession() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, summary }: { id: string; summary?: string }) =>
+      api.completeCoachSession(id, summary),
+    onSuccess: ({ session }) => {
+      queryClient.setQueryData<CoachStateResponse>(coachStateQueryKey, (prev) =>
+        prev
+          ? {
+              ...prev,
+              activeSession: null,
+              activeMessages: [],
+              recentSessions: [
+                session,
+                ...prev.recentSessions.filter((item) => item.id !== session.id),
+              ].slice(0, RECENT_SESSION_LIMIT),
+            }
+          : prev,
+      );
+    },
+  });
+}
+
+/**
+ * 采纳 / 忽略提案：只替换这一条消息，不刷新教练状态。
+ * 采纳会写入 checkins / patterns / fears，因此定向失效 bootstrap。
+ */
+export function useResolveCoachProposal() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      messageId,
+      proposalId,
+      action,
+    }: {
+      messageId: string;
+      proposalId: string;
+      action: "apply" | "dismiss";
+    }) => api.resolveCoachProposal(messageId, proposalId, action),
+    onSuccess: ({ message }, variables) => {
+      const replaceMessage = (item: { id: string }) => item.id === message.id;
+      const patch = (prev: ChatSessionDetailResponse) => ({
+        ...prev,
+        messages: prev.messages.map((item) => (replaceMessage(item) ? message : item)),
+      });
+
+      queryClient.setQueryData<CoachStateResponse>(coachStateQueryKey, (prev) =>
+        prev
+          ? {
+              ...prev,
+              activeMessages: prev.activeMessages.map((item) =>
+                replaceMessage(item) ? message : item,
+              ),
+            }
+          : prev,
+      );
+
+      queryClient.setQueryData<ChatSessionDetailResponse | null>(
+        ["coach", "session", message.sessionId] as const,
+        (prev) => (prev ? patch(prev) : prev),
+      );
+
+      if (variables.action === "apply") {
+        // 采纳会写业务表，也会改变主动洞察（如恐惧已拆解、画像已补全）；
+        // bootstrap 与教练状态都定向失效，避免旧信号点进去变成 invalid_signal。
+        void queryClient.invalidateQueries({ queryKey: coachStateQueryKey });
+        void queryClient.invalidateQueries({ queryKey: bootstrapQueryKey });
+      }
     },
   });
 }

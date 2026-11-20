@@ -100,6 +100,9 @@ export function OverviewPage() {
               <Link to="/daily" className="btn-primary">
                 {todayDone ? "继续今天的仪式" : "开始今天的仪式"}
               </Link>
+              <Link to="/coach" className="btn-secondary">
+                找教练聊聊
+              </Link>
               <Link to="/diary" className="btn-secondary">
                 翻看日记
               </Link>
@@ -254,6 +257,13 @@ export function OverviewPage() {
             <p className="text-[11px] uppercase tracking-[0.2em] text-moss">Quick links</p>
             <h2 className="mt-1 text-xl text-ink">今天想做点什么？</h2>
             <div className="mt-4 space-y-2">
+              <Link
+                to="/coach"
+                className="flex items-center justify-between rounded-2xl border border-line/70 bg-paper-deep/30 px-4 py-3 text-sm text-ink transition hover:border-moss/30 hover:bg-white/70"
+              >
+                <span>🌱 AI 教练</span>
+                <span className="text-ink-soft">随时聊聊 · 发现卡点 →</span>
+              </Link>
               <Link
                 to="/daily"
                 className="flex items-center justify-between rounded-2xl border border-line/70 bg-paper-deep/30 px-4 py-3 text-sm text-ink transition hover:border-moss/30 hover:bg-white/70"

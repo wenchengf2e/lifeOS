@@ -31,6 +31,7 @@ worker/
 │   └── queries.ts        # parseJson、行映射 mapXxx、loadAll 聚合查询
 └── routes/
     ├── checkins.ts       # 打卡：按日期读取 / upsert
+    ├── coach.ts          # AI 教练：状态 / 画像 / 会话 / 对话 / 提案回写
     ├── docs.ts           # 通用文档：按 (module, key) 读取 / upsert
     ├── energy.ts         # 能量充电屋练习记录 CRUD，answers 字典在 data JSON
     ├── fears.ts          # 恐惧清单 CRUD，五步 data 为 JSON
@@ -39,9 +40,12 @@ worker/
     ├── patterns.ts       # 模式卡 CRUD 与状态流转
     ├── reviews.ts        # 周 / 月复盘读取 / upsert
     └── telos.ts          # 人生罗盘：档案 / 五级链实体 / 整图快照
+  coach/
+    ├── skills.ts         # 7 大成长模型 Playbook、共享教练人格与阶段模板
+    └── engine.ts         # 主动洞察扫描、上下文装配、LLM 调用与本地启发式降级
 
 shared/types.ts           # 前端与 Worker 共享的类型、常量和数据契约
-migrations/               # D1 migration：0001_init.sql / 0002_review.sql / 0003_goals.sql / 0004_fears.sql / 0005_energy_sessions.sql / 0006_telos.sql
+migrations/               # D1 migration：0001–0006，0007_coach.sql 起为 AI 教练
 wrangler.jsonc            # Worker、D1 binding、静态资源、OWNER_EMAIL 配置
 ```
 
@@ -117,6 +121,7 @@ export default route;
 - 例外：数据可能持续增长、页面独立、故障面需要隔离的模块，使用独立接口和独立前端缓存，**不要**修改 `loadAll()` / `BootstrapResponse`。
 - 独立模块仍应进入 `/api/export`：在导出路由里单独查询并附加字段，保持备份完整。
 - 人生罗盘是第一个独立加载模块，详细契约见 [`telos-module.md`](./telos-module.md)。
+- AI 教练是第二个独立加载模块（`chat_messages` 会持续增长），详细契约见 [`coach-module.md`](./coach-module.md)。
 
 ### 人生罗盘（`telos_*`）
 
@@ -126,6 +131,18 @@ export default route;
 - `loadAll()` 与 `/api/bootstrap` 不包含任何 telos 字段；`/api/export` 单独附加 `telosProfile` / `telosItems` / `telosSnapshots`。
 - 删除父节点走服务端 BFS 级联，返回 `deletedIds`；快照由服务端抓取，不信任客户端。
 - 档案用独立 `telos_profiles` 表，不要复用 `documents`。
+
+### AI 智能教练（`coach_*` / `chat_*`）
+
+- 三张表：`coach_profiles`（每用户一条 active 画像）、`chat_sessions`（话题单元）、`chat_messages`（append-only 消息流水）。
+- 画像不复用 `documents`；`coach_profiles` 用部分唯一索引保证每用户只有一条 active 画像。
+- 路由：`GET /api/coach/state`、`PUT /api/coach/profile`、`GET /api/coach/sessions/:id`、`POST /api/coach/chat`、`POST /api/coach/sessions/:id/complete`、`POST /api/coach/messages/:messageId/proposals/:proposalId`。
+- 成长模型与引擎在 `worker/coach/`：7 个 Skill、5 个阶段；显式 `skill` 优先于关键词路由。
+- 配置了 `AI_API_KEY` 时调用 OpenAI 兼容接口，未配置或失败时降级本地引擎；`AI_API_KEY` 用 `wrangler secret`，不要写进 `vars`。
+- 业务日期使用客户端 `localDate`（本地时区 `YYYY-MM-DD`），缺省才回退 UTC。
+- 提案必须用户确认后 `apply` 才写业务表；重复采纳幂等。
+- `loadAll()` / `/api/bootstrap` 不包含任何 coach 字段；`/api/export` 单独附加三份数据。
+- 详细契约见 [`coach-module.md`](./coach-module.md)。
 
 ---
 
@@ -164,5 +181,6 @@ export default route;
 - `0003_goals.sql` — `goals`
 - `0004_fears.sql` — `fears`（含 `archived` 列与归档索引）
 - `0005_energy_sessions.sql` — `energy_sessions`（含 `tool`、`completed` 与组合索引）
+- `0007_coach.sql` — `coach_profiles` / `chat_sessions` / `chat_messages`（含 active 画像部分唯一索引与会话 `seq` 唯一索引）
 
 每个 migration 文件开头保留 `PRAGMA foreign_keys = ON;`。

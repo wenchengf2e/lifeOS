@@ -1,6 +1,9 @@
 import { and, asc, desc, eq } from "drizzle-orm";
 import type {
+  ChatMessageEntry,
+  ChatSessionEntry,
   CheckinData,
+  CoachProfileData,
   DocumentData,
   CheckinEntry,
   DocumentEntry,
@@ -27,6 +30,10 @@ import type {
   TelosStrategyStatus,
 } from "../../shared/types";
 import {
+  createEmptyCoachProfile,
+  normalizeChatMessage,
+  normalizeChatSession,
+  normalizeCoachProfile,
   normalizeEnergySessionData,
   normalizeFearData,
   normalizeGoalData,
@@ -41,7 +48,10 @@ import {
 } from "../../shared/types";
 import { getDb } from "./client";
 import {
+  chatMessages,
+  chatSessions,
   checkins,
+  coachProfiles,
   documents,
   energySessions,
   fears,
@@ -278,6 +288,77 @@ export async function loadTelosExport(db: Db, userId: string) {
     telosItems: itemRows.map(mapTelosItem),
     telosSnapshots: snapshotRows.map(mapTelosSnapshot),
   };
+}
+
+/**
+ * 教练数据独立导出：同样不参与 `loadAll()`，`/api/bootstrap` 不受影响；
+ * 只有手动导出备份时才一起读取。
+ */
+export async function loadCoachExport(db: Db, userId: string) {
+  const [profileRows, sessionRows, messageRows] = await Promise.all([
+    db
+      .select()
+      .from(coachProfiles)
+      .where(and(eq(coachProfiles.userId, userId), eq(coachProfiles.isActive, true)))
+      .limit(1),
+    db
+      .select()
+      .from(chatSessions)
+      .where(eq(chatSessions.userId, userId))
+      .orderBy(desc(chatSessions.updatedAt)),
+    db
+      .select()
+      .from(chatMessages)
+      .where(eq(chatMessages.userId, userId))
+      .orderBy(asc(chatMessages.sessionId), asc(chatMessages.seq)),
+  ]);
+
+  const [profileRow] = profileRows;
+  return {
+    coachProfile: profileRow ? mapCoachProfile(profileRow) : createEmptyCoachProfile(),
+    chatSessions: sessionRows.map(mapChatSession),
+    chatMessages: messageRows.map(mapChatMessage),
+  };
+}
+
+export function mapCoachProfile(row: typeof coachProfiles.$inferSelect): CoachProfileData {
+  const raw = parseJson<Record<string, unknown>>(row.data, {});
+  // 行上的 version 是权威值；data 里可能残留旧值。
+  return normalizeCoachProfile({ ...raw, version: row.version });
+}
+
+export function mapChatSession(row: typeof chatSessions.$inferSelect): ChatSessionEntry {
+  return normalizeChatSession({
+    id: row.id,
+    mode: row.mode,
+    skill: row.skill,
+    stage: row.stage,
+    title: row.title,
+    summary: row.summary,
+    triggerRef: parseJson<Record<string, unknown>>(row.triggerRef, {}),
+    status: row.status,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  });
+}
+
+export function mapChatMessage(row: typeof chatMessages.$inferSelect): ChatMessageEntry {
+  return normalizeChatMessage({
+    id: row.id,
+    sessionId: row.sessionId,
+    seq: row.seq,
+    role: row.role,
+    content: row.content,
+    skill: row.skill,
+    stage: row.stage,
+    quickReplies: parseJson<unknown>(row.quickReplies, []),
+    proposals: parseJson<unknown>(row.proposals, []),
+    refs: parseJson<unknown>(row.refs, []),
+    contextSnapshot: parseJson<Record<string, unknown>>(row.contextSnapshot, {}),
+    model: row.model,
+    tokenUsage: row.tokenUsage,
+    createdAt: row.createdAt,
+  });
 }
 
 export async function loadAll(db: Db, userId: string) {

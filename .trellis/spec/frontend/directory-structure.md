@@ -47,9 +47,11 @@ src/
 │   ├── fears/
 │   │   ├── FearAnalysisCard.tsx # 第 3、4 步之间的可选权衡分析（折叠 / 把握 / 历史案例 / 不行动代价）
 │   │   └── FearStepField.tsx   # 恐惧清单单个步骤卡 + 文本域
+│   ├── coach/                  # AI 教练：洞察卡 / 消息气泡 / 提案卡 / 画像抽屉 / 历史话题 / 输入区
 │   └── compass/                # 人生罗盘：档案卡 / 递归树 / 分类字段 / 风险卡 / 快照 diff
 ├── content/                    # 纯配置与文案（无 JSX）
 │   ├── autosave.ts             # 自动保存防抖延时（能量充电屋 / 恐惧 / 五步诊断共用）
+│   ├── coach.ts                # AI 教练：7 大模型、5 阶段、提案与画像字段文案
 │   ├── daily.ts                # 每日仪式四模块与字段
 │   ├── energy.ts               # 能量充电屋四工具与默认问题模板
 │   ├── compass.ts              # 人生罗盘分类 / 状态 / 字段 / 文案
@@ -84,6 +86,7 @@ src/
     ├── FearDetailPage.tsx      # 单条恐惧五步详情 + 自动保存 + 归档
     ├── EnergyPage.tsx          # 能量充电屋主页（四大工具入口 + 历史练习记录筛选）
     ├── EnergySessionPage.tsx   # 单次充电练习（一步一问沉浸书写 + 全文回看双模式）
+    ├── CoachPage.tsx           # AI 教练（单一连续主线 + 主动洞察 + 提案回写）
     ├── ListsPage.tsx           # 清单（四个 tab）
     ├── RealityPage.tsx         # Reality OS 投资六维
     ├── CompassPage.tsx         # 人生罗盘主页（档案 + 五级树 + 风险登记册 + 快照）
@@ -109,6 +112,7 @@ src/
 | `/fears/:fearId` | `FearDetailPage` |
 | `/energy` | `EnergyPage` |
 | `/energy/:sessionId` | `EnergySessionPage`（`?mode=write\|read&step=1..N`） |
+| `/coach` | `CoachPage`（单一连续主线 + 主动洞察 + 教练画像 / 历史话题抽屉） |
 | `/principles` | `GoalsPage` |
 | `/principles/:goalId` | `GoalDetailPage`（`?step=1..5`） |
 | `/reality` | `RealityPage` |
@@ -163,6 +167,17 @@ src/
 - 级联删除确认框显示后代数量；成功后按响应 `deletedIds` 精确移除缓存。
 - 快照对比从 URL `?a=&b=` 恢复选择；移动端纵向堆叠，不能横向滚动。
 
+### 独立加载模块（AI 教练）
+
+- 教练数据不进入 bootstrap，使用独立 query key：
+  - `["coach","state"]` → `GET /api/coach/state?date=<本地日期>`（当前画像 + 活跃会话 + 消息 + 最近话题 + 主动洞察）
+  - `["coach","session",id]` → `GET /api/coach/sessions/:id`（历史话题只读明细）
+- 发送消息只就地追加 `["coach","state"]` 缓存，不整页 refetch，避免覆盖输入框草稿。
+- 提案 `apply` 会写入 `checkins` / `patterns` / `fears`，因此需要 invalidate `["bootstrap"]`；`dismiss` 不需要。
+- 请求必须携带本地 `todayKey()`（`localDate` / `?date=`），业务日期不依赖 Worker 的 UTC 时钟。
+- 教练画像保存是显式按钮 + 版本守卫；历史话题抽屉复用只读消息组件，不渲染输入区。
+- 详细契约见 [`coach-module.md`](../backend/coach-module.md)。
+
 ### 派生逻辑
 
 - 打卡完成判断、连续天数、月度统计 → `src/lib/stats.ts`。
@@ -200,5 +215,6 @@ src/
 | 列表 + 详情 + 自动保存 + 派生状态的新模块 | `src/pages/FearsPage.tsx`、`src/pages/FearDetailPage.tsx`、`src/lib/fears.ts` |
 | 配置驱动的一步一问沉浸式书写 + 回看双模式 | `src/pages/EnergyPage.tsx`、`src/pages/EnergySessionPage.tsx`、`src/content/energy.ts`、`src/lib/energy.ts` |
 | 独立加载模块 + 独立 query key | `src/pages/CompassPage.tsx`、`src/lib/queries.ts` |
+| 单一连续主线、主动洞察、提案回写与抽屉面板 | `src/pages/CoachPage.tsx`、`src/components/coach/*`、`src/lib/queries.ts` |
 | 整图快照 diff | `src/lib/compass.ts`、`src/pages/CompassSnapshotsPage.tsx` |
 | 静态内容页 | `src/pages/AboutPage.tsx` + `src/content/about.json` |

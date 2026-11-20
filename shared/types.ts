@@ -877,6 +877,293 @@ export function normalizeTelosSnapshotData(raw: unknown): TelosSnapshotData {
   };
 }
 
+// ---- AI 智能教练（coach） ----
+
+/** 七大成长模型；路由、会话与消息都从这里取值，前后端共享同一份白名单。 */
+export const COACH_SKILL_KEYS = [
+  "life-vision",
+  "procrastination-execution",
+  "planning",
+  "review",
+  "habit-design",
+  "energy-management",
+  "complex-problem-solving",
+] as const;
+
+export type CoachSkillKey = (typeof COACH_SKILL_KEYS)[number];
+
+/** 成长循环阶段；与 life-coach-main 的共享七步流程对齐。 */
+export const COACH_STAGE_KEYS = [
+  "listen",
+  "clarify",
+  "reframe",
+  "experiment",
+  "wrapup",
+] as const;
+
+export type CoachStageKey = (typeof COACH_STAGE_KEYS)[number];
+
+export const COACH_SESSION_MODES = ["reactive", "proactive"] as const;
+
+export type CoachSessionMode = (typeof COACH_SESSION_MODES)[number];
+
+export const COACH_SESSION_STATUSES = ["active", "completed", "archived"] as const;
+
+export type CoachSessionStatus = (typeof COACH_SESSION_STATUSES)[number];
+
+export const COACH_MESSAGE_ROLES = ["user", "assistant", "system"] as const;
+
+export type CoachMessageRole = (typeof COACH_MESSAGE_ROLES)[number];
+
+/**
+ * 教练画像：稳定底图，不是所有记忆的总仓库。
+ * 字段对齐 life-coach-main 的 `profile/user.md` 与 `memory/long-term.md`。
+ */
+export type CoachProfileData = {
+  /** 每次保存 +1，仅作展示 / 调试。 */
+  version: number;
+  /** 基本作息与固定承诺（工作日 / 周末节律、固定安排）。 */
+  routines: string;
+  /** 精力窗口与恢复线索（高能 / 低能时段、透支信号、有效恢复方式）。 */
+  energyWindows: string;
+  /** 沟通偏好与雷区（喜欢的推进方式、讨厌被催或打卡等）。 */
+  preferences: string;
+  /** 执行与拖延线索（常见启动阻力、触发场景、有效启动方式、反效果方式）。 */
+  executionClues: string[];
+  /** 跨周期长期洞察与有效策略（沉淀自多次对话与复盘）。 */
+  longTermInsights: string[];
+};
+
+export const COACH_PROPOSAL_KINDS = [
+  "checkin_plan",
+  "pattern_card",
+  "fear_action",
+  "coach_profile",
+] as const;
+
+export type CoachProposalKind = (typeof COACH_PROPOSAL_KINDS)[number];
+
+export type CoachProposalStatus = "pending" | "applied" | "dismissed";
+
+/** 待确认回写提案：只有用户点「采纳」后才写入业务表。 */
+export type CoachProposal = {
+  id: string;
+  kind: CoachProposalKind;
+  title: string;
+  summary: string;
+  status: CoachProposalStatus;
+  payload: Record<string, unknown>;
+};
+
+/** 提案写入成功后记录的目标，前端据此跳转到对应业务表。 */
+export type CoachRef = {
+  table: "checkins" | "patterns" | "fears" | "coach_profiles";
+  id: string;
+  op: "create" | "update" | "upsert";
+  label: string;
+};
+
+export type ChatSessionEntry = {
+  id: string;
+  mode: CoachSessionMode;
+  skill: CoachSkillKey | null;
+  stage: CoachStageKey;
+  title: string;
+  summary: string;
+  triggerRef: Record<string, unknown>;
+  status: CoachSessionStatus;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ChatMessageEntry = {
+  id: string;
+  sessionId: string;
+  seq: number;
+  role: CoachMessageRole;
+  content: string;
+  skill: CoachSkillKey | null;
+  stage: CoachStageKey | null;
+  quickReplies: string[];
+  proposals: CoachProposal[];
+  refs: CoachRef[];
+  contextSnapshot: Record<string, unknown>;
+  model: string | null;
+  tokenUsage: number | null;
+  createdAt: string;
+};
+
+/** 主动洞察卡片：由后端基于确定性规则扫描 LifeOS 数据生成。 */
+export type CoachSignal = {
+  /** 稳定 id，同一条规则每次扫描得到同一个值。 */
+  id: string;
+  skill: CoachSkillKey;
+  title: string;
+  observation: string;
+  openingPrompt: string;
+  quickOptions: string[];
+  triggerRef?: {
+    table: string;
+    id?: string;
+    reason: string;
+  };
+};
+
+/** 本次对话注入的 LifeOS 数据摘要；结构随 skill 场景裁剪，允许扩展。 */
+export type CoachContextSnapshot = Record<string, unknown>;
+
+export type CoachStateResponse = {
+  profile: CoachProfileData;
+  activeSession: ChatSessionEntry | null;
+  activeMessages: ChatMessageEntry[];
+  recentSessions: ChatSessionEntry[];
+  signals: CoachSignal[];
+  aiConfigured: boolean;
+};
+
+export type ChatSessionDetailResponse = {
+  session: ChatSessionEntry;
+  messages: ChatMessageEntry[];
+};
+
+export function isCoachSkillKey(value: unknown): value is CoachSkillKey {
+  return typeof value === "string" && (COACH_SKILL_KEYS as readonly string[]).includes(value);
+}
+
+export function isCoachStageKey(value: unknown): value is CoachStageKey {
+  return typeof value === "string" && (COACH_STAGE_KEYS as readonly string[]).includes(value);
+}
+
+export function isCoachProposalKind(value: unknown): value is CoachProposalKind {
+  return typeof value === "string" && (COACH_PROPOSAL_KINDS as readonly string[]).includes(value);
+}
+
+export function createEmptyCoachProfile(): CoachProfileData {
+  return {
+    version: 1,
+    routines: "",
+    energyWindows: "",
+    preferences: "",
+    executionClues: [],
+    longTermInsights: [],
+  };
+}
+
+/** 把可能缺字段的画像补成完整形状；version 至少为 1。 */
+export function normalizeCoachProfile(raw: unknown): CoachProfileData {
+  const root = asRecord(raw);
+  return {
+    version: Math.max(1, Math.round(asNumber(root.version, 1))),
+    routines: asString(root.routines),
+    energyWindows: asString(root.energyWindows),
+    preferences: asString(root.preferences),
+    executionClues: asStringArray(root.executionClues),
+    longTermInsights: asStringArray(root.longTermInsights),
+  };
+}
+
+/** 快捷回复最多保留 4 条，空字符串丢弃，重复项只留第一次。 */
+export function normalizeQuickReplies(raw: unknown): string[] {
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const item of asStringArray(raw)) {
+    const text = item.trim();
+    if (!text || seen.has(text)) continue;
+    seen.add(text);
+    result.push(text);
+    if (result.length >= 4) break;
+  }
+  return result;
+}
+
+export function normalizeCoachProposals(raw: unknown): CoachProposal[] {
+  if (!Array.isArray(raw)) return [];
+
+  const result: CoachProposal[] = [];
+  for (const [index, item] of raw.entries()) {
+    const root = asRecord(item);
+    if (!isCoachProposalKind(root.kind)) continue;
+    const status = root.status;
+    result.push({
+      id: asString(root.id) || `proposal-${index}`,
+      kind: root.kind,
+      title: asString(root.title),
+      summary: asString(root.summary),
+      status: status === "applied" || status === "dismissed" ? status : "pending",
+      payload: asRecord(root.payload),
+    });
+  }
+  return result;
+}
+
+export function normalizeCoachRefs(raw: unknown): CoachRef[] {
+  if (!Array.isArray(raw)) return [];
+
+  const result: CoachRef[] = [];
+  for (const item of raw) {
+    const root = asRecord(item);
+    const table = root.table;
+    if (
+      table !== "checkins" &&
+      table !== "patterns" &&
+      table !== "fears" &&
+      table !== "coach_profiles"
+    ) {
+      continue;
+    }
+    const op = root.op;
+    result.push({
+      table,
+      id: asString(root.id),
+      op: op === "create" || op === "update" ? op : "upsert",
+      label: asString(root.label),
+    });
+  }
+  return result;
+}
+
+export function normalizeChatSession(raw: unknown): ChatSessionEntry {
+  const root = asRecord(raw);
+  const mode = root.mode;
+  const status = root.status;
+  return {
+    id: asString(root.id),
+    mode: mode === "proactive" ? "proactive" : "reactive",
+    skill: isCoachSkillKey(root.skill) ? root.skill : null,
+    stage: isCoachStageKey(root.stage) ? root.stage : "listen",
+    title: asString(root.title),
+    summary: asString(root.summary),
+    triggerRef: asRecord(root.triggerRef),
+    status: status === "completed" || status === "archived" ? status : "active",
+    createdAt: asString(root.createdAt),
+    updatedAt: asString(root.updatedAt),
+  };
+}
+
+export function normalizeChatMessage(raw: unknown): ChatMessageEntry {
+  const root = asRecord(raw);
+  const role = root.role;
+  return {
+    id: asString(root.id),
+    sessionId: asString(root.sessionId),
+    seq: Math.max(0, Math.round(asNumber(root.seq, 0))),
+    role: role === "assistant" || role === "system" ? role : "user",
+    content: asString(root.content),
+    skill: isCoachSkillKey(root.skill) ? root.skill : null,
+    stage: isCoachStageKey(root.stage) ? root.stage : null,
+    quickReplies: normalizeQuickReplies(root.quickReplies),
+    proposals: normalizeCoachProposals(root.proposals),
+    refs: normalizeCoachRefs(root.refs),
+    contextSnapshot: asRecord(root.contextSnapshot),
+    model: typeof root.model === "string" ? root.model : null,
+    tokenUsage:
+      typeof root.tokenUsage === "number" && Number.isFinite(root.tokenUsage)
+        ? root.tokenUsage
+        : null,
+    createdAt: asString(root.createdAt),
+  };
+}
+
 export type BootstrapResponse = {
   user: { email: string };
   checkins: CheckinEntry[];
@@ -895,6 +1182,9 @@ export type ExportResponse = BootstrapResponse & {
   telosProfile: TelosProfileData;
   telosItems: TelosItemEntry[];
   telosSnapshots: TelosSnapshotEntry[];
+  coachProfile: CoachProfileData;
+  chatSessions: ChatSessionEntry[];
+  chatMessages: ChatMessageEntry[];
 };
 
 export type ApiErrorBody = {

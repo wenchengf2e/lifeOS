@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/backend/index.md", "reason": "后端架构与模块规范总入口"}
+{"file": ".trellis/spec/backend/directory-structure.md", "reason": "Worker 路由、Drizzle 数据访问与独立加载模块规范"}
+{"file": ".trellis/spec/backend/telos-module.md", "reason": "参考独立加载模块（不进 bootstrap、进 export、独立缓存与 active profile 唯一索引）契约"}
+{"file": ".trellis/spec/frontend/index.md", "reason": "前端架构与规范总入口"}
+{"file": ".trellis/spec/frontend/directory-structure.md", "reason": "前端页面、content、queries、组件与命名规范"}

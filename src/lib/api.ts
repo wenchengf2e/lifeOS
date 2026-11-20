@@ -1,7 +1,14 @@
 import type {
   ApiErrorBody,
   BootstrapResponse,
+  ChatMessageEntry,
+  ChatSessionDetailResponse,
+  ChatSessionEntry,
   CheckinData,
+  CoachProfileData,
+  CoachRef,
+  CoachSkillKey,
+  CoachStateResponse,
   DocumentData,
   EnergySessionData,
   EnergySessionEntry,
@@ -90,6 +97,21 @@ export type TelosItemPatch = {
   parentId?: string | null;
   sortOrder?: number;
   data?: unknown;
+};
+
+export type CoachProfileInput = Omit<CoachProfileData, "version">;
+
+export type CoachChatInput = {
+  /** 指定会话时优先使用；省略则续接当前 active 会话。 */
+  sessionId?: string;
+  message: string;
+  skill?: CoachSkillKey;
+  signalId?: string;
+  triggerRef?: Record<string, unknown>;
+  /** true 时先归档当前 active 会话，再开启新一轮。 */
+  startNewSession?: boolean;
+  /** 前端当地日期键（YYYY-MM-DD）；服务端据此计算「今天」与周复盘。 */
+  localDate?: string;
 };
 
 export class ApiError extends Error {
@@ -284,6 +306,57 @@ export const api = {
 
   deleteTelosSnapshot(id: string) {
     return request<{ ok: true }>(`/api/telos/snapshots/${encode(id)}`, { method: "DELETE" });
+  },
+
+  /** 传入本地日期，服务端才不会用 UTC 时钟算错「今天」。 */
+  getCoachState(localDate?: string) {
+    const query = localDate ? `?date=${encode(localDate)}` : "";
+    return request<CoachStateResponse>(`/api/coach/state${query}`);
+  },
+
+  saveCoachProfile(input: CoachProfileInput) {
+    return request<{ ok: true; profile: CoachProfileData }>("/api/coach/profile", {
+      method: "PUT",
+      body: JSON.stringify(input),
+    });
+  },
+
+  getCoachSession(id: string) {
+    return request<ChatSessionDetailResponse>(`/api/coach/sessions/${encode(id)}`);
+  },
+
+  sendCoachChat(input: CoachChatInput) {
+    return request<{
+      ok: true;
+      session: ChatSessionEntry;
+      userMessage: ChatMessageEntry;
+      assistantMessage: ChatMessageEntry;
+      /** 换话题时被归档的上一轮会话（含服务端生成的小结）。 */
+      archivedSession?: ChatSessionEntry;
+    }>("/api/coach/chat", {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+  },
+
+  completeCoachSession(id: string, summary?: string) {
+    return request<{ ok: true; session: ChatSessionEntry }>(
+      `/api/coach/sessions/${encode(id)}/complete`,
+      {
+        method: "POST",
+        body: JSON.stringify(summary?.trim() ? { summary } : {}),
+      },
+    );
+  },
+
+  resolveCoachProposal(messageId: string, proposalId: string, action: "apply" | "dismiss") {
+    return request<{ ok: true; message: ChatMessageEntry; appliedRef?: CoachRef }>(
+      `/api/coach/messages/${encode(messageId)}/proposals/${encode(proposalId)}`,
+      {
+        method: "POST",
+        body: JSON.stringify({ action }),
+      },
+    );
   },
 
   createGoal(input: GoalCreateInput) {

@@ -17,7 +17,9 @@
     }
   ],
   "vars": {
-    "OWNER_EMAIL": "wencheng.f2e@gmail.com"
+    "OWNER_EMAIL": "wencheng.f2e@gmail.com",
+    "AI_BASE_URL": "https://opencode.ai/inference/go/openai/v1",
+    "AI_MODEL": "deepseek-v4.1-flash"
   },
   "observability": {
     "enabled": true
