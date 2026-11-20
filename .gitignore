@@ -8,3 +8,10 @@ dist
 .DS_Store
 *.log
 coverage
+
+# 本地调试与参考资料（不入库）
+/test.json
+/life-coach-main/
+/.workbuddy/
+/inter-coach.md
+/telos.md
