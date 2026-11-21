@@ -1,6 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import type { TelosCategory, TelosItemEntry, TelosRiskStatus } from "../../shared/types";
+import type {
+  TelosCategory,
+  TelosItemEntry,
+  TelosPriority,
+  TelosRiskStatus,
+} from "../../shared/types";
+import { TELOS_DEFAULT_PRIORITY } from "../../shared/types";
 import { CompassCreateDialog } from "../components/compass/CompassCreateDialog";
 import { CompassProfileCard } from "../components/compass/CompassProfileCard";
 import { CompassTree } from "../components/compass/CompassTree";
@@ -12,6 +18,7 @@ import {
   compassCategoryOrder,
   compassCreateCopy,
   compassPageCopy,
+  compassPriorityMeta,
   compassRiskStatusOrder,
   compassSnapshotsCopy,
   compassStatusMeta,
@@ -36,6 +43,7 @@ import {
 type CreateTarget = {
   category: TelosCategory;
   parent: TelosItemEntry | null;
+  priority: TelosPriority;
 };
 
 type Flash = {
@@ -98,14 +106,14 @@ export function CompassPage() {
 
   function openRoot(category: TelosCategory) {
     setDialogError(null);
-    setCreateTarget({ category, parent: null });
+    setCreateTarget({ category, parent: null, priority: TELOS_DEFAULT_PRIORITY });
   }
 
   function openChild(parent: TelosItemEntry) {
     const category = nextCompassCategory(parent.category);
     if (!category) return;
     setDialogError(null);
-    setCreateTarget({ category, parent });
+    setCreateTarget({ category, parent, priority: parent.priority });
   }
 
   function closeDialog() {
@@ -113,7 +121,7 @@ export function CompassPage() {
     setDialogError(null);
   }
 
-  async function handleCreate(title: string) {
+  async function handleCreate(title: string, priority: TelosPriority) {
     if (!createTarget) return;
     setDialogError(null);
     try {
@@ -121,6 +129,7 @@ export function CompassPage() {
         category: createTarget.category,
         parentId: createTarget.parent?.id ?? null,
         title,
+        priority,
       });
       setCreateTarget(null);
       navigate(`/compass/items/${result.item.id}`);
@@ -250,14 +259,25 @@ export function CompassPage() {
                         </p>
                       ) : null}
                     </div>
-                    <span
-                      className={[
-                        "shrink-0 rounded-full px-2 py-0.5 text-[11px]",
-                        compassStatusMeta.project.active.className,
-                      ].join(" ")}
-                    >
-                      {compassStatusMeta.project.active.label}
-                    </span>
+                    <div className="flex shrink-0 items-center gap-1.5">
+                      <span
+                        className={[
+                          "rounded-full px-2 py-0.5 text-[11px]",
+                          compassPriorityMeta[project.priority].className,
+                        ].join(" ")}
+                        title={compassPriorityMeta[project.priority].hint}
+                      >
+                        {compassPriorityMeta[project.priority].shortLabel}
+                      </span>
+                      <span
+                        className={[
+                          "rounded-full px-2 py-0.5 text-[11px]",
+                          compassStatusMeta.project.active.className,
+                        ].join(" ")}
+                      >
+                        {compassStatusMeta.project.active.label}
+                      </span>
+                    </div>
                   </Link>
                 </li>
               ))}
@@ -425,6 +445,7 @@ export function CompassPage() {
       {createTarget ? (
         <CompassCreateDialog
           category={createTarget.category}
+          defaultPriority={createTarget.priority}
           submitting={createItem.isPending}
           error={dialogError}
           onClose={closeDialog}

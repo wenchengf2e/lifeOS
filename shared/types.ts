@@ -603,6 +603,15 @@ export const TELOS_DEFAULT_STATUS = {
   risk: "watching",
 } as const satisfies Record<TelosCategory, string>;
 
+/** 罗盘条目优先级：P0 最高，P3 最低；未指定时用 P2。 */
+export const TELOS_PRIORITIES = ["p0", "p1", "p2", "p3"] as const;
+export type TelosPriority = (typeof TELOS_PRIORITIES)[number];
+export const TELOS_DEFAULT_PRIORITY: TelosPriority = "p2";
+
+export function isTelosPriority(value: unknown): value is TelosPriority {
+  return typeof value === "string" && (TELOS_PRIORITIES as readonly string[]).includes(value);
+}
+
 export type TelosControllability = "in" | "partial" | "out";
 
 export type TelosRiskControlState = "none" | "partial" | "ready";
@@ -684,6 +693,7 @@ export type TelosItemBase = {
   parentId: string | null;
   title: string;
   sortOrder: number;
+  priority: TelosPriority;
   createdAt: string;
   updatedAt: string;
 };

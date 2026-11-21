@@ -1,11 +1,17 @@
 import type {
   TelosCategory,
   TelosItemEntry,
+  TelosPriority,
   TelosProfileData,
   TelosRiskStatus,
   TelosSnapshotData,
 } from "../../shared/types";
-import { TELOS_PARENT_CATEGORY, normalizeTelosProfile } from "../../shared/types";
+import {
+  TELOS_DEFAULT_PRIORITY,
+  TELOS_PARENT_CATEGORY,
+  TELOS_PRIORITIES,
+  normalizeTelosProfile,
+} from "../../shared/types";
 import {
   compassCategoryMeta,
   compassCategoryOrder,
@@ -18,8 +24,16 @@ export function isRiskItem(item: TelosItemEntry): item is TelosRiskItem {
   return item.category === "risk";
 }
 
-/** 同级排序：先按 sortOrder，再按创建时间，最后按标题兜底。 */
+/** P0 → P3 的排序权重；数字越小越靠前。未知值按默认 P2 处理。 */
+export function compassPriorityRank(priority: TelosPriority): number {
+  const index = TELOS_PRIORITIES.indexOf(priority);
+  return index === -1 ? TELOS_PRIORITIES.indexOf(TELOS_DEFAULT_PRIORITY) : index;
+}
+
+/** 同级排序：先按优先级 P0→P3，再按手排 sortOrder，最后创建时间与标题兜底。 */
 export function compareCompassItems(a: TelosItemEntry, b: TelosItemEntry): number {
+  const rank = compassPriorityRank(a.priority) - compassPriorityRank(b.priority);
+  if (rank !== 0) return rank;
   if (a.sortOrder !== b.sortOrder) return a.sortOrder - b.sortOrder;
   if (a.createdAt !== b.createdAt) return a.createdAt < b.createdAt ? -1 : 1;
   return a.title.localeCompare(b.title, "zh-CN");
@@ -59,7 +73,7 @@ export function buildCompassForest(items: TelosItemEntry[]): CompassForest {
 
 export type TelosProjectItem = Extract<TelosItemEntry, { category: "project" }>;
 
-/** 进行中的项目，平铺视图用；按最近更新时间倒序。 */
+/** 进行中的项目，平铺视图用；先按优先级，再按最近更新时间倒序。 */
 export function activeCompassProjects(items: TelosItemEntry[]): TelosProjectItem[] {
   return items
     .filter(
@@ -67,6 +81,8 @@ export function activeCompassProjects(items: TelosItemEntry[]): TelosProjectItem
         item.category === "project" && item.status === "active",
     )
     .sort((a, b) => {
+      const rank = compassPriorityRank(a.priority) - compassPriorityRank(b.priority);
+      if (rank !== 0) return rank;
       if (a.updatedAt !== b.updatedAt) return a.updatedAt < b.updatedAt ? 1 : -1;
       return a.title.localeCompare(b.title, "zh-CN");
     });
@@ -228,7 +244,7 @@ export function readTelosProfile(raw: unknown): TelosProfileData {
 }
 
 export type CompassProfileDiffField = "mission" | "currentState" | "idealState";
-export type CompassChangedField = "title" | "status" | "parentId";
+export type CompassChangedField = "title" | "status" | "priority" | "parentId";
 
 export type CompassDataDiff = {
   key: string;
@@ -328,6 +344,12 @@ export function diffTelosSnapshots(
     }
     if (previous.status !== item.status) {
       fields.push({ field: "status", before: previous.status, after: item.status });
+    }
+    // 旧快照没有 priority 字段，按默认 P2 处理，避免整份历史全被判成变化。
+    const beforePriority = previous.priority || TELOS_DEFAULT_PRIORITY;
+    const afterPriority = item.priority || TELOS_DEFAULT_PRIORITY;
+    if (beforePriority !== afterPriority) {
+      fields.push({ field: "priority", before: beforePriority, after: afterPriority });
     }
     if (previous.parentId !== item.parentId) {
       fields.push({ field: "parentId", before: previous.parentId, after: item.parentId });

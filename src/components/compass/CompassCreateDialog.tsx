@@ -1,17 +1,26 @@
 import { useEffect, useRef, useState } from "react";
-import type { TelosCategory } from "../../../shared/types";
-import { compassCategoryMeta, compassCreateCopy, compassCreatePlaceholder } from "../../content/compass";
+import type { TelosCategory, TelosPriority } from "../../../shared/types";
+import { TELOS_DEFAULT_PRIORITY } from "../../../shared/types";
+import {
+  compassCategoryMeta,
+  compassCreateCopy,
+  compassCreatePlaceholder,
+  compassPriorityMeta,
+  compassPriorityOrder,
+} from "../../content/compass";
 
 type CompassCreateDialogProps = {
   category: TelosCategory;
+  defaultPriority?: TelosPriority;
   submitting: boolean;
   error: string | null;
   onClose: () => void;
-  onSubmit: (title: string) => void | Promise<void>;
+  onSubmit: (title: string, priority: TelosPriority) => void | Promise<void>;
 };
 
 export function CompassCreateDialog({
   category,
+  defaultPriority,
   submitting,
   error,
   onClose,
@@ -19,6 +28,9 @@ export function CompassCreateDialog({
 }: CompassCreateDialogProps) {
   const meta = compassCategoryMeta[category];
   const [title, setTitle] = useState("");
+  const [priority, setPriority] = useState<TelosPriority>(
+    defaultPriority ?? TELOS_DEFAULT_PRIORITY,
+  );
   const [formError, setFormError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const onCloseRef = useRef(onClose);
@@ -48,7 +60,7 @@ export function CompassCreateDialog({
       return;
     }
     setFormError(null);
-    await onSubmit(content);
+    await onSubmit(content, priority);
   }
 
   return (
@@ -101,6 +113,35 @@ export function CompassCreateDialog({
             }}
           />
         </label>
+
+        <div className="mt-5">
+          <span className="block text-sm font-medium text-ink">
+            {compassCreateCopy.priorityLabel}
+          </span>
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {compassPriorityOrder.map((value) => {
+              const priorityMeta = compassPriorityMeta[value];
+              const active = priority === value;
+              return (
+                <button
+                  key={value}
+                  type="button"
+                  aria-pressed={active}
+                  title={priorityMeta.hint}
+                  onClick={() => setPriority(value)}
+                  className={[
+                    "rounded-full px-3 py-1.5 text-xs transition",
+                    active
+                      ? `${priorityMeta.className} ring-1 ring-ink/15`
+                      : "border border-line bg-white/70 text-ink-soft hover:text-ink",
+                  ].join(" ")}
+                >
+                  {priorityMeta.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
         {formError ? <p className="mt-4 text-sm text-clay">{formError}</p> : null}
         {error ? <p className="mt-4 text-sm text-clay">{error}</p> : null}

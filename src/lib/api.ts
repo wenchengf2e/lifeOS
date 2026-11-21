@@ -26,6 +26,7 @@ import type {
   ReviewPeriodType,
   TelosCategory,
   TelosItemEntry,
+  TelosPriority,
   TelosProfileData,
   TelosSnapshotEntry,
   TelosSnapshotMeta,
@@ -87,6 +88,7 @@ export type TelosItemCreateInput = {
   parentId?: string | null;
   title: string;
   status?: string;
+  priority?: TelosPriority;
   sortOrder?: number;
   data?: unknown;
 };
@@ -94,6 +96,7 @@ export type TelosItemCreateInput = {
 export type TelosItemPatch = {
   title?: string;
   status?: string;
+  priority?: TelosPriority;
   parentId?: string | null;
   sortOrder?: number;
   data?: unknown;

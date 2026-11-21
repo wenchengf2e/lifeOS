@@ -1,5 +1,10 @@
 import { Link } from "react-router-dom";
-import { compassCategoryMeta, compassRiskControlMeta, compassRiskControlStateMeta } from "../../content/compass";
+import {
+  compassCategoryMeta,
+  compassPriorityMeta,
+  compassRiskControlMeta,
+  compassRiskControlStateMeta,
+} from "../../content/compass";
 import {
   compassStatusClassName,
   compassStatusLabel,
@@ -21,14 +26,25 @@ export function RiskCard({ risk }: { risk: TelosRiskItem }) {
         <span className={["rounded-full px-2.5 py-1 text-[11px] font-medium", meta.className].join(" ")}>
           {meta.icon} {meta.label}
         </span>
-        <span
-          className={[
-            "rounded-full px-2.5 py-1 text-[11px]",
-            compassStatusClassName("risk", risk.status),
-          ].join(" ")}
-        >
-          {compassStatusLabel("risk", risk.status)}
-        </span>
+        <div className="flex items-center gap-1.5">
+          <span
+            className={[
+              "rounded-full px-2.5 py-1 text-[11px]",
+              compassPriorityMeta[risk.priority].className,
+            ].join(" ")}
+            title={compassPriorityMeta[risk.priority].hint}
+          >
+            {compassPriorityMeta[risk.priority].shortLabel}
+          </span>
+          <span
+            className={[
+              "rounded-full px-2.5 py-1 text-[11px]",
+              compassStatusClassName("risk", risk.status),
+            ].join(" ")}
+          >
+            {compassStatusLabel("risk", risk.status)}
+          </span>
+        </div>
       </div>
 
       <h3 className="mt-3 line-clamp-2 font-display text-lg leading-snug text-ink transition group-hover:text-moss-dark">

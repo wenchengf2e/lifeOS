@@ -596,6 +596,7 @@ export async function buildCoachContextSnapshot(
         category: item.category,
         title: item.title,
         status: item.status,
+        priority: item.priority,
         updatedAt: item.updatedAt,
         nextAction: item.category === "project" ? truncate(item.data.nextAction, 120) : "",
       };

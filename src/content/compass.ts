@@ -1,6 +1,7 @@
 import type {
   TelosCategory,
   TelosControllability,
+  TelosPriority,
   TelosRiskControlState,
   TelosRiskStatus,
 } from "../../shared/types";
@@ -59,6 +60,43 @@ export const compassCategoryMeta: Record<TelosCategory, CompassCategoryMeta> = {
     icon: "⚠️",
     description: "可能让你偏离理想状态的场景，独立于五级链。",
     className: "bg-clay/15 text-clay",
+  },
+};
+
+/** 优先级从高到低；P0 最高。 */
+export const compassPriorityOrder: TelosPriority[] = ["p0", "p1", "p2", "p3"];
+
+export type CompassPriorityMeta = {
+  label: string;
+  shortLabel: string;
+  hint: string;
+  className: string;
+};
+
+export const compassPriorityMeta: Record<TelosPriority, CompassPriorityMeta> = {
+  p0: {
+    label: "P0 · 最高",
+    shortLabel: "P0",
+    hint: "不做会出大问题，优先处理。",
+    className: "bg-clay text-white",
+  },
+  p1: {
+    label: "P1 · 高",
+    shortLabel: "P1",
+    hint: "重要，近期要推进。",
+    className: "bg-clay/10 text-clay",
+  },
+  p2: {
+    label: "P2 · 中",
+    shortLabel: "P2",
+    hint: "正常排队处理。",
+    className: "bg-paper-deep/90 text-ink-soft",
+  },
+  p3: {
+    label: "P3 · 低",
+    shortLabel: "P3",
+    hint: "有空再推进，不着急。",
+    className: "bg-white/80 text-ink-soft/70",
   },
 };
 
@@ -347,6 +385,7 @@ export const compassPageCopy = {
 export const compassCreateCopy = {
   title: "新建条目",
   titleLabel: "标题",
+  priorityLabel: "优先级",
   submit: "创建并开始填写",
   creating: "创建中…",
   cancel: "取消",
@@ -367,6 +406,7 @@ export const compassItemCopy = {
   notFound: "这个条目不存在，可能已经被删除了。",
   titlePlaceholder: "未命名条目",
   statusLabel: "状态",
+  priorityLabel: "优先级",
   parentLabel: "上级",
   parentEmpty: "没有可选的上级",
   sortLabel: "同级排序",
@@ -435,6 +475,7 @@ export const compassDiffCopy = {
   itemFields: {
     title: "标题",
     status: "状态",
+    priority: "优先级",
     parentId: "上级",
   },
   parentMovedPrefix: "从",

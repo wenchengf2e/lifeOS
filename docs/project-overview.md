@@ -162,7 +162,7 @@ npm run cf:tail            # 线上日志
 | `fears` | 单条 | `data`(JSON 五步 + 可选权衡分析)、`archived` | 恐惧清单；标题从内容派生，归档是显式可逆标记 |
 | `energy_sessions` | 单条 | `tool`、`data`(JSON `answers` 字典)、`completed` | 能量充电屋带时间戳的独立练习记录 |
 | `telos_profiles` | 用户 + active 档案 | `mission`、`current_state`、`ideal_state`、`version`、`is_active` | 人生罗盘档案；部分唯一索引保证每用户一条 active |
-| `telos_items` | 单条 | `parent_id`、`category`、`title`、`status`、`sort_order`、`data`(JSON) | 人生罗盘五级链实体与风险 |
+| `telos_items` | 单条 | `parent_id`、`category`、`title`、`status`、`priority`、`sort_order`、`data`(JSON) | 人生罗盘五级链实体与风险；priority 取 P0–P3 |
 | `telos_snapshots` | 单条 | `item_count`、`data`(JSON `{profile, items}`) | 人生罗盘整图快照，不可变 |
 | `coach_profiles` | 用户 + active 画像 | `data`(JSON 作息 / 能量窗口 / 沟通偏好 / 执行线索 / 长期洞察)、`version`、`is_active` | AI 教练画像；部分唯一索引保证每用户一条 active |
 | `chat_sessions` | 单条 | `mode`、`skill`、`stage`、`title`、`summary`、`trigger_ref_json`、`status` | 教练话题单元；前端默认续接最近 active |

@@ -1,12 +1,18 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import type { TelosCategory, TelosData, TelosItemEntry } from "../../shared/types";
+import type { TelosCategory, TelosData, TelosItemEntry, TelosPriority } from "../../shared/types";
 import { TELOS_PARENT_CATEGORY, TELOS_STATUSES } from "../../shared/types";
 import { CompassCreateDialog } from "../components/compass/CompassCreateDialog";
 import { CompassItemFields } from "../components/compass/CompassItemFields";
 import { EmptyState, ErrorState, LoadingPage } from "../components/StateViews";
 import { AUTOSAVE_DEBOUNCE_MS } from "../content/autosave";
-import { compassCategoryMeta, compassCreateCopy, compassItemCopy } from "../content/compass";
+import {
+  compassCategoryMeta,
+  compassCreateCopy,
+  compassItemCopy,
+  compassPriorityMeta,
+  compassPriorityOrder,
+} from "../content/compass";
 import {
   compassStatusClassName,
   compassStatusLabel,
@@ -31,6 +37,7 @@ type CompassDraft = {
   category: TelosCategory;
   title: string;
   status: string;
+  priority: TelosPriority;
   parentId: string | null;
   sortOrder: number;
   data: TelosData;
@@ -84,6 +91,7 @@ export function CompassItemPage() {
       category: item.category,
       title: item.title,
       status: item.status,
+      priority: item.priority,
       parentId: item.parentId,
       sortOrder: item.sortOrder,
       data: item.data,
@@ -129,6 +137,7 @@ export function CompassItemPage() {
         patch: {
           title,
           status: current.status,
+          priority: current.priority,
           parentId: current.parentId,
           data: current.data,
         },
@@ -186,6 +195,7 @@ export function CompassItemPage() {
           patch: {
             title,
             status: current.status,
+            priority: current.priority,
             parentId: current.parentId,
             data: current.data,
           },
@@ -255,10 +265,17 @@ export function CompassItemPage() {
   const liveItem = draft as unknown as TelosItemEntry;
   const descendants = countDescendants(items, draft.id);
   const siblingIndex = siblings.findIndex((entry) => entry.id === draft.id);
-  const canMoveUp = siblingIndex > 0;
-  const canMoveDown = siblingIndex >= 0 && siblingIndex < siblings.length - 1;
+  // 排序优先级优先于手排 sortOrder，箭头只调整同一优先级组内的顺序。
+  const canMoveUp =
+    siblingIndex > 0 && siblings[siblingIndex - 1]?.priority === draft.priority;
+  const canMoveDown =
+    siblingIndex >= 0 &&
+    siblingIndex < siblings.length - 1 &&
+    siblings[siblingIndex + 1]?.priority === draft.priority;
 
-  function updateMeta(patch: Partial<Pick<CompassDraft, "title" | "status" | "parentId">>) {
+  function updateMeta(
+    patch: Partial<Pick<CompassDraft, "title" | "status" | "priority" | "parentId">>,
+  ) {
     setDraft((prev) => (prev ? { ...prev, ...patch } : prev));
     markDirty();
   }
@@ -307,7 +324,7 @@ export function CompassItemPage() {
     }
   }
 
-  async function handleCreateChild(title: string) {
+  async function handleCreateChild(title: string, priority: TelosPriority) {
     if (!draft || !nextCategory) return;
     setChildError(null);
     try {
@@ -315,6 +332,7 @@ export function CompassItemPage() {
         category: nextCategory,
         parentId: draft.id,
         title,
+        priority,
       });
       setChildTarget(null);
       navigate(`/compass/items/${result.item.id}`);
@@ -330,7 +348,7 @@ export function CompassItemPage() {
     if (!draft || updateItem.isPending) return;
     const targetIndex = siblingIndex + direction;
     const target = siblings[targetIndex];
-    if (siblingIndex < 0 || !target) return;
+    if (siblingIndex < 0 || !target || target.priority !== draft.priority) return;
 
     let nextCurrentOrder = target.sortOrder;
     let nextTargetOrder = draft.sortOrder;
@@ -438,6 +456,24 @@ export function CompassItemPage() {
               </option>
             ))}
           </select>
+
+          <label className="flex items-center gap-1.5 text-xs text-ink-soft">
+            <span>{compassItemCopy.priorityLabel}</span>
+            <select
+              value={draft.priority}
+              aria-label={compassItemCopy.priorityLabel}
+              onChange={(event) =>
+                updateMeta({ priority: event.target.value as TelosPriority })
+              }
+              className="select-pill"
+            >
+              {compassPriorityOrder.map((priority) => (
+                <option key={priority} value={priority}>
+                  {compassPriorityMeta[priority].label}
+                </option>
+              ))}
+            </select>
+          </label>
 
           {parentCategory ? (
             <label className="flex items-center gap-1.5 text-xs text-ink-soft">
@@ -646,6 +682,7 @@ export function CompassItemPage() {
       {childTarget ? (
         <CompassCreateDialog
           category={childTarget}
+          defaultPriority={draft.priority}
           submitting={createItem.isPending}
           error={childError}
           onClose={() => {

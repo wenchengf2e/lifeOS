@@ -11,8 +11,10 @@ import {
 } from "../db/queries";
 import {
   TELOS_CATEGORIES,
+  TELOS_DEFAULT_PRIORITY,
   TELOS_DEFAULT_STATUS,
   TELOS_PARENT_CATEGORY,
+  TELOS_PRIORITIES,
   isTelosCategory,
   isTelosStatus,
   normalizeTelosItemData,
@@ -29,6 +31,7 @@ const idSchema = z.string().min(1).max(64);
 const categorySchema = z.enum(TELOS_CATEGORIES);
 const titleSchema = z.string().trim().min(1).max(200);
 const statusSchema = z.string().min(1).max(32);
+const prioritySchema = z.enum(TELOS_PRIORITIES);
 const parentIdSchema = z.string().min(1).max(64).nullable();
 const dataSchema = z.record(z.string(), z.unknown());
 
@@ -43,6 +46,7 @@ const createItemSchema = z.object({
   parentId: parentIdSchema.optional(),
   title: titleSchema,
   status: statusSchema.optional(),
+  priority: prioritySchema.optional(),
   sortOrder: z.number().int().optional(),
   data: dataSchema.optional(),
 });
@@ -51,6 +55,7 @@ const patchItemSchema = z
   .object({
     title: titleSchema.optional(),
     status: statusSchema.optional(),
+    priority: prioritySchema.optional(),
     parentId: parentIdSchema.optional(),
     sortOrder: z.number().int().optional(),
     data: dataSchema.optional(),
@@ -59,6 +64,7 @@ const patchItemSchema = z
     (value) =>
       value.title !== undefined ||
       value.status !== undefined ||
+      value.priority !== undefined ||
       value.parentId !== undefined ||
       value.sortOrder !== undefined ||
       value.data !== undefined,
@@ -283,6 +289,7 @@ app.post("/items", async (c) => {
     category,
     title: parsed.data.title,
     status,
+    priority: parsed.data.priority ?? TELOS_DEFAULT_PRIORITY,
     sortOrder,
     data: serialized.data,
     createdAt: now,
@@ -350,6 +357,7 @@ app.patch("/items/:id", async (c) => {
   };
   if (parsed.data.title !== undefined) updates.title = parsed.data.title;
   if (parsed.data.status !== undefined) updates.status = parsed.data.status;
+  if (parsed.data.priority !== undefined) updates.priority = parsed.data.priority;
   if (nextParentId !== undefined) updates.parentId = nextParentId;
   if (parsed.data.sortOrder !== undefined) updates.sortOrder = parsed.data.sortOrder;
   if (parsed.data.data !== undefined) {

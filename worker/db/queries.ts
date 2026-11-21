@@ -45,6 +45,8 @@ import {
   normalizeTelosRiskData,
   normalizeTelosSnapshotData,
   normalizeTelosStrategyData,
+  TELOS_DEFAULT_PRIORITY,
+  isTelosPriority,
 } from "../../shared/types";
 import { getDb } from "./client";
 import {
@@ -180,6 +182,7 @@ export function mapTelosItem(row: typeof telosItems.$inferSelect): TelosItemEntr
     parentId: row.parentId,
     title: row.title,
     sortOrder: row.sortOrder,
+    priority: isTelosPriority(row.priority) ? row.priority : TELOS_DEFAULT_PRIORITY,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   };

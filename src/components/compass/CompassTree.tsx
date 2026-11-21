@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import type { TelosItemEntry } from "../../../shared/types";
-import { compassCategoryMeta } from "../../content/compass";
+import { compassCategoryMeta, compassPriorityMeta } from "../../content/compass";
 import {
   buildCompassForest,
   compassStatusClassName,
@@ -76,6 +76,15 @@ function CompassTreeNode({
           </div>
 
           <div className="flex flex-wrap items-center gap-2 pl-9 sm:shrink-0 sm:pl-0">
+            <span
+              className={[
+                "rounded-full px-2 py-0.5 text-[11px]",
+                compassPriorityMeta[item.priority].className,
+              ].join(" ")}
+              title={compassPriorityMeta[item.priority].hint}
+            >
+              {compassPriorityMeta[item.priority].shortLabel}
+            </span>
             <span
               className={[
                 "rounded-full px-2 py-0.5 text-[11px]",

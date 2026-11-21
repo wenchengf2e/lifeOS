@@ -90,6 +90,7 @@ export const telosItems = sqliteTable("telos_items", {
   category: text("category").notNull(),
   title: text("title").notNull(),
   status: text("status").notNull(),
+  priority: text("priority").notNull().default("p2"),
   sortOrder: integer("sort_order").notNull().default(0),
   data: text("data").notNull().default("{}"),
   createdAt: text("created_at").notNull(),

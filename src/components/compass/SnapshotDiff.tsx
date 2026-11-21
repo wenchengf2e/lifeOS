@@ -1,9 +1,10 @@
 import { useMemo } from "react";
-import type { TelosItemEntry, TelosSnapshotData } from "../../../shared/types";
+import type { TelosItemEntry, TelosPriority, TelosSnapshotData } from "../../../shared/types";
 import {
   compassCategoryMeta,
   compassCategoryOrder,
   compassDiffCopy,
+  compassPriorityMeta,
   compassRiskControlStateMeta,
 } from "../../content/compass";
 import {
@@ -97,6 +98,16 @@ function renderFieldChange(
   if (field.field === "status") {
     const before = field.before ? compassStatusLabel(change.item.category, field.before) : "—";
     const after = field.after ? compassStatusLabel(change.item.category, field.after) : "—";
+    return `${before} → ${after}`;
+  }
+
+  if (field.field === "priority") {
+    const before = field.before
+      ? (compassPriorityMeta[field.before as TelosPriority]?.label ?? field.before)
+      : "—";
+    const after = field.after
+      ? (compassPriorityMeta[field.after as TelosPriority]?.label ?? field.after)
+      : "—";
     return `${before} → ${after}`;
   }
 
