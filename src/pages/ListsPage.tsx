@@ -88,7 +88,6 @@ export function ListsPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Evidence"
         title="清单"
         description="成就和关键改变不是用来感动自己的，是状态差的时候拿出来的证据。写具体的事、次数、天数、结果。"
       />

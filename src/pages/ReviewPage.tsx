@@ -70,7 +70,6 @@ export function ReviewPage() {
   return (
     <>
       <PageHeader
-        eyebrow={reviewPageCopy.eyebrow}
         title={reviewPageCopy.title}
         description={reviewPageCopy.description}
       />
@@ -159,8 +158,7 @@ export function ReviewPage() {
       <section className="mt-8">
         <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
           <div>
-            <p className="text-[11px] uppercase tracking-[0.2em] text-moss">Patterns</p>
-            <h2 className="mt-1 text-xl text-ink">模式库</h2>
+            <h2 className="text-xl text-ink">模式库</h2>
             <p className="mt-1 text-xs text-ink-soft">
               这里是复盘的资产。每张卡都应该能解释过去，也能预测下次。
             </p>
@@ -208,8 +206,7 @@ export function ReviewPage() {
 
       <section className="mt-8">
         <div className="mb-4">
-          <p className="text-[11px] uppercase tracking-[0.2em] text-moss">History</p>
-          <h2 className="mt-1 text-xl text-ink">往期复盘</h2>
+          <h2 className="text-xl text-ink">往期复盘</h2>
         </div>
 
         {history.length === 0 ? (

@@ -8,7 +8,7 @@ export function AboutPage() {
   return (
     <>
       <div id="about-top">
-        <PageHeader eyebrow="About" title={title} description={subtitle} />
+        <PageHeader title={title} description={subtitle} />
       </div>
 
       <section className="mb-6 overflow-hidden rounded-[2rem] border border-line/60 bg-white/60 p-6 shadow-sm sm:p-9">
@@ -49,8 +49,7 @@ export function AboutPage() {
 
         <aside className="h-fit space-y-4 lg:sticky lg:top-28">
           <nav className="card p-5" aria-label="本页目录">
-            <p className="text-[11px] uppercase tracking-[0.2em] text-moss">On this page</p>
-            <ol className="mt-3 space-y-0.5">
+            <ol className="space-y-0.5">
               {sections.map((section, index) => (
                 <li key={section.id}>
                   <a
@@ -68,8 +67,7 @@ export function AboutPage() {
           </nav>
 
           <section className="card p-5">
-            <p className="text-[11px] uppercase tracking-[0.2em] text-moss">Source</p>
-            <h2 className="mt-1 text-base text-ink">内容放在哪里</h2>
+            <h2 className="text-base text-ink">内容放在哪里</h2>
             <div className="mt-3 space-y-2">
               <code className="block rounded-xl border border-line/70 bg-paper-deep/40 px-3 py-2 text-[11px] text-ink-soft">
                 src/content/about.json
@@ -100,12 +98,7 @@ function AboutSectionCard({ section, index }: { section: AboutSection; index: nu
     <section id={section.id} className="card scroll-mt-28 p-6 sm:p-8">
       <div className="flex items-start justify-between gap-4 border-b border-line/60 pb-5">
         <div>
-          {section.eyebrow ? (
-            <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-moss">
-              {section.eyebrow}
-            </p>
-          ) : null}
-          <h2 className="mt-2 text-2xl text-ink">{section.title}</h2>
+          <h2 className="text-2xl text-ink">{section.title}</h2>
           {section.summary ? (
             <p className="mt-2 text-sm leading-7 text-ink-soft">{section.summary}</p>
           ) : null}

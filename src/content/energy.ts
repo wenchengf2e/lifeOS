@@ -217,7 +217,6 @@ export const energyTools: EnergyTool[] = [
 ];
 
 export const energyPageCopy = {
-  eyebrow: "Energy Charging House",
   title: "能量充电屋",
   description:
     "四个向内充电的入口：先看见此刻的状态，再写下想要的画面，拆开卡住的想法，最后看清一个反复出现的行为。每次练习都是一篇带时间戳的独立笔记。",

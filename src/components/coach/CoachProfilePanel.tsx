@@ -143,8 +143,7 @@ export function CoachProfilePanel({
       <div className="flex h-full w-full max-w-2xl flex-col overflow-y-auto bg-paper shadow-2xl sm:rounded-l-[2rem]">
         <div className="flex items-start justify-between gap-4 border-b border-line/60 px-5 py-4 sm:px-7">
           <div className="min-w-0">
-            <p className="text-[11px] uppercase tracking-[0.2em] text-moss">Coach Profile</p>
-            <h2 id="coach-profile-title" className="mt-1 text-2xl text-ink">
+            <h2 id="coach-profile-title" className="text-2xl text-ink">
               我的教练画像
             </h2>
             <p className="mt-1 text-xs leading-6 text-ink-soft">

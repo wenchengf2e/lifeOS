@@ -6,7 +6,6 @@
   "sections": [
     {
       "id": "why",
-      "eyebrow": "Why",
       "title": "为什么做这套系统",
       "summary": "把散落在备忘录、聊天记录和脑子里的自我观察，收进一个可以长期维护的地方。",
       "blocks": [
@@ -27,7 +26,6 @@
     },
     {
       "id": "design",
-      "eyebrow": "Design",
       "title": "设计思路",
       "summary": "像一张安静的书桌，而不是一个给你打分的仪表盘。",
       "blocks": [
@@ -54,7 +52,6 @@
     },
     {
       "id": "loop",
-      "eyebrow": "Loop",
       "title": "系统怎么跑起来",
       "summary": "不是一次性填完的问卷，而是一个每天、每周、每月转动的循环。",
       "blocks": [
@@ -82,7 +79,6 @@
     },
     {
       "id": "principles",
-      "eyebrow": "Principles",
       "title": "使用原则",
       "summary": "这些原则比任何模板都重要。",
       "blocks": [
@@ -107,7 +103,6 @@
     },
     {
       "id": "modules",
-      "eyebrow": "Modules",
       "title": "每个模块做什么",
       "summary": "同一个设计语言下，每个页面承担不同的思考密度。",
       "blocks": [
@@ -128,7 +123,6 @@
     },
     {
       "id": "data",
-      "eyebrow": "Data",
       "title": "数据与隐私",
       "summary": "数据属于你，不进入第三方分析或广告系统。",
       "blocks": [
@@ -148,7 +142,6 @@
     },
     {
       "id": "next",
-      "eyebrow": "Next",
       "title": "接下来",
       "summary": "先把每天都会用的部分跑顺，再逐步补齐长尾功能。",
       "blocks": [

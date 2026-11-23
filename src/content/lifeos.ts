@@ -20,10 +20,11 @@ export type LifeOSDirectionField = {
 export const lifeosDirection = {
   module: "lifeos",
   key: "direction",
-  eyebrow: "North Star",
   title: "方向卡",
   desc: "在六栏之前，先给出一组坐标。目标模块会直接引用这里，不用再复制一遍。",
   linkLabel: "用五步诊断拆一个目标",
+  expand: "展开",
+  collapse: "收起",
   fields: [
     {
       key: "statement" as const,

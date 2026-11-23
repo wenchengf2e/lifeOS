@@ -48,7 +48,6 @@ export const reviewSteps: ReviewStep[] = [
 ];
 
 export const reviewPageCopy = {
-  eyebrow: "Weekly Review",
   title: "复盘",
   description:
     "日记是原料，周复盘是加工，模式卡是资产。每周花二十分钟，把散落的七天收成一句能带走的话。",

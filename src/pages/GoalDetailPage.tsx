@@ -562,8 +562,7 @@ export function GoalDetailPage() {
 
         <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
           <section className="card p-5">
-            <p className="text-[11px] uppercase tracking-[0.18em] text-moss">Checklist</p>
-            <h2 className="mt-1 text-base text-ink">{goalDetailCopy.sidebarChecklist}</h2>
+            <h2 className="text-base text-ink">{goalDetailCopy.sidebarChecklist}</h2>
             <ul className="mt-3 space-y-2">
               {checklist.map((item) => (
                 <li key={item.label} className="flex gap-2 text-xs leading-6">
@@ -579,8 +578,7 @@ export function GoalDetailPage() {
           </section>
 
           <section className="card p-5">
-            <p className="text-[11px] uppercase tracking-[0.18em] text-moss">North Star</p>
-            <h2 className="mt-1 text-base text-ink">
+            <h2 className="text-base text-ink">
               {directionTheme || goalDetailCopy.sidebarDirection}
             </h2>
             <p className="mt-2 text-xs leading-6 text-ink-soft">
@@ -595,8 +593,7 @@ export function GoalDetailPage() {
           </section>
 
           <section className="card p-5">
-            <p className="text-[11px] uppercase tracking-[0.18em] text-moss">Overview</p>
-            <h2 className="mt-1 text-base text-ink">{goalDetailCopy.sidebarOverview}</h2>
+            <h2 className="text-base text-ink">{goalDetailCopy.sidebarOverview}</h2>
             <dl className="mt-4 space-y-3 text-xs">
               <div className="flex items-start justify-between gap-3">
                 <dt className="shrink-0 text-ink-soft">{goalDetailCopy.deadline}</dt>

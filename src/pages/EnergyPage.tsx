@@ -73,15 +73,13 @@ export function EnergyPage() {
   return (
     <>
       <PageHeader
-        eyebrow={energyPageCopy.eyebrow}
         title={energyPageCopy.title}
         description={energyPageCopy.description}
       />
 
       <section>
         <div className="mb-4">
-          <p className="text-[11px] uppercase tracking-[0.2em] text-moss">Charging pods</p>
-          <h2 className="mt-1 text-xl text-ink">{energyPageCopy.toolsTitle}</h2>
+          <h2 className="text-xl text-ink">{energyPageCopy.toolsTitle}</h2>
           <p className="mt-1 max-w-2xl text-xs leading-6 text-ink-soft">
             {energyPageCopy.toolsDesc}
           </p>
@@ -128,8 +126,7 @@ export function EnergyPage() {
 
       <section className="mt-10">
         <div className="mb-4">
-          <p className="text-[11px] uppercase tracking-[0.2em] text-moss">History</p>
-          <h2 className="mt-1 text-xl text-ink">{energyPageCopy.historyTitle}</h2>
+          <h2 className="text-xl text-ink">{energyPageCopy.historyTitle}</h2>
           <p className="mt-1 max-w-2xl text-xs leading-6 text-ink-soft">
             {energyPageCopy.historyDesc}
           </p>

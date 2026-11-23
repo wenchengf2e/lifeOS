@@ -61,7 +61,6 @@ export function LifeOSPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Life OS"
         title="人生 OS"
         description="先写方向卡，再用六栏把自己描述清楚。方向卡给坐标，六栏给细节；先写事实和判断，再慢慢迭代。"
       />

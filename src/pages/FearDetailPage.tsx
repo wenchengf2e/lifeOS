@@ -228,10 +228,7 @@ export function FearDetailPage() {
       </button>
 
       <div className="mb-6">
-        <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-moss">
-          {fearsPageCopy.eyebrow}
-        </p>
-        <h1 className="mt-2 font-display text-3xl leading-tight text-ink sm:text-4xl">
+        <h1 className="font-display text-3xl leading-tight text-ink sm:text-4xl">
           {fearTitle(draft.data)}
         </h1>
 

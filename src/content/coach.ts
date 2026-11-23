@@ -189,7 +189,6 @@ export const CHAT_INPUT_MAX_LENGTH = 4000;
 export const QUICK_REPLY_LIMIT = 4;
 
 export const coachPageCopy = {
-  eyebrow: "AI Coach",
   title: "小芽 · 你的成长教练",
   description:
     "不评判、不催促。每次只问一个锋利的问题，陪你把卡住的地方拆成一个今天能做的小动作。",
@@ -202,7 +201,6 @@ export const coachPageCopy = {
   signalsDesc: "根据你最近的打卡、目标、恐惧与罗盘数据扫描得出，点一张就直接开聊。",
   signalsEmpty: "暂时没有需要提醒的线索。直接在下面写一句话，小芽就会接住。",
   signalsCollapsed: "教练主动线索",
-  threadEyebrow: "Thread",
   threadEmptyTitle: "新的对话",
   threadFallbackTitle: "当前对话",
   threadEmptyHint: "还没有开始对话。点一张主动线索卡，或直接在下面写下此刻最想说的那句话。",

@@ -201,10 +201,7 @@ export function CoachPage() {
       <section className="overflow-hidden rounded-[2rem] border border-line/60 bg-white/60 p-5 shadow-sm sm:p-8">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="min-w-0 max-w-2xl">
-            <p className="text-[11px] font-medium uppercase tracking-[0.24em] text-moss">
-              {coachPageCopy.eyebrow}
-            </p>
-            <h1 className="mt-3 font-display text-3xl leading-tight text-ink sm:text-4xl">
+            <h1 className="font-display text-3xl leading-tight text-ink sm:text-4xl">
               {coachPageCopy.title}
             </h1>
             <p className="mt-3 max-w-xl text-sm leading-7 text-ink-soft">
@@ -383,10 +380,7 @@ export function CoachPage() {
       <section className="card mt-6 p-4 sm:p-6">
         <div className="flex flex-wrap items-end justify-between gap-2">
           <div className="min-w-0">
-            <p className="text-[11px] uppercase tracking-[0.2em] text-moss">
-              {coachPageCopy.threadEyebrow}
-            </p>
-            <h2 className="mt-1 truncate text-xl text-ink">
+            <h2 className="truncate text-xl text-ink">
               {state.activeSession?.title.trim() ||
                 (hasMessages
                   ? coachPageCopy.threadFallbackTitle

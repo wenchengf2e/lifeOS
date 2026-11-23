@@ -22,7 +22,6 @@ export function DiaryPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Journal"
         title="日记"
         description="晚间日记和想法的只读归档，按时间倒序。想补写某一天，点开那一条就行。"
         action={

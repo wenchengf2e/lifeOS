@@ -165,7 +165,6 @@ export function DailyPage() {
   return (
     <>
       <PageHeader
-        eyebrow={dailyPageCopy.eyebrow}
         title={dailyPageCopy.title}
         description={dailyPageCopy.description}
         action={

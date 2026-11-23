@@ -131,7 +131,6 @@ export const MAX_ACTIVE_GOALS = 3;
 export const STALE_GOAL_DAYS = 14;
 
 export const goalsPageCopy = {
-  eyebrow: "Five-Step Diagnosis",
   title: "五步诊断",
   description:
     "人生 OS 定方向，目标定战场。每个目标单独走一遍：目标 → 问题 → 诊断 → 方案 → 践行。",

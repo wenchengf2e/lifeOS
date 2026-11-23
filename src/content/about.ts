@@ -16,7 +16,6 @@ export type AboutBlock =
 
 export type AboutSection = {
   id: string;
-  eyebrow?: string;
   title: string;
   summary?: string;
   blocks: AboutBlock[];

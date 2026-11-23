@@ -205,7 +205,6 @@ export function ReviewWizardPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Weekly Review"
         title={`第 ${isoWeekNumber(weekKey)} 周复盘`}
         description={`${weekRangeLabel(weekKey)} · 本周记录了 ${entries.length} 天。四步走完，这一周才算收好。`}
         action={
@@ -673,8 +672,7 @@ export function ReviewWizardPage() {
 
         <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
           <section className="card p-5">
-            <p className="text-[11px] uppercase tracking-[0.2em] text-moss">Progress</p>
-            <h2 className="mt-1 text-base text-ink">这一周的进度</h2>
+            <h2 className="text-base text-ink">这一周的进度</h2>
             <dl className="mt-4 space-y-3 text-xs">
               <div className="flex items-center justify-between gap-2">
                 <dt className="text-ink-soft">做成了什么</dt>

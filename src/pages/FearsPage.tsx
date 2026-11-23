@@ -69,7 +69,6 @@ export function FearsPage() {
   return (
     <>
       <PageHeader
-        eyebrow={fearsPageCopy.eyebrow}
         title={fearsPageCopy.title}
         description={fearsPageCopy.description}
         action={
@@ -141,8 +140,7 @@ export function FearsPage() {
           <div className="max-h-[92vh] w-full max-w-xl overflow-y-auto rounded-t-[2rem] border border-line bg-paper p-6 shadow-2xl sm:rounded-[2rem] sm:p-7">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-[11px] uppercase tracking-[0.2em] text-moss">New Fear</p>
-                <h2 id="new-fear-title" className="mt-1 text-2xl text-ink">
+                <h2 id="new-fear-title" className="text-2xl text-ink">
                   {newFearCopy.title}
                 </h2>
                 <p className="mt-2 text-sm leading-7 text-ink-soft">{newFearCopy.desc}</p>

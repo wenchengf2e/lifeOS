@@ -137,7 +137,6 @@ export function GoalsPage() {
   return (
     <>
       <PageHeader
-        eyebrow={goalsPageCopy.eyebrow}
         title={goalsPageCopy.title}
         description={goalsPageCopy.description}
         action={
@@ -311,8 +310,7 @@ export function GoalsPage() {
 
       <section className="mt-10">
         <div className="mb-4">
-          <p className="text-[11px] uppercase tracking-[0.2em] text-moss">Method</p>
-          <h2 className="mt-1 text-xl text-ink">{goalsPageCopy.methodTitle}</h2>
+          <h2 className="text-xl text-ink">{goalsPageCopy.methodTitle}</h2>
           <p className="mt-1 max-w-2xl text-xs leading-6 text-ink-soft">
             {goalsPageCopy.methodDesc}
           </p>
@@ -350,8 +348,7 @@ export function GoalsPage() {
           <div className="max-h-[92vh] w-full max-w-xl overflow-y-auto rounded-t-[2rem] border border-line bg-paper p-6 shadow-2xl sm:rounded-[2rem] sm:p-7">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-[11px] uppercase tracking-[0.2em] text-moss">New Goal</p>
-                <h2 id="new-goal-title" className="mt-1 text-2xl text-ink">
+                <h2 id="new-goal-title" className="text-2xl text-ink">
                   {newGoalCopy.title}
                 </h2>
                 <p className="mt-2 text-sm leading-7 text-ink-soft">{newGoalCopy.desc}</p>

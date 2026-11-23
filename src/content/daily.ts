@@ -178,7 +178,6 @@ export const dailyModules: DailyModule[] = [
 export const allDailyFields: DailyField[] = dailyModules.flatMap((module) => module.fields);
 
 export const dailyPageCopy = {
-  eyebrow: "Daily Practice",
   title: "每日仪式",
   description: "一天四段：方向、经过、想法、复盘。写一条就算，仪式不必完整。",
 };

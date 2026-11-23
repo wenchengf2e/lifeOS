@@ -163,8 +163,7 @@ export function OverviewPage() {
       <section className="mt-6 card p-6 sm:p-7">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <p className="text-[11px] uppercase tracking-[0.2em] text-moss">Goals</p>
-            <h2 className="mt-1 text-xl text-ink">进行中的目标</h2>
+            <h2 className="text-xl text-ink">进行中的目标</h2>
             <p className="mt-1 text-xs text-ink-soft">
               人生 OS 定方向，目标定战场。每个目标单独走五步。
             </p>
@@ -221,8 +220,7 @@ export function OverviewPage() {
         <section className="card p-6 sm:p-7">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-[11px] uppercase tracking-[0.2em] text-moss">Journal</p>
-              <h2 className="mt-1 text-xl text-ink">最近的日记</h2>
+              <h2 className="text-xl text-ink">最近的日记</h2>
             </div>
             <Link to="/diary" className="btn-ghost text-xs">
               全部 →
@@ -254,8 +252,7 @@ export function OverviewPage() {
 
         <aside className="space-y-4">
           <section className="card p-6">
-            <p className="text-[11px] uppercase tracking-[0.2em] text-moss">Quick links</p>
-            <h2 className="mt-1 text-xl text-ink">今天想做点什么？</h2>
+            <h2 className="text-xl text-ink">今天想做点什么？</h2>
             <div className="mt-4 space-y-2">
               <Link
                 to="/coach"

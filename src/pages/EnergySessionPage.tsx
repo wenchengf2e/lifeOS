@@ -368,8 +368,7 @@ export function EnergySessionPage() {
         </header>
 
         <section className="mb-4">
-          <p className="text-[11px] uppercase tracking-[0.2em] text-moss">Session notes</p>
-          <h2 className="mt-1 text-xl text-ink">{energySessionCopy.readTitle}</h2>
+          <h2 className="text-xl text-ink">{energySessionCopy.readTitle}</h2>
           <p className="mt-1 max-w-2xl text-xs leading-6 text-ink-soft">
             {energySessionCopy.readDesc}
           </p>

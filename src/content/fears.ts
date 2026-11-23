@@ -84,7 +84,6 @@ export const fearSteps: FearStep[] = [
 export const FEAR_UNTITLED = "未命名恐惧";
 
 export const fearsPageCopy = {
-  eyebrow: "Fear → Action",
   title: "恐惧清单",
   description:
     "把一条模糊的恐惧拆成五步：识别、找根因、定义问题、变成动作、用证据验证。写下来之后，它才有机会被处理，而不是一直在脑子里放大。",
