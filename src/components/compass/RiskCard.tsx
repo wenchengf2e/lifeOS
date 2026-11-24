@@ -85,7 +85,7 @@ export function RiskCard({ risk }: { risk: TelosRiskItem }) {
                 <dt className="shrink-0 text-ink-soft/70">
                   {compassRiskControlMeta[key].label}
                 </dt>
-                <dd className="min-w-0 break-words">{note}</dd>
+                <dd className="min-w-0 whitespace-pre-line break-words">{note}</dd>
               </div>
             );
           })}

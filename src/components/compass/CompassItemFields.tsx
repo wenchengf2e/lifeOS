@@ -433,9 +433,9 @@ function RiskControlField({
           );
         })}
       </div>
-      <input
-        type="text"
-        className="field mt-3"
+      <textarea
+        className="field mt-3 min-h-24 resize-y"
+        rows={3}
         maxLength={2000}
         placeholder={compassFieldCopy.risk.notePlaceholder}
         value={value.note}
