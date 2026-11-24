@@ -211,11 +211,12 @@ export function DailyPage() {
         <div className="space-y-5">
           {dailyModules.map(renderModule)}
 
-          <div className="card flex flex-wrap items-center justify-between gap-3 p-4">
-            <div className="text-xs text-ink-soft">{statusText}</div>
+          {/* 移动端吸底，写到哪都能直接保存；桌面端保持普通卡片。 */}
+          <div className="sticky bottom-0 z-20 -mx-4 flex flex-wrap items-center justify-between gap-3 border-t border-line/60 bg-paper/95 px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3 backdrop-blur sm:-mx-6 sm:px-6 lg:static lg:mx-0 lg:rounded-3xl lg:border lg:border-line/70 lg:bg-white/70 lg:p-4 lg:pb-4 lg:shadow-sm lg:backdrop-blur-none">
+            <div className="min-w-0 flex-1 text-xs text-ink-soft">{statusText}</div>
             <button
               type="button"
-              className="btn-primary"
+              className="btn-primary shrink-0"
               onClick={handleSave}
               disabled={saveCheckin.isPending}
             >
