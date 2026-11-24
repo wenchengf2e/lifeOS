@@ -52,3 +52,25 @@
 ### Status
 
 [OK] **Completed**
+
+
+## Session 3: 周/月前瞻计划与每日仪式提醒
+<!-- trellis-session: v=2 fp=96b06740fd81bc00 -->
+
+**Date**: 2026-11-24
+**Task**: 周/月前瞻计划与每日仪式提醒
+**Branch**: `feat/weekly-monthly-plan`
+
+### Summary
+
+新增 /plan 周/月双轨计划页（主题 + 最多 3 个重点、历史周期），每日仪式顶部展示本周计划与本月主题；计划复用 documents(module=plan)，无新增表、migration 或 API；typecheck/build 通过，质量检查覆盖运行时断言与 375px 布局。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `2a6d220` | feat: 新增周/月前瞻计划与每日仪式提醒 |
+
+### Status
+
+[OK] **Completed**
