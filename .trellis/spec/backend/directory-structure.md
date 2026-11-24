@@ -98,8 +98,24 @@ export default route;
 
 ### 何时复用 `documents`，何时新建表
 
-- 页面级、结构不固定或迭代频繁的数据 → `documents`（`module` + `key`），例如人生 OS 六栏、方向卡、Reality OS 的 `module="reality", key="trading"`。
+- 页面级、结构不固定或迭代频繁的数据 → `documents`（`module` + `key`），例如人生 OS 六栏、方向卡、Reality OS 的 `module="reality", key="trading"`、周 / 月计划的 `module="plan", key="week-2026-W48"`。
 - 需要列表、排序、筛选、状态流转或独立计数的实体 → 单独建表（`goals`、`fears`、`items`、`patterns`、`reviews`、`checkins`）。
+
+### 周 / 月前瞻计划（`documents`）
+
+- 计划是页面级、按周期自然键读写、没有列表 / 状态流转需求的数据，复用 `documents`，不单独建表。
+- `module = "plan"`；`key = "week-YYYY-Www"`（如 `week-2026-W48`）或 `month-YYYY-MM`（如 `month-2026-11`）。
+  `docs.ts` 的 slug 校验是 `^[a-zA-Z0-9_-]+$`，不能用冒号；周 / 月必须用不同前缀，避免同一 key 互相覆盖。
+- `data` 形状：`{ theme?: string; priorities?: string[] }`；最多 3 条重点，纯文本，不记录完成状态。
+- 路由复用 `GET /api/docs?module=plan`、`GET /api/docs/plan/:key`、`PUT /api/docs/plan/:key`；前端统一走 `useSaveDocument`。
+- 清空语义：全空也允许 `PUT`，由前端 `isPlanFilled` 判空；历史列表只展示已填写周期。
+- 校验与边界：
+  - 非法 `module` / `key` → `400 { error: "invalid_path" }`；
+  - 请求体不是对象 → `400 { error: "invalid_body" }`；
+  - 周键非法（如 `W00`、`W54`、`YYYY-M`）→ 前端回退到当前周，不发请求；
+  - 超过 3 条重点 → 前端规范化时截断，不依赖服务端拒绝。
+- `documents` 已在 `loadAll()` 中，因此 `/api/bootstrap` 与 `/api/export` 自动包含计划；不要为它新增独立接口或字段。
+- 后续周复盘按 `week-YYYY-Www` 读取同一份文档即可，不改变存储契约。
 
 ### 恐惧清单（`fears`）
 

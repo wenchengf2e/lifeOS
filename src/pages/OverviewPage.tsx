@@ -13,6 +13,7 @@ import {
   goalProgress,
   sortGoals,
 } from "../lib/goals";
+import { findPlanEntry, isPlanFilled, readPlanData } from "../lib/plan";
 import { useBootstrap } from "../lib/queries";
 import { currentStreak, isCountedDone, monthDoneCount } from "../lib/stats";
 
@@ -50,6 +51,9 @@ export function OverviewPage() {
   const energyCount = data?.energySessions?.length ?? 0;
 
   const currentWeek = isoWeekKeyOf(today);
+  const weekPlanFilled = isPlanFilled(
+    readPlanData(findPlanEntry(data?.documents ?? [], "week", currentWeek)),
+  );
   const weekReview = (data?.reviews ?? []).find(
     (entry) => entry.periodType === "week" && entry.periodKey === currentWeek,
   );
@@ -267,6 +271,15 @@ export function OverviewPage() {
               >
                 <span>🪞 每日仪式</span>
                 <span className="text-ink-soft">→</span>
+              </Link>
+              <Link
+                to="/plan"
+                className="flex items-center justify-between rounded-2xl border border-line/70 bg-paper-deep/30 px-4 py-3 text-sm text-ink transition hover:border-moss/30 hover:bg-white/70"
+              >
+                <span>🗓️ 周 / 月计划</span>
+                <span className="text-ink-soft">
+                  {weekPlanFilled ? "本周已定调" : "本周未定调"} →
+                </span>
               </Link>
               <Link
                 to="/lifeos"

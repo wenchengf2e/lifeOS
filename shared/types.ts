@@ -67,6 +67,18 @@ export const REVIEW_PERIOD_TYPES = ["week", "month"] as const;
 
 export type ReviewPeriodType = (typeof REVIEW_PERIOD_TYPES)[number];
 
+export const PLAN_PERIOD_TYPES = ["week", "month"] as const;
+
+export type PlanPeriodType = (typeof PLAN_PERIOD_TYPES)[number];
+
+/** 周 / 月前瞻计划：一句话主题 + 1–3 个重点，纯文本，不记录完成状态。 */
+export type PeriodPlanData = {
+  /** 一句话主题。 */
+  theme?: string;
+  /** 1–3 个重点，纯文本提醒，不写入清单或目标。 */
+  priorities?: string[];
+};
+
 export const PATTERN_STATUSES = ["watching", "verified", "retired"] as const;
 
 export type PatternStatus = (typeof PATTERN_STATUSES)[number];

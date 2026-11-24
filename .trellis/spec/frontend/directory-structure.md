@@ -40,6 +40,7 @@ src/
 │   ├── EnergySessionCard.tsx   # 能量充电屋练习记录摘要卡
 │   ├── DirectionCard.tsx       # 人生 OS 方向卡
 │   ├── PatternCard.tsx         # 模式卡字段、证据、状态流转
+│   ├── PlanReminderCard.tsx    # 每日仪式顶部的本周 / 本月计划提醒卡
 │   ├── Reality*.tsx            # Reality OS：方向卡、目标摘要卡、雷达图
 │   ├── goals/
 │   │   ├── fields.tsx          # FieldHeader / TextField / TextInput / TextListField / SegmentedField / StepEmpty
@@ -59,6 +60,7 @@ src/
 │   ├── goals.ts                # 领域、状态、五步定义、限额与文案
 │   ├── lifeos.ts               # 方向卡与人生 OS 六栏
 │   ├── lists.ts                # 成就 / 痛苦 / 关键改变 / 复盘动作四个清单
+│   ├── plan.ts                 # 周 / 月计划字段、限额、历史与提醒卡文案
 │   ├── review.ts               # 周复盘四步、模式卡字段、状态
 │   ├── reality.ts              # Reality OS 六维、T1–T5 标准、统计
 │   ├── about.ts                # 关于页类型与解析
@@ -72,10 +74,12 @@ src/
 │   ├── goals.ts                # 五步派生：完成度、进度、检查清单、停滞判断
 │   ├── stats.ts                # 打卡完成判断、日期集合、月 / 总计数、连续天数
 │   ├── date.ts                 # 日期键、中文格式化、月 / ISO 周工具
+│   ├── plan.ts                 # 周 / 月计划：周期键、规范化、历史列表派生
 │   └── useReality.ts           # Reality OS 读写（documents + localStorage 兜底）
 └── pages/                      # 路由页面，统一 XxxPage.tsx
     ├── OverviewPage.tsx        # 总览仪表盘
-    ├── DailyPage.tsx           # 每日仪式（四模块）
+    ├── DailyPage.tsx           # 每日仪式（四模块 + 周 / 月计划提醒）
+    ├── PlanPage.tsx            # 周 / 月计划编辑与历史周期
     ├── DiaryPage.tsx           # 日记归档（只读）
     ├── LifeOSPage.tsx          # 人生 OS 六栏
     ├── ReviewPage.tsx          # 复盘首页（周复盘入口 + 模式库）
@@ -102,6 +106,7 @@ src/
 | --- | --- |
 | `/` | `OverviewPage` |
 | `/daily` | `DailyPage`（`?date=YYYY-MM-DD` 可补写历史） |
+| `/plan` | `PlanPage`（`?period=week\|month&key=...`） |
 | `/belief`、`/evening` | 重定向到 `/daily` |
 | `/lifeos` | `LifeOSPage` |
 | `/diary` | `DiaryPage` |
@@ -150,6 +155,7 @@ src/
 - 写操作分两类：
   - 打卡、文档、清单、复盘、模式卡：mutation 成功后 invalidate `["bootstrap"]`。
   - 目标、恐惧清单：用 `setQueryData` 就地更新缓存，避免覆盖正在编辑的草稿。
+- 周 / 月计划复用 `documents` 与 `useSaveDocument`，不新增 query key；页面从 bootstrap 的 `documents` 中过滤 `module = "plan"`，保存成功后随 bootstrap 一起刷新。
 - 页面内表单使用局部 state；日期、步骤等领域选择状态用 `useSearchParams` 保存，保证刷新和分享链接可恢复。
 - 长表单（如 `GoalDetailPage`）使用防抖自动保存和版本守卫，避免旧响应覆盖新输入。
 - 防抖延时统一用 `src/content/autosave.ts` 的 `AUTOSAVE_DEBOUNCE_MS`，不要在页面里写死数字。
@@ -185,6 +191,7 @@ src/
 - 恐惧标题（第 1 步首行）、完成度、归档过滤、下一步预览、权衡分析状态 → `src/lib/fears.ts`。
 - 罗盘建树、祖先链、后代计数、风险排序、快照 diff → `src/lib/compass.ts`。
 - 日期键、ISO 周、中文格式化 → `src/lib/date.ts`。
+- 周 / 月计划的周期键、数据规范化、历史列表、周期标签 → `src/lib/plan.ts`。
 - 页面里不要重复实现这些计算。
 
 ---

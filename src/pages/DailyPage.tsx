@@ -3,6 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import type { CheckinData } from "../../shared/types";
 import { DaySidebar } from "../components/DaySidebar";
 import { PageHeader } from "../components/PageHeader";
+import { PlanReminderCard } from "../components/PlanReminderCard";
 import { ErrorState, LoadingPage } from "../components/StateViews";
 import {
   allDailyFields,
@@ -11,7 +12,8 @@ import {
   type DailyField,
   type DailyModule,
 } from "../content/daily";
-import { todayKey } from "../lib/date";
+import { isoWeekKeyOf, monthKeyOf, todayKey } from "../lib/date";
+import { findPlanEntry, readPlanData } from "../lib/plan";
 import { useBootstrap, useSaveCheckin } from "../lib/queries";
 
 type SaveStatus = { type: "idle" | "saved" | "error"; message?: string };
@@ -45,6 +47,13 @@ export function DailyPage() {
 
   if (isLoading) return <LoadingPage label="正在读取今天的记录…" />;
   if (error) return <ErrorState error={error} />;
+
+  // 提醒卡跟着当前查看的日期走，历史日期也能看到那一周 / 那一月的计划。
+  const weekKey = isoWeekKeyOf(date);
+  const monthKey = monthKeyOf(date);
+  const documents = data?.documents ?? [];
+  const weekPlan = readPlanData(findPlanEntry(documents, "week", weekKey));
+  const monthPlan = readPlanData(findPlanEntry(documents, "month", monthKey));
 
   function updateField(key: keyof CheckinData, value: string) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -182,6 +191,13 @@ export function DailyPage() {
             </button>
           </div>
         }
+      />
+
+      <PlanReminderCard
+        weekKey={weekKey}
+        monthKey={monthKey}
+        weekPlan={weekPlan}
+        monthPlan={monthPlan}
       />
 
       <div className="grid gap-6 lg:grid-cols-[300px_minmax(0,1fr)]">

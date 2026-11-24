@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/frontend/directory-structure.md", "reason": "前端页面、组件、content、lib 的分层与命名约定"}
+{"file": ".trellis/spec/backend/directory-structure.md", "reason": "documents 复用边界与周期键约定"}
+{"file": "docs/project-overview.md", "reason": "现有每日仪式、复盘、总览与数据模型背景"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "跨 shared 类型、lib 派生、页面与组件的数据流检查"}

@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/frontend/directory-structure.md", "reason": "检查页面/组件/content/lib 分层与命名"}
+{"file": ".trellis/spec/backend/directory-structure.md", "reason": "检查 documents 复用与周期键合法性"}
+{"file": "docs/development-workflow.md", "reason": "质量门与验证命令"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "检查重复派生逻辑与既有工具复用"}

@@ -18,6 +18,7 @@ import { LifeOSPage } from "./pages/LifeOSPage";
 import { ListsPage } from "./pages/ListsPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { OverviewPage } from "./pages/OverviewPage";
+import { PlanPage } from "./pages/PlanPage";
 import { ReviewPage } from "./pages/ReviewPage";
 import { ReviewWizardPage } from "./pages/ReviewWizardPage";
 
@@ -38,6 +39,7 @@ export function App() {
       <Routes>
         <Route path="/" element={<OverviewPage />} />
         <Route path="/daily" element={<DailyPage />} />
+        <Route path="/plan" element={<PlanPage />} />
         <Route path="/coach" element={<CoachPage />} />
         <Route path="/compass" element={<CompassPage />} />
         <Route path="/compass/items/:itemId" element={<CompassItemPage />} />

@@ -89,10 +89,10 @@ Cloudflare D1（SQLite，lifeos-db）
 ```
 lifeos/
 ├── src/                    # React 前端
-│   ├── components/         # 可复用组件（含 goals/ 五步表单、fears/ 恐惧步骤卡、compass/ 罗盘组件、coach/ 教练组件）
-│   ├── content/            # 纯配置与文案（含 compass.ts、coach.ts）
-│   ├── lib/                # API、Query、日期、统计、派生逻辑（含 compass.ts）
-│   ├── pages/              # 路由页面（XxxPage.tsx，含 Compass*.tsx、CoachPage.tsx）
+│   ├── components/         # 可复用组件（含 goals/ 五步表单、fears/ 恐惧步骤卡、compass/ 罗盘组件、coach/ 教练组件、PlanReminderCard）
+│   ├── content/            # 纯配置与文案（含 compass.ts、coach.ts、plan.ts）
+│   ├── lib/                # API、Query、日期、统计、派生逻辑（含 compass.ts、plan.ts）
+│   ├── pages/              # 路由页面（XxxPage.tsx，含 Compass*.tsx、CoachPage.tsx、PlanPage.tsx）
 │   ├── App.tsx             # 路由表
 │   ├── main.tsx            # 入口与 Provider
 │   └── index.css           # Tailwind 4 + 设计 token
@@ -154,7 +154,7 @@ npm run cf:tail            # 线上日志
 | 表 | 粒度 | 关键字段 | 用途 |
 | --- | --- | --- | --- |
 | `checkins` | 用户 + 日期 | `checkin_date`、`data`(JSON) | 每日仪式的 `plan` / `journal` / `review` / `q1`–`q6` |
-| `documents` | 用户 + module + key | `module`、`doc_key`、`data`(JSON) | 人生 OS 六栏、方向卡、Reality OS |
+| `documents` | 用户 + module + key | `module`、`doc_key`、`data`(JSON) | 人生 OS 六栏、方向卡、周 / 月计划、Reality OS |
 | `items` | 单条 | `module`、`content`、`item_date`、`done`、`sort_order` | 成就 / 痛苦 / 关键改变 / 复盘动作清单 |
 | `reviews` | 用户 + 周期 | `period_type`(`week`/`month`)、`period_key`、`data`(JSON) | 周复盘、月复盘（页面待做） |
 | `patterns` | 单条 | `title`、`trigger`、`reaction`、`payoff`、`cost`、`alternative`、`evidence`、`status` | 模式库 |
@@ -184,7 +184,8 @@ npm run cf:tail            # 线上日志
 | 模块 | 路由 | 核心作用 | 主要数据 |
 | --- | --- | --- | --- |
 | 总览 | `/` | 今日状态、连续天数、目标进度、日记摘要、快捷入口、全量导出 | 聚合 bootstrap |
-| 每日仪式 | `/daily` | 今日行动 / 晚间日记 / 想法 / 今日复盘六问 | `checkins` |
+| 每日仪式 | `/daily` | 今日行动 / 晚间日记 / 想法 / 今日复盘六问；顶部展示本周 / 本月计划提醒 | `checkins` |
+| 周 / 月计划 | `/plan` | 周期主题 + 1–3 个重点，作为每日行动的上层坐标 | `documents(module=plan)` |
 | 日记 | `/diary` | 只读回看有日记或想法的日期 | `checkins` |
 | 人生 OS | `/lifeos` | 方向卡 + 身份 / 阶段 / 理想 / 差距 / 策略 / 验证六栏 | `documents(module=lifeos)` |
 | 人生罗盘 | `/compass`、`/compass/items/:id`、`/compass/snapshots` | 五级链战略树 + 风险登记册 + 整图快照对比 | `telos_profiles`、`telos_items`、`telos_snapshots` |
@@ -202,7 +203,7 @@ npm run cf:tail            # 线上日志
 - 今日是否完成、连续打卡天数、本月打卡次数、人生 OS 六栏完成度。
 - 最多三个进行中目标及其五步进度。
 - 最近三条日记 / 想法摘要。
-- 快捷入口：每日仪式、人生 OS、日记、复盘、五步诊断、恐惧清单、Reality OS、清单。
+- 快捷入口：每日仪式、周 / 月计划、人生 OS、日记、复盘、五步诊断、恐惧清单、Reality OS、清单。
 - 「导出全部数据」下载全量 JSON。
 
 ### 3.3 每日仪式 `/daily`

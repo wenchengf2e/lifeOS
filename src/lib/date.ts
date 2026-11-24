@@ -124,6 +124,13 @@ export function shiftWeekKey(weekKey: string, delta: number) {
   return isoWeekKeyOf(shiftDate(isoWeekStart(weekKey), delta * 7));
 }
 
+/** 月键 YYYY-MM 前后移动，自动跨年。 */
+export function shiftMonthKey(monthKey: string, delta: number) {
+  const [yearStr, monthStr] = monthKey.split("-");
+  const date = new Date(Number(yearStr), Number(monthStr) - 1 + delta, 1);
+  return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}`;
+}
+
 export function weekRangeLabel(weekKey: string) {
   const days = isoWeekDays(weekKey);
   return `${formatDateCN(days[0])} – ${formatDateCN(days[6])}`;
