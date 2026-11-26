@@ -71,7 +71,7 @@ function ProblemFields({
 }) {
   const copy = compassFieldCopy.problem;
   return (
-    <div className="space-y-5">
+    <div className="space-y-4 sm:space-y-5">
       <TextField
         label={copy.description.label}
         hint={copy.description.hint}
@@ -117,7 +117,7 @@ function GoalFields({
 }) {
   const copy = compassFieldCopy.goal;
   return (
-    <div className="space-y-5">
+    <div className="space-y-4 sm:space-y-5">
       <TextListField
         label={copy.successCriteria.label}
         hint={copy.successCriteria.hint}
@@ -195,7 +195,7 @@ function ChallengeFields({
 }) {
   const copy = compassFieldCopy.challenge;
   return (
-    <div className="space-y-5">
+    <div className="space-y-4 sm:space-y-5">
       <TextField
         label={copy.evidence.label}
         hint={copy.evidence.hint}
@@ -236,7 +236,7 @@ function StrategyFields({
 }) {
   const copy = compassFieldCopy.strategy;
   return (
-    <div className="space-y-5">
+    <div className="space-y-4 sm:space-y-5">
       <TextField
         label={copy.hypothesis.label}
         hint={copy.hypothesis.hint}
@@ -380,7 +380,7 @@ function ProjectFields({
 }) {
   const copy = compassFieldCopy.project;
   return (
-    <div className="space-y-5">
+    <div className="space-y-4 sm:space-y-5">
       <TextField
         label={copy.nextAction.label}
         hint={copy.nextAction.hint}
@@ -408,7 +408,7 @@ function RiskControlField({
 }) {
   const meta = compassRiskControlMeta[kind];
   return (
-    <div className="rounded-2xl border border-line/70 bg-paper-deep/30 p-4">
+    <div className="rounded-2xl border border-line/70 bg-paper-deep/30 p-3 sm:p-4">
       <FieldHeader label={meta.label} hint={meta.hint} />
       <div className="mt-2 flex flex-wrap gap-1.5">
         {(["none", "partial", "ready"] as const).map((state) => {
@@ -434,7 +434,7 @@ function RiskControlField({
         })}
       </div>
       <textarea
-        className="field mt-3 min-h-24 resize-y"
+        className="field mt-3 min-h-16 resize-y sm:min-h-24"
         rows={3}
         maxLength={2000}
         placeholder={compassFieldCopy.risk.notePlaceholder}
@@ -455,7 +455,7 @@ function RiskFields({
 }) {
   const copy = compassFieldCopy.risk;
   return (
-    <div className="space-y-5">
+    <div className="space-y-4 sm:space-y-5">
       <TextField
         label={copy.scenario.label}
         hint={copy.scenario.hint}
@@ -463,7 +463,7 @@ function RiskFields({
         value={data.scenario}
         onChange={(scenario) => onChange({ ...data, scenario })}
       />
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-2 sm:gap-5">
         <CompassScaleField
           label={copy.probability.label}
           hint={copy.probability.hint}

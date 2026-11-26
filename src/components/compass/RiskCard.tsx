@@ -20,7 +20,7 @@ export function RiskCard({ risk }: { risk: TelosRiskItem }) {
   return (
     <Link
       to={`/compass/items/${risk.id}`}
-      className="card group flex flex-col p-5 transition hover:-translate-y-0.5 hover:border-moss/30 hover:shadow-md"
+      className="card group flex flex-col p-4 transition hover:-translate-y-0.5 hover:border-moss/30 hover:shadow-md sm:p-5"
     >
       <div className="flex items-start justify-between gap-3">
         <span className={["rounded-full px-2.5 py-1 text-[11px] font-medium", meta.className].join(" ")}>

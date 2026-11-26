@@ -541,7 +541,7 @@ export function CompassItemPage() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
-        <article className="card p-6 sm:p-8">
+        <article className="card p-4 sm:p-6 lg:p-8">
           <div className="flex items-start gap-3">
             <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-moss-soft text-xl">
               {meta.icon}
@@ -551,7 +551,7 @@ export function CompassItemPage() {
             </div>
           </div>
 
-          <div className="mt-7">
+          <div className="mt-5 sm:mt-7">
             <CompassItemFields item={liveItem} onChange={updateData} />
           </div>
         </article>
