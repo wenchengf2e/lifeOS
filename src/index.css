@@ -87,3 +87,19 @@
     @apply inline-flex items-center gap-1 rounded-full bg-moss-soft px-2.5 py-1 text-[11px] font-medium text-moss-dark;
   }
 }
+
+/* 移动端紧凑化：收紧全站大 padding 与卡片留白，小屏内容密度更高 */
+@media (max-width: 640px) {
+  .card {
+    border-radius: 1.25rem;
+  }
+
+  .p-4 { padding: 0.875rem; }
+  .p-5 { padding: 1rem; }
+  .p-6, .p-7, .p-8 { padding: 1.125rem; }
+
+  .px-5 { padding-left: 1rem; padding-right: 1rem; }
+  .px-6, .px-8 { padding-left: 1.125rem; padding-right: 1.125rem; }
+
+  .py-6, .py-8, .py-10, .py-12 { padding-top: 1.125rem; padding-bottom: 1.125rem; }
+}

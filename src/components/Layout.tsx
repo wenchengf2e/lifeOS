@@ -15,7 +15,7 @@ export function Layout({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-30 border-b border-line/60 bg-paper/85 backdrop-blur-md">
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-4 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-2 px-3 py-3 sm:gap-3 sm:px-6 sm:py-4 lg:flex-row lg:items-center lg:justify-between">
           <Link to="/" className="group flex items-baseline gap-3">
             <span className="font-display text-xl font-semibold tracking-tight text-ink">
               LifeOS
@@ -46,9 +46,9 @@ export function Layout({ children }: { children: ReactNode }) {
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6 lg:py-12">{children}</main>
+      <main className="mx-auto w-full max-w-6xl flex-1 px-3 py-5 sm:px-6 sm:py-8 lg:py-12">{children}</main>
 
-      <footer className="mx-auto w-full max-w-6xl px-4 pb-10 sm:px-6">
+      <footer className="mx-auto w-full max-w-6xl px-3 pb-8 sm:px-6 sm:pb-10">
         <div className="flex flex-col gap-2 border-t border-line/60 pt-6 text-xs text-ink-soft sm:flex-row sm:items-center sm:justify-between">
           <p>LifeOS · 数据存储于 Cloudflare D1，仅你可见。</p>
           <p>React + Hono · Cloudflare Workers</p>
